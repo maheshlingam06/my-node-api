@@ -23,7 +23,11 @@ const uploadLimiter = rateLimit({
     standardHeaders: true,
     legacyHeaders: false,
     // This ensures we are definitely looking at the user's IP from the proxy
-    keyGenerator: (req) => req.headers['x-forwarded-for'] || req.ip
+    keyGenerator: (req) => {
+        // If x-forwarded-for exists, take the first IP in the comma-separated string
+        const xff = req.headers['x-forwarded-for'];
+        return xff ? xff.split(',')[0].trim() : req.ip;
+    },
 });
 
 app.use(globalLimiter);
