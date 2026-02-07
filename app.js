@@ -20,8 +20,10 @@ const uploadLimiter = rateLimit({
     windowMs: 60 * 60 * 1000,
     max: 5,
     message: 'Upload limit reached!',
+    standardHeaders: true,
+    legacyHeaders: false,
     // This ensures we are definitely looking at the user's IP from the proxy
-    keyGenerator: (req) => req.ip || req.headers['x-forwarded-for'] || req.socket.remoteAddress,
+    keyGenerator: (req) => req.headers['x-forwarded-for'] || req.ip
 });
 
 app.use(globalLimiter);
@@ -36,6 +38,9 @@ const upload = multer({ storage: storage });
 app.post('/upload-file', uploadLimiter, upload.single('myFile'), async (req, res) => {
     try {
         if (!req.file) return res.status(400).send('No file.');
+
+        console.log("Request from IP:", req.ip);
+        console.log("X-Forwarded-For:", req.headers['x-forwarded-for']);
 
         const file = req.file;
         const fileName = `${Date.now()}-${file.originalname}`;
