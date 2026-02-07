@@ -52,35 +52,40 @@ app.get('/', (req, res) => {
 // Add this route to your app.js
 app.get('/gallery', async (req, res) => {
     try {
-        // 1. List all files in the 'images' bucket
-        const { data, error } = await supabase.storage
-            .from('images')
-            .list('', {
-                limit: 100,
-                sortBy: { column: 'created_at', order: 'desc' },
-            });
+        // 1. Fetch data from the 'submissions' table
+        const { data: submissions, error } = await supabase
+            .from('submissions')
+            .select('*')
+            .order('id', { ascending: false }); // Show newest first
 
         if (error) throw error;
 
-        // 2. Generate Public URLs for each file
-        const imageUrls = data.map(file => {
-            const { data: publicUrl } = supabase.storage
-                .from('images')
-                .getPublicUrl(file.name);
-            return publicUrl.publicUrl;
+        // 2. Build the HTML with the database content
+        let html = `
+            <style>
+                .card { border: 1px solid #ccc; padding: 10px; border-radius: 8px; width: 220px; }
+                .gallery { display: flex; flex-wrap: wrap; gap: 20px; font-family: sans-serif; }
+                img { width: 200px; height: 200px; object-fit: cover; border-radius: 4px; }
+            </style>
+            <h1>Community Gallery</h1>
+            <div class="gallery">
+        `;
+
+        submissions.forEach(item => {
+            html += `
+                <div class="card">
+                    <img src="${item.image_url}">
+                    <p><strong>${item.username}</strong></p>
+                    <p>${item.message}</p>
+                </div>
+            `;
         });
 
-        // 3. Build a simple HTML string to display them
-        let html = '<h1>My Image Gallery</h1><div style="display: flex; flex-wrap: wrap; gap: 10px;">';
-        imageUrls.forEach(url => {
-            html += `<img src="${url}" style="width: 200px; height: 200px; object-fit: cover; border-radius: 8px;">`;
-        });
-        html += '</div><br><a href="/">Upload more</a>';
-
+        html += '</div><br><a href="/">Back to Home</a>';
         res.send(html);
 
     } catch (err) {
-        res.status(500).send("Error loading gallery: " + err.message);
+        res.status(500).send("Gallery Error: " + err.message);
     }
 });
 
