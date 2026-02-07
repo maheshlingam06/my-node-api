@@ -39,6 +39,16 @@ const supabase = createClient(process.env.SUPABASE_URL, process.env.SUPABASE_ANO
 const storage = multer.memoryStorage();
 const upload = multer({ storage: storage });
 
+app.get('/', (req, res) => {
+    res.send(`
+        <h1>Node.js API is Live!</h1>
+        <ul>
+            <li><a href="/gallery">View Gallery</a></li>
+        </ul>
+        <p>Use your local index.html to upload new files.</p>
+    `);
+});
+
 // Add this route to your app.js
 app.get('/gallery', async (req, res) => {
     try {
