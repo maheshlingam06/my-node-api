@@ -1,6 +1,8 @@
 const express = require('express');
 const rateLimit = require('express-rate-limit');
 const multer = require('multer');
+const QRCode = require('qrcode');
+const nodemailer = require('nodemailer');
 const { createClient } = require('@supabase/supabase-js');
 
 const app = express();
@@ -30,6 +32,15 @@ const uploadLimiter = rateLimit({
         const xff = req.headers['x-forwarded-for'];
         return xff ? xff.split(',')[0].trim() : req.ip;
     },
+});
+
+// 1. Setup Email Transporter (Using Gmail as an example)
+const transporter = nodemailer.createTransport({
+    service: 'gmail',
+    auth: {
+        user: process.env.EMAIL_USER, // Your email
+        pass: process.env.EMAIL_PASS  // Your App Password
+    }
 });
 
 app.use(globalLimiter);
@@ -100,7 +111,8 @@ app.post('/register', uploadLimiter, async (req, res) => {
     try {
         // Destructure all the fields from the new UI
         const { 
-            participant_name, 
+            participant_name,
+            email, 
             mobile, 
             location, 
             teens_adults, 
@@ -112,6 +124,19 @@ app.post('/register', uploadLimiter, async (req, res) => {
             sat_night 
         } = req.body;
 
+        // 2. Generate QR Code as a Buffer
+        const qrData = `Reunion-2026-${mobile}`;
+        const qrCodeBuffer = await QRCode.toBuffer(qrData);
+
+        // 3. Upload QR Code to Supabase Storage
+        const qrFileName = `qrcodes/${mobile}-${Date.now()}.png`;
+        const { data: uploadData, error: uploadError } = await supabase.storage
+            .from('images')
+            .upload(qrFileName, qrCodeBuffer, { contentType: 'image/png' });
+
+        if (uploadError) throw uploadError;
+        const { data: qrUrl } = supabase.storage.from('images').getPublicUrl(qrFileName);
+
         // Insert into the 'submissions' table
         const { data, error } = await supabase
             .from('submissions')
@@ -119,6 +144,7 @@ app.post('/register', uploadLimiter, async (req, res) => {
                 { 
                     participant_name,
                     mobile,
+                    email,
                     location,
                     teens_adults: parseInt(teens_adults) || 0,
                     kids: parseInt(kids) || 0,
@@ -126,18 +152,29 @@ app.post('/register', uploadLimiter, async (req, res) => {
                     fri_reunion,
                     fri_night,
                     sat_reunion,
-                    sat_night
+                    sat_night,
+                    qr_code_url: qrUrl.publicUrl
                 }
             ]);
 
         if (error) throw error;
 
-        // Redirect to a success page or send a message
-        res.send(`
-            <h1>Registration Successful!</h1>
-            <p>Thank you, ${participant_name}. We have received your details.</p>
-            <a href="/gallery">View Attendees</a>
-        `);
+        // 5. Send Confirmation Email
+        const mailOptions = {
+            from: '"Family Reunion" <your-email@gmail.com>',
+            to: email,
+            subject: 'Your Family Reunion Registration & QR Code',
+            html: `
+                <h1>Hi ${participant_name}!</h1>
+                <p>You are registered! Please show the QR code below at the check-in desk.</p>
+                <img src="${qrUrl.publicUrl}" alt="Your QR Code" width="200" />
+                <p>Location: Heritage Resort</p>
+            `
+        };
+
+        await transporter.sendMail(mailOptions);
+
+        res.send("Registration Successful! Check your email for your QR code.");
 
     } catch (err) {
         console.error("Registration Error:", err.message);
