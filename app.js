@@ -2,9 +2,11 @@ const express = require('express');
 const rateLimit = require('express-rate-limit');
 const multer = require('multer');
 const QRCode = require('qrcode');
-const nodemailer = require('nodemailer');
+// const nodemailer = require('nodemailer');
+const { Resend } = require('resend');
 const { createClient } = require('@supabase/supabase-js');
 const dns = require('dns');
+const resend = new Resend(process.env.RESEND_API_KEY);
 
 dns.setDefaultResultOrder('ipv4first'); // Force Node to prefer IPv4 addresses
 
@@ -36,20 +38,6 @@ const uploadLimiter = rateLimit({
         const xff = req.headers['x-forwarded-for'];
         return xff ? xff.split(',')[0].trim() : req.ip;
     },
-});
-
-// 1. Setup Email Transporter (Using Gmail as an example)
-const transporter = nodemailer.createTransport({
-    host: 'smtp.gmail.com',
-    port: 465,
-    secure: true,
-    auth: {
-        user: process.env.EMAIL_USER, // Your email
-        pass: process.env.EMAIL_PASS  // Your App Password
-    },
-    tls: {
-        rejectUnauthorized: false
-    }
 });
 
 app.use(globalLimiter);
@@ -169,21 +157,21 @@ app.post('/register', uploadLimiter, async (req, res) => {
         if (error) throw error;
 
         // 5. Send Confirmation Email
-        const mailOptions = {
-            from: '"Family Reunion" <your-email@gmail.com>',
+        // SEND EMAIL VIA HTTP API (Bypasses Render's Port Block)
+        const { dataResend, errorResend } = await resend.emails.send({
+            from: 'Family Reunion <onboarding@resend.dev>', // Use this for testing
             to: email,
-            subject: 'Your Family Reunion Registration & QR Code',
+            subject: 'Your Family Reunion QR Code',
             html: `
                 <h1>Hi ${participant_name}!</h1>
-                <p>You are registered! Please show the QR code below at the check-in desk.</p>
-                <img src="${qrUrl.publicUrl}" alt="Your QR Code" width="200" />
-                <p>Location: Heritage Resort</p>
+                <p>Your registration is confirmed. Here is your check-in code:</p>
+                <img src="${qrUrl.publicUrl}" width="200" />
             `
-        };
+        });
 
-        await transporter.sendMail(mailOptions);
+        if (errorResend) throw errorResend;
 
-        res.send("Registration Successful! Check your email for your QR code.");
+        res.send("Registration Successful! Check your email.");
 
     } catch (err) {
         console.error("Registration Error:", err.message);
