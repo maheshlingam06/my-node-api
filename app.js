@@ -4,6 +4,8 @@ const multer = require('multer');
 const { createClient } = require('@supabase/supabase-js');
 
 const app = express();
+app.set('trust proxy', 1);
+
 const PORT = process.env.PORT || 10000;
 
 const globalLimiter = rateLimit({
@@ -15,13 +17,14 @@ const globalLimiter = rateLimit({
 });
 
 const uploadLimiter = rateLimit({
-    windowMs: 60 * 60 * 1000, // 1 hour
-    max: 5, // Only 5 uploads per hour per IP
-    message: 'Upload limit reached. Please try again in an hour.',
+    windowMs: 60 * 60 * 1000,
+    max: 5,
+    message: 'Upload limit reached!',
+    // This ensures we are definitely looking at the user's IP from the proxy
+    keyGenerator: (req) => req.ip || req.headers['x-forwarded-for'] || req.socket.remoteAddress,
 });
 
 app.use(globalLimiter);
-app.set('trust proxy', 1);
 
 // 1. Initialize Supabase
 const supabase = createClient(process.env.SUPABASE_URL, process.env.SUPABASE_ANON_KEY);
