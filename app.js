@@ -3,10 +3,18 @@ const rateLimit = require('express-rate-limit');
 const multer = require('multer');
 const QRCode = require('qrcode');
 // const nodemailer = require('nodemailer');
-const { Resend } = require('resend');
+// const { Resend } = require('resend');
 const { createClient } = require('@supabase/supabase-js');
 const dns = require('dns');
-const resend = new Resend(process.env.RESEND_API_KEY);
+// const resend = new Resend(process.env.RESEND_API_KEY);
+const Brevo = require('@getbrevo/brevo');
+// 1. Initialize the Brevo Transactional Emails API
+const apiInstance = new Brevo.TransactionalEmailsApi();
+
+// 2. Set your API Key
+let defaultClient = Brevo.ApiClient.instance;
+let apiKey = defaultClient.authentications['api-key'];
+apiKey.apiKey = process.env.BREVO_API_KEY;
 
 dns.setDefaultResultOrder('ipv4first'); // Force Node to prefer IPv4 addresses
 
@@ -157,21 +165,27 @@ app.post('/register', uploadLimiter, async (req, res) => {
         if (error) throw error;
 
         // 5. Send Confirmation Email
-        // SEND EMAIL VIA HTTP API (Bypasses Render's Port Block)
-        const { dataResend, errorResend } = await resend.emails.send({
-            from: 'Family Reunion <onboarding@resend.dev>', // Use this for testing
-            to: email,
-            subject: 'Your Family Reunion QR Code',
-            html: `
-                <h1>Hi ${participant_name}!</h1>
-                <p>Your registration is confirmed. Here is your check-in code:</p>
-                <img src="${qrUrl.publicUrl}" width="200" />
-            `
-        });
+        // 3. Prepare the Email using Brevo's HTTP API (Bypasses Render's port blocks)
+        const sendSmtpEmail = new Brevo.SendSmtpEmail();
 
-        if (errorResend) throw errorResend;
+        sendSmtpEmail.subject = "Your Family Reunion QR Code";
+        sendSmtpEmail.htmlContent = `
+            <div style="font-family: Arial, sans-serif; text-align: center;">
+                <h1>Hello ${participant_name}!</h1>
+                <p>Your registration is confirmed. Please present the code below at the resort check-in.</p>
+                <img src="${qrUrl.publicUrl}" alt="Check-in QR Code" width="250" />
+                <p><strong>Mobile:</strong> ${mobile}</p>
+                <p>We look forward to seeing you at Heritage Resort!</p>
+            </div>`;
+        
+        // IMPORTANT: The sender email MUST be verified in your Brevo account
+        sendSmtpEmail.sender = { "name": "Reunion Team", "email": "d.mahesh.0510@gmail.com" };
+        sendSmtpEmail.to = [{ "email": email, "name": participant_name }];
 
-        res.send("Registration Successful! Check your email.");
+        // 4. Trigger the send
+        await apiInstance.sendTransacEmail(sendSmtpEmail);
+
+        res.send("Registration Successful! Check your email for your unique QR code.");
 
     } catch (err) {
         console.error("Registration Error:", err.message);
