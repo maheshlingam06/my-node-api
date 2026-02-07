@@ -4,11 +4,15 @@ const multer = require('multer');
 const QRCode = require('qrcode');
 const nodemailer = require('nodemailer');
 const { createClient } = require('@supabase/supabase-js');
+const dns = require('dns');
+
+dns.setDefaultResultOrder('ipv4first'); // Force Node to prefer IPv4 addresses
 
 const app = express();
 app.set('trust proxy', 1);
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
+
 
 const PORT = process.env.PORT || 10000;
 
@@ -36,10 +40,15 @@ const uploadLimiter = rateLimit({
 
 // 1. Setup Email Transporter (Using Gmail as an example)
 const transporter = nodemailer.createTransport({
-    service: 'gmail',
+    host: 'smtp.gmail.com',
+    port: 465,
+    secure: true,
     auth: {
         user: process.env.EMAIL_USER, // Your email
         pass: process.env.EMAIL_PASS  // Your App Password
+    },
+    tls: {
+        rejectUnauthorized: false
     }
 });
 
