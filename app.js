@@ -5,6 +5,8 @@ const { createClient } = require('@supabase/supabase-js');
 
 const app = express();
 app.set('trust proxy', 1);
+app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
 
 const PORT = process.env.PORT || 10000;
 
@@ -86,6 +88,60 @@ app.get('/gallery', async (req, res) => {
 
     } catch (err) {
         res.status(500).send("Gallery Error: " + err.message);
+    }
+});
+
+// Add these lines near the top of your app.js if they aren't there
+app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
+
+// NEW SEPARATE REGISTRATION API
+app.post('/register', uploadLimiter, async (req, res) => {
+    try {
+        // Destructure all the fields from the new UI
+        const { 
+            participant_name, 
+            mobile, 
+            location, 
+            teens_adults, 
+            kids, 
+            thu_night, 
+            fri_reunion, 
+            fri_night, 
+            sat_reunion, 
+            sat_night 
+        } = req.body;
+
+        // Insert into the 'submissions' table
+        const { data, error } = await supabase
+            .from('submissions')
+            .insert([
+                { 
+                    participant_name,
+                    mobile,
+                    location,
+                    teens_adults: parseInt(teens_adults) || 0,
+                    kids: parseInt(kids) || 0,
+                    thu_night,
+                    fri_reunion,
+                    fri_night,
+                    sat_reunion,
+                    sat_night
+                }
+            ]);
+
+        if (error) throw error;
+
+        // Redirect to a success page or send a message
+        res.send(`
+            <h1>Registration Successful!</h1>
+            <p>Thank you, ${participant_name}. We have received your details.</p>
+            <a href="/gallery">View Attendees</a>
+        `);
+
+    } catch (err) {
+        console.error("Registration Error:", err.message);
+        res.status(500).send("Registration failed: " + err.message);
     }
 });
 
