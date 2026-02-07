@@ -39,6 +39,41 @@ const supabase = createClient(process.env.SUPABASE_URL, process.env.SUPABASE_ANO
 const storage = multer.memoryStorage();
 const upload = multer({ storage: storage });
 
+// Add this route to your app.js
+app.get('/gallery', async (req, res) => {
+    try {
+        // 1. List all files in the 'images' bucket
+        const { data, error } = await supabase.storage
+            .from('images')
+            .list('', {
+                limit: 100,
+                sortBy: { column: 'created_at', order: 'desc' },
+            });
+
+        if (error) throw error;
+
+        // 2. Generate Public URLs for each file
+        const imageUrls = data.map(file => {
+            const { data: publicUrl } = supabase.storage
+                .from('images')
+                .getPublicUrl(file.name);
+            return publicUrl.publicUrl;
+        });
+
+        // 3. Build a simple HTML string to display them
+        let html = '<h1>My Image Gallery</h1><div style="display: flex; flex-wrap: wrap; gap: 10px;">';
+        imageUrls.forEach(url => {
+            html += `<img src="${url}" style="width: 200px; height: 200px; object-fit: cover; border-radius: 8px;">`;
+        });
+        html += '</div><br><a href="/">Upload more</a>';
+
+        res.send(html);
+
+    } catch (err) {
+        res.status(500).send("Error loading gallery: " + err.message);
+    }
+});
+
 app.post('/upload-file', uploadLimiter, upload.single('myFile'), async (req, res) => {
     try {
         if (!req.file) return res.status(400).send('No file.');
