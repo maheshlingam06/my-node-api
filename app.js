@@ -12,9 +12,10 @@ const Brevo = require('@getbrevo/brevo');
 const apiInstance = new Brevo.TransactionalEmailsApi();
 
 // 2. Set your API Key
-let defaultClient = Brevo.ApiClient.instance;
-let apiKey = defaultClient.authentications['api-key'];
-apiKey.apiKey = process.env.BREVO_API_KEY;
+// let defaultClient = Brevo.ApiClient.instance;
+// let apiKey = defaultClient.authentications['api-key'];
+// apiKey.apiKey = process.env.BREVO_API_KEY;
+apiInstance.setApiKey(Brevo.TransactionalEmailsApiApiKeys.apiKey, process.env.BREVO_API_KEY);
 
 dns.setDefaultResultOrder('ipv4first'); // Force Node to prefer IPv4 addresses
 
