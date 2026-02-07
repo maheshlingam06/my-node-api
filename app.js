@@ -88,33 +88,40 @@ app.post('/upload-file', uploadLimiter, upload.single('myFile'), async (req, res
     try {
         if (!req.file) return res.status(400).send('No file.');
 
-        console.log("Request from IP:", req.ip);
-        console.log("X-Forwarded-For:", req.headers['x-forwarded-for']);
-
+        // 1. Upload File to Storage (as before)
         const file = req.file;
         const fileName = `${Date.now()}-${file.originalname}`;
-
-        // 3. Upload to Supabase 'images' bucket
-        const { data, error } = await supabase.storage
+        const { data: storageData, error: storageError } = await supabase.storage
             .from('images')
-            .upload(fileName, file.buffer, {
-                contentType: file.mimetype,
-                upsert: false
-            });
+            .upload(fileName, file.buffer, { contentType: file.mimetype });
 
-        if (error) throw error;
+        if (storageError) throw storageError;
 
-        // 4. Get the Public URL
-        const { data: publicUrl } = supabase.storage
-            .from('images')
-            .getPublicUrl(fileName);
+        const { data: publicUrl } = supabase.storage.from('images').getPublicUrl(fileName);
+
+        // 2. Insert Data into the Database Table
+        // We get 'username' and 'message' from the UI (req.body)
+        const { username, message } = req.body;
+
+        const { data: dbData, error: dbError } = await supabase
+            .from('submissions')
+            .insert([
+                { 
+                    username: username || 'Anonymous', 
+                    message: message || 'No message', 
+                    image_url: publicUrl.publicUrl 
+                }
+            ]);
+
+        if (dbError) throw dbError;
 
         res.send({
-            message: 'Securely uploaded to Supabase!',
-            url: publicUrl.publicUrl
+            message: 'File uploaded and database record saved!',
+            imageUrl: publicUrl.publicUrl
         });
 
     } catch (err) {
+        console.error(err);
         res.status(500).send(err.message);
     }
 });
