@@ -354,49 +354,40 @@ const upload = multer({
     limits: { fileSize: 10 * 1024 * 1024 } // 10MB total limit
 });
 
-// The Salesforce-compatible endpoint
-app.post('/api/salesforce/upload', upload.array('files', 10), async (req, res) => {
+app.post('/api/salesforce/upload', upload.any(), async (req, res) => {
     try {
-        // 1. Access the text parameters
         const { brokercode, hashcode } = req.body;
-        
-        // 2. Access the files (will be an empty array if 0 files sent)
         const files = req.files || [];
-
-        console.log(`Received Request - Broker: ${brokercode}, Hash: ${hashcode}`);
-        console.log(`Files attached: ${files.length}`);
-
-        // Simple validation if brokercode is required
-        if (!brokercode) {
-            return res.status(400).json({ error: "Missing brokercode" });
-        }
 
         const uploadResults = [];
 
-        // 3. Process files only if they exist
         for (const file of files) {
-            const fileName = `sf-uploads/${brokercode}/${Date.now()}-${file.originalname}`;
+            // We specify the folder in the path string: 'salesforce-project/...'
+            const filePath = `salesforce-project/${brokercode}/${file.fieldname}-${Date.now()}-${file.originalname}`;
             
             const { data, error } = await supabase.storage
-                .from('project-two-bucket')
-                .upload(fileName, file.buffer, {
-                    contentType: file.mimetype
+                .from('images') 
+                .upload(filePath, file.buffer, {
+                    contentType: file.mimetype,
+                    upsert: true 
                 });
 
             if (error) throw error;
-            uploadResults.push(fileName);
+            
+            const { data: urlData } = supabase.storage.from('images').getPublicUrl(filePath);
+            
+            uploadResults.push({
+                document: file.fieldname,
+                url: urlData.publicUrl
+            });
         }
 
-        // 4. Return success with confirmation of parameters received
         res.json({
             status: "Success",
-            received_brokercode: brokercode,
-            files_processed: uploadResults.length,
-            file_paths: uploadResults
+            uploads: uploadResults
         });
 
     } catch (err) {
-        console.error("Salesforce API Error:", err);
         res.status(500).json({ error: err.message });
     }
 });
