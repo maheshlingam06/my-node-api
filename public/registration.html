@@ -119,11 +119,48 @@
     </script>
     <script>
         // Put this inside a <script> tag at the bottom of your registration.html
-        window.onload = function() {
+        window.onload = async function() {
+            const token = localStorage.getItem('supabaseToken');
             const urlParams = new URLSearchParams(window.location.search);
             const emailFromUrl = urlParams.get('email');
+
+            // Always pre-fill email if in URL**3
             if (emailFromUrl) {
-                document.querySelector('input[name="email"]').value = emailFromUrl;
+                document.getElementById('email').value = emailFromUrl;
+            }
+
+            // NEW: Fetch existing data if token exists
+            if (token) {
+                try {
+                    const response = await fetch('/get-registration', {
+                        headers: { 'Authorization': `Bearer ${token}` }
+                    });
+                    const existingData = await response.json();
+
+                    if (existingData && existingData.participant_name) {
+                        // Map the database fields to your form inputs
+                        const form = document.getElementById('reunion-form');
+                        
+                        // Text/Tel inputs
+                        form.querySelector('[name="participant_name"]').value = existingData.participant_name;
+                        form.querySelector('[name="mobile"]').value = existingData.mobile;
+                        form.querySelector('[name="location"]').value = existingData.location;
+                        form.querySelector('[name="teens_adults"]').value = existingData.teens_adults;
+                        form.querySelector('[name="kids"]').value = existingData.kids;
+                        
+                        // Select dropdowns
+                        form.querySelector('[name="thu_night"]').value = existingData.thu_night;
+                        form.querySelector('[name="fri_reunion"]').value = existingData.fri_reunion;
+                        form.querySelector('[name="fri_night"]').value = existingData.fri_night;
+                        form.querySelector('[name="sat_reunion"]').value = existingData.sat_reunion;
+                        form.querySelector('[name="sat_night"]').value = existingData.sat_night;
+
+                        // Update the button text if they are editing
+                        document.querySelector('.btn-submit').innerText = "Update Registration";
+                    }
+                } catch (err) {
+                    console.error("Error fetching saved data:", err);
+                }
             }
         };
     </script>
@@ -145,7 +182,7 @@
             <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
                 <div class="input-group">
                     <label>Mobile Number (with Country Code)</label>
-                    <input type="tel" name="mobile" placeholder="+1 234 567 890" required>
+                    <input type="tel" name="mobile" placeholder="+1 264 567 890" required>
                 </div>
                 <div class="input-group">
                     <label>Email Address</label>
@@ -234,10 +271,10 @@
                 <span style="color: #059669; font-weight: 600;">Open</span>
             </div>
             
-            <div class="summary-total">
+            <!-- <div class="summary-total">
                 <span>Total RSVP</span>
-                <span style="color: var(--primary);">Reviewing</span>
-            </div>
+                <span style="color: var(primary);">Reviewing</span>
+            </div> -->/
             
             <button type="submit" class="btn-submit">Complete Registration</button>
             <p style="font-size: 11px; color: #64748b; text-align: center; margin-top: 15px;">

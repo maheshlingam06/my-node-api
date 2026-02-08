@@ -282,6 +282,30 @@ app.post('/login', async (req, res) => {
     }
 });
 
+app.get('/get-registration', async (req, res) => {
+    try {
+        const token = req.headers.authorization?.split(' ')[1];
+        if (!token) return res.status(401).json({ error: "Unauthorized" });
+
+        // 1. Verify user
+        const { data: { user }, error: authError } = await supabase.auth.getUser(token);
+        if (authError || !user) return res.status(401).json({ error: "Invalid session" });
+
+        // 2. Fetch their specific submission
+        const { data, error } = await supabase
+            .from('submissions')
+            .select('*')
+            .eq('user_id', user.id)
+            .single(); // We only expect one registration per user
+
+        if (error && error.code !== 'PGRST116') throw error; // PGRST116 means no record found (which is fine)
+
+        res.status(200).json(data || {}); 
+    } catch (err) {
+        res.status(500).json({ error: err.message });
+    }
+});
+
 app.post('/upload-file', uploadLimiter, upload.single('myFile'), async (req, res) => {
     try {
         if (!req.file) return res.status(400).send('No file.');
