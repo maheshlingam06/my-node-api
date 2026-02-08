@@ -59,7 +59,7 @@ const supabase = createClient(process.env.SUPABASE_URL, process.env.SUPABASE_ANO
 
 // 2. Use Memory Storage (Safe for small files)
 const storage = multer.memoryStorage();
-const upload = multer({ storage: storage });
+// const upload = multer({ storage: storage });
 
 // Helper function to verify reCAPTCHA
 async function verifyRecaptcha(token) {
@@ -349,10 +349,10 @@ app.post('/upload-file', uploadLimiter, upload.single('myFile'), async (req, res
 });
 
 // Configure Multer for multiple files in memory
-// const upload = multer({ 
-//     storage: multer.memoryStorage(),
-//     limits: { fileSize: 10 * 1024 * 1024 } // 10MB total limit
-// });
+const upload = multer({ 
+    storage: multer.memoryStorage(),
+    limits: { fileSize: 10 * 1024 * 1024 } // 10MB total limit
+});
 
 // The Salesforce-compatible endpoint
 app.post('/api/salesforce/upload', upload.array('files', 10), async (req, res) => {
