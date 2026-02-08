@@ -3,6 +3,7 @@ const rateLimit = require('express-rate-limit');
 const multer = require('multer');
 const QRCode = require('qrcode');
 const axios = require('axios');
+const path = require('path');
 // const nodemailer = require('nodemailer');
 // const { Resend } = require('resend');
 const { createClient } = require('@supabase/supabase-js');
@@ -78,13 +79,7 @@ async function verifyRecaptcha(token) {
 }
 
 app.get('/', (req, res) => {
-    res.send(`
-        <h1>Node.js API is Live!</h1>
-        <ul>
-            <li><a href="/gallery">View Gallery</a></li>
-        </ul>
-        <p>Use your local index.html to upload new files.</p>
-    `);
+    res.sendFile(path.join(__dirname, 'signup.html'));
 });
 
 // Add this route to your app.js
