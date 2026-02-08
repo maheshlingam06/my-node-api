@@ -154,7 +154,8 @@ app.post('/signup', uploadLimiter, async (req, res) => {
         // Send back success - Frontend will then show the details form
         res.status(200).json({ 
             message: "Account created! Please check your email for verification.",
-            user: data.user 
+            user: data.user,
+            session: data.session
         });
 
     } catch (err) {

@@ -64,6 +64,10 @@ async function handleSignup() {
 
                 if (response.ok) {
                     // SUCCESS: Redirect to your existing registration page
+                    // 1. SAVE THE TOKEN immediately so registration.html can see it
+                    if (result.user && result.session) {
+                        localStorage.setItem('supabaseToken', result.session.access_token);
+                    }
                     // We pass the email in the URL so the next form can auto-fill it
                     window.location.href = `registration.html?email=${encodeURIComponent(email)}`;
                 } else {
