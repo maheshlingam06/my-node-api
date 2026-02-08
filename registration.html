@@ -90,6 +90,16 @@
         }
     </style>
     <script src="https://www.google.com/recaptcha/api.js?render=YOUR_SITE_KEY" defer></script>
+    <script>
+        // Put this inside a <script> tag at the bottom of your registration.html
+        window.onload = function() {
+            const urlParams = new URLSearchParams(window.location.search);
+            const emailFromUrl = urlParams.get('email');
+            if (emailFromUrl) {
+                document.querySelector('input[name="email"]').value = emailFromUrl;
+            }
+        };
+    </script>
 </head>
 <body>
 

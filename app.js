@@ -2,6 +2,7 @@ const express = require('express');
 const rateLimit = require('express-rate-limit');
 const multer = require('multer');
 const QRCode = require('qrcode');
+const axios = require('axios');
 // const nodemailer = require('nodemailer');
 // const { Resend } = require('resend');
 const { createClient } = require('@supabase/supabase-js');
@@ -58,6 +59,23 @@ const supabase = createClient(process.env.SUPABASE_URL, process.env.SUPABASE_ANO
 const storage = multer.memoryStorage();
 const upload = multer({ storage: storage });
 
+// Helper function to verify reCAPTCHA
+async function verifyRecaptcha(token) {
+    const secretKey = process.env.RECAPTCHA_SECRET_KEY;
+    const response = await axios.post(
+            `https://www.google.com/recaptcha/api/siteverify`,
+            null,
+            {
+                params: {
+                    secret: SECRET_KEY,
+                    response: token
+                }
+            }
+        );
+        
+    return response.data.success && response.data.score >= 0.5; 
+}
+
 app.get('/', (req, res) => {
     res.send(`
         <h1>Node.js API is Live!</h1>
@@ -111,6 +129,34 @@ app.get('/gallery', async (req, res) => {
 // Add these lines near the top of your app.js if they aren't there
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
+
+// 1. New Signup API (Account Creation)
+app.post('/signup', uploadLimiter, async (req, res) => {
+    try {
+        const { email, password, captchaToken } = req.body;
+
+        // Verify reCAPTCHA
+        const isHuman = await verifyRecaptcha(captchaToken);
+        if (!isHuman) return res.status(403).json({ error: "Bot activity detected." });
+
+        // Create User in Supabase Auth
+        const { data, error } = await supabase.auth.signUp({
+            email,
+            password,
+        });
+
+        if (error) throw error;
+
+        // Send back success - Frontend will then show the details form
+        res.status(200).json({ 
+            message: "Account created! Please check your email for verification.",
+            user: data.user 
+        });
+
+    } catch (err) {
+        res.status(500).json({ error: err.message });
+    }
+});
 
 // NEW SEPARATE REGISTRATION API
 app.post('/register', uploadLimiter, async (req, res) => {
