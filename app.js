@@ -166,9 +166,24 @@ app.post('/signup', uploadLimiter, async (req, res) => {
 // NEW SEPARATE REGISTRATION API
 app.post('/register', uploadLimiter, async (req, res) => {
     try {
+
+        // 1. Get the token from the "Authorization: Bearer <token>" header
+        const authHeader = req.headers.authorization;
+        const token = authHeader && authHeader.split(' ')[1];
+
+        if (!token) return res.status(401).json({ error: "Please login again." });
+
+        // 2. Ask Supabase Auth to verify the token and give us the user
+        const { data: { user }, error: authError } = await supabase.auth.getUser(token);
+
+        if (authError || !user) {
+            return res.status(401).json({ error: "Session expired. Please login." });
+        }
+
+        // 3. Now we have user.id! 
+        const userId = user.id;
         // Destructure all the fields from the new UI
         const {
-            user, 
             participant_name,
             email, 
             mobile, 
@@ -200,7 +215,7 @@ app.post('/register', uploadLimiter, async (req, res) => {
             .from('submissions')
             .insert([
                 { 
-                    user_id: user.id,
+                    user_id: userId,
                     participant_name,
                     mobile,
                     email,
