@@ -24,6 +24,7 @@ const app = express();
 app.set('trust proxy', 1);
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
+app.use(express.static('public'));
 
 
 const PORT = process.env.PORT || 10000;
@@ -72,7 +73,7 @@ async function verifyRecaptcha(token) {
                 }
             }
         );
-        
+
     return response.data.success && response.data.score >= 0.5; 
 }
 
