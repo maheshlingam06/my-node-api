@@ -52,7 +52,7 @@ async function handleSignup() {
     loader.style.display = 'block';
 
     grecaptcha.ready(function() {
-        grecaptcha.execute('YOUR_SITE_KEY', {action: 'signup'}).then(async (token) => {
+        grecaptcha.execute('__SITE_KEY__', {action: 'signup'}).then(async (token) => {
             try {
                 const response = await fetch('../signup', {
                     method: 'POST',
