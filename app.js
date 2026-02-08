@@ -167,7 +167,8 @@ app.post('/signup', uploadLimiter, async (req, res) => {
 app.post('/register', uploadLimiter, async (req, res) => {
     try {
         // Destructure all the fields from the new UI
-        const { 
+        const {
+            user, 
             participant_name,
             email, 
             mobile, 
@@ -199,6 +200,7 @@ app.post('/register', uploadLimiter, async (req, res) => {
             .from('submissions')
             .insert([
                 { 
+                    user_id: user.id,
                     participant_name,
                     mobile,
                     email,

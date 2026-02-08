@@ -132,7 +132,7 @@
 
 <button class="btn-logout" onclick="handleLogout()">Logout</button>
 
-<form action="../register" method="POST" class="checkout-container">
+<form class="checkout-container">
     <div class="main-content">
         
         <div class="card">
@@ -247,5 +247,51 @@
     </div>
 </form>
 
+<script>
+    // Wrap your logic in a listener for the form's submit event
+document.querySelector('form').addEventListener('submit', async function(e) {
+    e.preventDefault(); // Stop the page from refreshing/redirecting automatically
+
+    const submitBtn = document.querySelector('.btn-submit');
+    submitBtn.innerText = "Processing...";
+    submitBtn.disabled = true;
+
+    // 1. Grab the token from localStorage
+    const token = localStorage.getItem('supabaseToken');
+
+    // 2. Gather all the form data
+    const formData = new FormData(this);
+    const data = Object.fromEntries(formData.entries());
+
+    try {
+        // 3. Manually send the request via fetch
+        const response = await fetch('../register', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${token}` // <--- THIS is how we pass the user identity
+            },
+            body: JSON.stringify(data)
+        });
+
+        const result = await response.json();
+
+        if (response.ok) {
+            alert("Success! Your QR code has been generated and emailed.");
+            window.location.href = "./signupcomplete.html"; // Redirect to gallery or success page
+        } else {
+            alert("Registration failed: " + (result.error || "Unknown error"));
+            submitBtn.innerText = "Complete Registration";
+            submitBtn.disabled = false;
+        }
+    } catch (err) {
+        console.error("Fetch Error:", err);
+        alert("Server error. Please try again.");
+        submitBtn.innerText = "Complete Registration";
+        submitBtn.disabled = false;
+    }
+});
+</script>
 </body>
+
 </html>
