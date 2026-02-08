@@ -69,7 +69,7 @@ async function verifyRecaptcha(token) {
             null,
             {
                 params: {
-                    secret: SECRET_KEY,
+                    secret: secretKey,
                     response: token
                 }
             }
