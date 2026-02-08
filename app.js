@@ -30,6 +30,12 @@ app.use(express.static('public'));
 
 const PORT = process.env.PORT || 10000;
 
+// Configure Multer for multiple files in memory
+const upload = multer({ 
+    storage: multer.memoryStorage(),
+    limits: { fileSize: 10 * 1024 * 1024 } // 10MB total limit
+});
+
 const globalLimiter = rateLimit({
     windowMs: 15 * 60 * 1000, // 15 minutes
     max: 100, // Limit each IP to 100 requests per window
@@ -348,11 +354,7 @@ app.post('/upload-file', uploadLimiter, upload.single('myFile'), async (req, res
     }
 });
 
-// Configure Multer for multiple files in memory
-const upload = multer({ 
-    storage: multer.memoryStorage(),
-    limits: { fileSize: 10 * 1024 * 1024 } // 10MB total limit
-});
+
 
 app.post('/api/salesforce/upload', upload.any(), async (req, res) => {
     try {
