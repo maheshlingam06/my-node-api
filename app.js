@@ -84,7 +84,7 @@ app.get('/', (req, res) => {
 
 app.get('/signup', (req, res) => {
     const fs = require('fs');
-    let html = fs.readFileSync(__dirname + '/signup.html', 'utf8');
+    let html = fs.readFileSync(path.join(__dirname, 'public', 'signup.html'), 'utf8');
     // Replace a placeholder in your HTML with the ENV variable
     html = html.replace('__SITE_KEY__', process.env.RECAPTCHA_SITE_KEY);
     res.send(html);
