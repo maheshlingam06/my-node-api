@@ -261,7 +261,7 @@ app.post('/register', uploadLimiter, async (req, res) => {
 
     } catch (err) {
         console.error("Registration Error:", err.message);
-        res.status(500).send("Registration failed: " + err.message);
+        res.status(500).json({ message: "Registration failed: " + err.message});
     }
 });
 
