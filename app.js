@@ -254,7 +254,10 @@ app.post('/register', uploadLimiter, async (req, res) => {
         // 4. Trigger the send
         await apiInstance.sendTransacEmail(sendSmtpEmail);
 
-        res.send("Registration Successful! Check your email for your unique QR code.");
+        // res.send("Registration Successful! Check your email for your unique QR code.");
+        res.status(200).json({ 
+            message: "Registration Successful! Check your email for your unique QR code." 
+        });
 
     } catch (err) {
         console.error("Registration Error:", err.message);
