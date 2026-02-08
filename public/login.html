@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Step 1: Family Account Signup</title>
+    <title>Family Reunion - Login</title>
     <style>
         :root { --primary: #2563eb; --bg: #f8fafc; --text: #1e293b; --border: #e2e8f0; --white: #ffffff; }
         body { font-family: 'Inter', sans-serif; background-color: var(--bg); display: flex; justify-content: center; align-items: center; height: 100vh; margin: 0; }
@@ -14,16 +14,16 @@
         input { width: 100%; padding: 12px; border: 1px solid var(--border); border-radius: 6px; box-sizing: border-box; }
         .btn-submit { width: 100%; background: var(--primary); color: white; border: none; padding: 14px; border-radius: 8px; font-weight: 600; cursor: pointer; margin-top: 10px; }
         .btn-submit:hover { background: #1d4ed8; }
+        .footer-links { text-align: center; margin-top: 20px; font-size: 14px; }
+        .footer-links a { color: var(--primary); text-decoration: none; font-weight: 600; }
         .loader { display: none; text-align: center; margin-top: 10px; font-size: 14px; color: var(--primary); }
     </style>
-    
-    <script src="https://www.google.com/recaptcha/api.js?render=YOUR_SITE_KEY"></script>
 </head>
 <body>
 
 <div class="card">
-    <h2>Join the Reunion</h2>
-    <p style="text-align: center; font-size: 14px; color: #64748b; margin-bottom: 20px;">Step 1: Create your secure account</p>
+    <h2>Welcome Back</h2>
+    <p style="text-align: center; font-size: 14px; color: #64748b; margin-bottom: 20px;">Log in to manage your registration</p>
     
     <div class="input-group">
         <label>Email Address</label>
@@ -31,53 +31,55 @@
     </div>
     
     <div class="input-group">
-        <label>Create Password</label>
+        <label>Password</label>
         <input type="password" id="password" placeholder="••••••••" required>
     </div>
 
-    <button id="submitBtn" onclick="handleSignup()" class="btn-submit">Sign Up & Continue</button>
-    <div id="loader" class="loader">Verifying...</div>
+    <button id="submitBtn" onclick="handleLogin()" class="btn-submit">Login</button>
+    <div id="loader" class="loader">Authenticating...</div>
+
+    <div class="footer-links">
+        Don't have an account? <a href="signup.html">Sign Up</a>
+    </div>
 </div>
 
 <script>
-async function handleSignup() {
+async function handleLogin() {
     const email = document.getElementById('email').value;
     const password = document.getElementById('password').value;
     const btn = document.getElementById('submitBtn');
     const loader = document.getElementById('loader');
 
-    if(!email || !password) return alert("Please fill in all fields.");
+    if(!email || !password) return alert("Please enter both email and password.");
 
     btn.style.display = 'none';
     loader.style.display = 'block';
 
-    grecaptcha.ready(function() {
-        grecaptcha.execute('YOUR_SITE_KEY', {action: 'signup'}).then(async (token) => {
-            try {
-                const response = await fetch('../signup', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ email, password, captchaToken: token })
-                });
-
-                const result = await response.json();
-
-                if (response.ok) {
-                    // SUCCESS: Redirect to your existing registration page
-                    // We pass the email in the URL so the next form can auto-fill it
-                    window.location.href = `registration.html?email=${encodeURIComponent(email)}`;
-                } else {
-                    alert("Signup failed: " + (result.error || "Unknown error"));
-                    btn.style.display = 'block';
-                    loader.style.display = 'none';
-                }
-            } catch (err) {
-                alert("Server error. Please check your connection.");
-                btn.style.display = 'block';
-                loader.style.display = 'none';
-            }
+    try {
+        const response = await fetch('../login', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ email, password })
         });
-    });
+
+        const result = await response.json();
+
+        if (response.ok) {
+            // Store the token so the user stays logged in
+            localStorage.setItem('supabaseToken', result.session.access_token);
+            
+            // Redirect to the registration form (Step 2)
+            window.location.href = `registration.html?email=${encodeURIComponent(email)}`;
+        } else {
+            alert("Login failed: " + (result.error || "Check your credentials."));
+            btn.style.display = 'block';
+            loader.style.display = 'none';
+        }
+    } catch (err) {
+        alert("Server error. Please try again.");
+        btn.style.display = 'block';
+        loader.style.display = 'none';
+    }
 }
 </script>
 

@@ -11,6 +11,7 @@
             --text: #1e293b;
             --border: #e2e8f0;
             --white: #ffffff;
+            --danger: #ef4444;
         }
 
         body {
@@ -21,6 +22,22 @@
             justify-content: center;
             padding: 40px 20px;
             margin: 0;
+        }
+
+        .btn-logout {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            background-color: var(--white);
+            color: var(--danger);
+            border: 1px solid var(--danger);
+            padding: 8px 16px;
+            border-radius: 6px;
+            font-weight: 600;
+            font-size: 14px;
+            cursor: pointer;
+            transition: all 0.2s;
+            z-index: 100;
         }
 
         .checkout-container {
@@ -91,6 +108,16 @@
     </style>
     <script src="https://www.google.com/recaptcha/api.js?render=YOUR_SITE_KEY" defer></script>
     <script>
+        // 1. Check if the user is logged in
+        const token = localStorage.getItem('supabaseToken');
+        
+        if (!token) {
+            // No token found? Send them to login
+            alert("Please login first to access the registration form.");
+            window.location.href = "login.html";
+        }
+    </script>
+    <script>
         // Put this inside a <script> tag at the bottom of your registration.html
         window.onload = function() {
             const urlParams = new URLSearchParams(window.location.search);
@@ -103,7 +130,9 @@
 </head>
 <body>
 
-<form action="https://my-node-api-jam2.onrender.com/register" method="POST" class="checkout-container">
+<button class="btn-logout" onclick="handleLogout()">Logout</button>
+
+<form action="../register" method="POST" class="checkout-container">
     <div class="main-content">
         
         <div class="card">

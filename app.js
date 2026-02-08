@@ -236,6 +236,23 @@ app.post('/register', uploadLimiter, async (req, res) => {
     }
 });
 
+app.post('/login', async (req, res) => {
+    try {
+        const { email, password } = req.body;
+        const { data, error } = await supabase.auth.signInWithPassword({
+            email,
+            password,
+        });
+
+        if (error) throw error;
+        
+        // Return the user session
+        res.status(200).json({ message: "Login successful", session: data.session });
+    } catch (err) {
+        res.status(401).json({ error: err.message });
+    }
+});
+
 app.post('/upload-file', uploadLimiter, upload.single('myFile'), async (req, res) => {
     try {
         if (!req.file) return res.status(400).send('No file.');
