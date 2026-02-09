@@ -366,6 +366,8 @@ app.post('/api/salesforce/upload', upload.any(), async (req, res) => {
         for (const file of files) {
             // We specify the folder in the path string: 'salesforce-project/...'
             const filePath = `salesforce-project/${brokercode}/${file.fieldname}-${Date.now()}-${file.originalname}`;
+
+            console.log('files received:' + filePath);
             
             const { data, error } = await supabase.storage
                 .from('images') 
