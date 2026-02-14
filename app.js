@@ -404,11 +404,14 @@ app.post('/login', async (req, res) => {
 app.get('/get-registration', async (req, res) => {
     try {
         const token = req.headers.authorization?.split(' ')[1];
+        console.log('token=', token);
         if (!token) return res.status(401).json({ error: "Unauthorized" });
 
         // 1. Verify user
         const { data: { user }, error: authError } = await supabase.auth.getUser(token);
         if (authError || !user) return res.status(401).json({ error: "Invalid session" });
+
+        console.log('user data=', user);6
 
         // 2. Fetch their specific submission
         const { data, error } = await supabase
@@ -418,6 +421,7 @@ app.get('/get-registration', async (req, res) => {
             .single(); // We only expect one registration per user
 
         if (error && error.code !== 'PGRST116') throw error; // PGRST116 means no record found (which is fine)
+        console.log('data from supabase:', data);
 
         res.status(200).json(data || {}); 
     } catch (err) {
