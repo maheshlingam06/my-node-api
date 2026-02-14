@@ -300,8 +300,7 @@ app.post('/register', async (req, res) => {
             .from('submissions')
             .select('participant_name, email, qr_code_url')
             .eq('user_id', user.id)
-            .single()
-            .setBearerToken(token);
+            .single();
 
         let qrCodeUrl = existing?.qr_code_url;
         let shouldSendEmail = false;
@@ -353,8 +352,7 @@ app.post('/register', async (req, res) => {
                 sat_reunion: req.body.sat_reunion,
                 sat_night: req.body.sat_night,
                 qr_code_url: qrCodeUrl // Uses existing one if no change
-            }, { onConflict: 'user_id' })
-            .setBearerToken(token); // Crucial for RLS to work with the ANON key
+            }, { onConflict: 'user_id' });
 
 
         if (dbError) throw dbError;
