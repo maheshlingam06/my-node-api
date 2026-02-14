@@ -62,8 +62,8 @@ const uploadLimiter = rateLimit({
 app.use(globalLimiter);
 
 // 1. Initialize Supabase
-// const supabase = createClient(process.env.SUPABASE_URL, process.env.SUPABASE_ANON_KEY);
-const supabase = createClient(process.env.SUPABASE_URL, process.env.SUPABASE_SERVICE_KEY);
+const supabase = createClient(process.env.SUPABASE_URL, process.env.SUPABASE_ANON_KEY);
+// const supabase = createClient(process.env.SUPABASE_URL, process.env.SUPABASE_SERVICE_KEY);
 
 // 2. Use Memory Storage (Safe for small files)
 const storage = multer.memoryStorage();
@@ -285,12 +285,16 @@ app.post('/register', async (req, res) => {
         const { data: { user }, error: authError } = await supabase.auth.getUser(token);
         if (authError || !user) return res.status(401).json({ error: "Unauthorized" });
 
+        // Add this at the very top of app.post('/register')
+        const { participant_name, email, mobile } = req.body;
+
         // 1. Fetch existing data first
         const { data: existing } = await supabase
             .from('submissions')
             .select('participant_name, email, qr_code_url')
             .eq('user_id', user.id)
-            .single();
+            .single()
+            .setBearerToken(token);
 
         let qrCodeUrl = existing?.qr_code_url;
         let shouldSendEmail = false;
@@ -318,13 +322,12 @@ app.post('/register', async (req, res) => {
 
             if (uploadError) throw uploadError;
             const { data: qrUrl } = supabase.storage.from('images').getPublicUrl(qrFileName);
+            qrCodeUrl = qrUrl.publicUrl;
             
             shouldSendEmail = true;
         } else {
             console.log("Silent update - no QR/Email needed.");
         }
-
-
 
         // 3. Perform the Upsert
         const { error: dbError } = await supabase
@@ -343,7 +346,9 @@ app.post('/register', async (req, res) => {
                 sat_reunion: req.body.sat_reunion,
                 sat_night: req.body.sat_night,
                 qr_code_url: qrCodeUrl // Uses existing one if no change
-            }, { onConflict: 'user_id' });
+            }, { onConflict: 'user_id' })
+            .setBearerToken(token); // Crucial for RLS to work with the ANON key
+
 
         if (dbError) throw dbError;
 
@@ -360,7 +365,7 @@ app.post('/register', async (req, res) => {
                 <div style="font-family: Arial, sans-serif; text-align: center;">
                     <h1>Hello ${participant_name}!</h1>
                     <p>Your registration is confirmed. Please present the code below at the resort check-in.</p>
-                    <img src="${qrUrl.publicUrl}" alt="Check-in QR Code" width="250" />
+                    <img src="${qrCodeUrl}" alt="Check-in QR Code" width="250" />
                     <p><strong>Mobile:</strong> ${mobile}</p>
                     <p>We look forward to seeing you at Heritage Resort!</p>
                 </div>`;
@@ -411,7 +416,7 @@ app.get('/get-registration', async (req, res) => {
         const { data: { user }, error: authError } = await supabase.auth.getUser(token);
         if (authError || !user) return res.status(401).json({ error: "Invalid session" });
 
-        console.log('user data=', user);6
+        console.log('user data=', user);
 
         // 2. Fetch their specific submission
         const { data, error } = await supabase
