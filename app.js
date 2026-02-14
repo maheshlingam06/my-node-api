@@ -173,7 +173,7 @@ app.post('/signup', uploadLimiter, async (req, res) => {
         res.status(500).json({ error: err.message });
     }
 });
-
+  
 // // NEW SEPARATE REGISTRATION API
 // app.post('/register', uploadLimiter, async (req, res) => {
 //     try {
@@ -277,7 +277,7 @@ app.post('/signup', uploadLimiter, async (req, res) => {
 //         console.error("Registration Error:", err.message);
 //         res.status(500).json({ message: "Registration failed: " + err.message});
 //     }
-});
+// });
 
 app.post('/register', async (req, res) => {
     try {
