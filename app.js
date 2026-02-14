@@ -282,14 +282,21 @@ app.post('/signup', uploadLimiter, async (req, res) => {
 app.post('/register', async (req, res) => {
     try {
         const token = req.headers.authorization?.split(' ')[1];
+
+        
         const { data: { user }, error: authError } = await supabase.auth.getUser(token);
         if (authError || !user) return res.status(401).json({ error: "Unauthorized" });
-
+        
         // Add this at the very top of app.post('/register')
         const { participant_name, email, mobile } = req.body;
-
+        
+        // 1. Create a "User-Specific" client for this request
+        // This is the clean way to handle RLS with the ANON key
+        const userSupabase = createClient(process.env.SUPABASE_URL, process.env.SUPABASE_ANON_KEY, {
+            global: { headers: { Authorization: `Bearer ${token}` } }
+        });
         // 1. Fetch existing data first
-        const { data: existing } = await supabase
+        const { data: existing } = await userSupabase
             .from('submissions')
             .select('participant_name, email, qr_code_url')
             .eq('user_id', user.id)
@@ -314,14 +321,14 @@ app.post('/register', async (req, res) => {
             const qrData = `Reunion-2026-${mobile}`;
             const qrCodeBuffer = await QRCode.toBuffer(qrData);
 
-            // 3. Upload QR Code to Supabase Storage
+            // 3. Upload QR Code to userSupabase Storage
             const qrFileName = `qrcodes/${mobile}-${Date.now()}.png`;
-            const { data: uploadData, error: uploadError } = await supabase.storage
+            const { data: uploadData, error: uploadError } = await userSupabase.storage
                 .from('images')
                 .upload(qrFileName, qrCodeBuffer, { contentType: 'image/png' });
 
             if (uploadError) throw uploadError;
-            const { data: qrUrl } = supabase.storage.from('images').getPublicUrl(qrFileName);
+            const { data: qrUrl } = userSupabase.storage.from('images').getPublicUrl(qrFileName);
             qrCodeUrl = qrUrl.publicUrl;
             
             shouldSendEmail = true;
@@ -330,7 +337,7 @@ app.post('/register', async (req, res) => {
         }
 
         // 3. Perform the Upsert
-        const { error: dbError } = await supabase
+        const { error: dbError } = await userSupabase
             .from('submissions')
             .upsert({ 
                 user_id: user.id,
@@ -415,18 +422,23 @@ app.get('/get-registration', async (req, res) => {
         // 1. Verify user
         const { data: { user }, error: authError } = await supabase.auth.getUser(token);
         if (authError || !user) return res.status(401).json({ error: "Invalid session" });
-
+        
         console.log('user data=', user);
-
+        
+        // 1. Create a "User-Specific" client for this request
+        // This is the clean way to handle RLS with the ANON key
+        const userSupabase = createClient(process.env.SUPABASE_URL, process.env.SUPABASE_ANON_KEY, {
+            global: { headers: { Authorization: `Bearer ${token}` } }
+        });
         // 2. Fetch their specific submission
-        const { data, error } = await supabase
+        const { data, error } = await userSupabase
             .from('submissions')
             .select('*')
             .eq('user_id', user.id)
             .single(); // We only expect one registration per user
 
         if (error && error.code !== 'PGRST116') throw error; // PGRST116 means no record found (which is fine)
-        console.log('data from supabase:', data);
+        console.log('data from userSupabase:', data);
 
         res.status(200).json(data || {}); 
     } catch (err) {
