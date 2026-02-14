@@ -62,7 +62,8 @@ const uploadLimiter = rateLimit({
 app.use(globalLimiter);
 
 // 1. Initialize Supabase
-const supabase = createClient(process.env.SUPABASE_URL, process.env.SUPABASE_ANON_KEY);
+// const supabase = createClient(process.env.SUPABASE_URL, process.env.SUPABASE_ANON_KEY);
+const supabase = createClient(process.env.SUPABASE_URL, process.env.SUPABASE_SERVICE_KEY);
 
 // 2. Use Memory Storage (Safe for small files)
 const storage = multer.memoryStorage();
