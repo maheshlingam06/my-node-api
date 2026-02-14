@@ -220,6 +220,9 @@ app.post('/register', uploadLimiter, async (req, res) => {
         if (uploadError) throw uploadError;
         const { data: qrUrl } = supabase.storage.from('images').getPublicUrl(qrFileName);
 
+
+        console.log('New user data=', userId, ' ', participant_name, ' ', email, ' ', qr_code_url);
+
         // Insert into the 'submissions' table
         const { data, error } = await supabase
             .from('submissions')
