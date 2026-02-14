@@ -303,6 +303,7 @@ app.post('/register', async (req, res) => {
             existing.email !== req.body.email) {
             
             console.log("Generating new QR and triggering email...");
+            let mobile = req.body.mobile;
             
             // ... [Insert your existing QR generation and Storage upload code here] ...
             // qrCodeUrl = result.publicUrl;
@@ -322,6 +323,8 @@ app.post('/register', async (req, res) => {
         } else {
             console.log("Silent update - no QR/Email needed.");
         }
+
+
 
         // 3. Perform the Upsert
         const { error: dbError } = await supabase
@@ -350,6 +353,7 @@ app.post('/register', async (req, res) => {
             // 5. Send Confirmation Email
             // 3. Prepare the Email using Brevo's HTTP API (Bypasses Render's port blocks)
             const sendSmtpEmail = new Brevo.SendSmtpEmail();
+            let mobile = req.body.mobile;
 
             sendSmtpEmail.subject = "Your Family Reunion QR Code";
             sendSmtpEmail.htmlContent = `
