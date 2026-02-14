@@ -174,108 +174,209 @@ app.post('/signup', uploadLimiter, async (req, res) => {
     }
 });
 
-// NEW SEPARATE REGISTRATION API
-app.post('/register', uploadLimiter, async (req, res) => {
+// // NEW SEPARATE REGISTRATION API
+// app.post('/register', uploadLimiter, async (req, res) => {
+//     try {
+
+//         // 1. Get the token from the "Authorization: Bearer <token>" header
+//         const authHeader = req.headers.authorization;
+//         const token = authHeader && authHeader.split(' ')[1];
+
+//         if (!token) return res.status(401).json({ error: "Please login again." });
+
+//         // 2. Ask Supabase Auth to verify the token and give us the user
+//         const { data: { user }, error: authError } = await supabase.auth.getUser(token);
+
+//         if (authError || !user) {
+//             return res.status(401).json({ error: "Session expired. Please login." });
+//         }
+
+//         // 3. Now we have user.id! 
+//         const userId = user.id;
+//         // Destructure all the fields from the new UI
+//         const {
+//             participant_name,
+//             email, 
+//             mobile, 
+//             location, 
+//             teens_adults, 
+//             kids, 
+//             thu_night, 
+//             fri_reunion, 
+//             fri_night, 
+//             sat_reunion, 
+//             sat_night 
+//         } = req.body;
+
+//         // 2. Generate QR Code as a Buffer
+//         const qrData = `Reunion-2026-${mobile}`;
+//         const qrCodeBuffer = await QRCode.toBuffer(qrData);
+
+//         // 3. Upload QR Code to Supabase Storage
+//         const qrFileName = `qrcodes/${mobile}-${Date.now()}.png`;
+//         const { data: uploadData, error: uploadError } = await supabase.storage
+//             .from('images')
+//             .upload(qrFileName, qrCodeBuffer, { contentType: 'image/png' });
+
+//         if (uploadError) throw uploadError;
+//         const { data: qrUrl } = supabase.storage.from('images').getPublicUrl(qrFileName);
+
+
+//         // console.log('New user data=', userId, ' ', participant_name, ' ', email, ' ', qrUrl.publicUrl);
+
+//         // Insert into the 'submissions' table
+//         const { data, error } = await supabase
+//             .from('submissions')
+//             .upsert([
+//                 { 
+//                     user_id: userId,
+//                     participant_name,
+//                     mobile,
+//                     email,
+//                     location,
+//                     teens_adults: parseInt(teens_adults) || 0,
+//                     kids: parseInt(kids) || 0,
+//                     thu_night,
+//                     fri_reunion,
+//                     fri_night,
+//                     sat_reunion,
+//                     sat_night,
+//                     qr_code_url: qrUrl.publicUrl
+//                 }
+//             ]);
+
+//         if (error) throw error;
+
+//         // 5. Send Confirmation Email
+//         // 3. Prepare the Email using Brevo's HTTP API (Bypasses Render's port blocks)
+//         const sendSmtpEmail = new Brevo.SendSmtpEmail();
+
+//         sendSmtpEmail.subject = "Your Family Reunion QR Code";
+//         sendSmtpEmail.htmlContent = `
+//             <div style="font-family: Arial, sans-serif; text-align: center;">
+//                 <h1>Hello ${participant_name}!</h1>
+//                 <p>Your registration is confirmed. Please present the code below at the resort check-in.</p>
+//                 <img src="${qrUrl.publicUrl}" alt="Check-in QR Code" width="250" />
+//                 <p><strong>Mobile:</strong> ${mobile}</p>
+//                 <p>We look forward to seeing you at Heritage Resort!</p>
+//             </div>`;
+        
+//         // IMPORTANT: The sender email MUST be verified in your Brevo account
+//         sendSmtpEmail.sender = { "name": "Reunion Team", "email": "d.mahesh.0510@gmail.com" };
+//         sendSmtpEmail.to = [{ "email": email, "name": participant_name }];
+
+//         // 4. Trigger the send
+//         await apiInstance.sendTransacEmail(sendSmtpEmail);
+
+//         // res.send("Registration Successful! Check your email for your unique QR code.");
+//         res.status(200).json({ 
+//             message: "Registration Successful! Check your email for your unique QR code." 
+//         });
+
+//     } catch (err) {
+//         console.error("Registration Error:", err.message);
+//         res.status(500).json({ message: "Registration failed: " + err.message});
+//     }
+});
+
+app.post('/register', async (req, res) => {
     try {
-
-        // 1. Get the token from the "Authorization: Bearer <token>" header
-        const authHeader = req.headers.authorization;
-        const token = authHeader && authHeader.split(' ')[1];
-
-        if (!token) return res.status(401).json({ error: "Please login again." });
-
-        // 2. Ask Supabase Auth to verify the token and give us the user
+        const token = req.headers.authorization?.split(' ')[1];
         const { data: { user }, error: authError } = await supabase.auth.getUser(token);
+        if (authError || !user) return res.status(401).json({ error: "Unauthorized" });
 
-        if (authError || !user) {
-            return res.status(401).json({ error: "Session expired. Please login." });
+        // 1. Fetch existing data first
+        const { data: existing } = await adminSupabase
+            .from('submissions')
+            .select('participant_name, email, qr_code_url')
+            .eq('user_id', user.id)
+            .single();
+
+        let qrCodeUrl = existing?.qr_code_url;
+        let shouldSendEmail = false;
+
+        // 2. Logic: Should we generate a new QR & Email?
+        // - If brand new registration (no existing record)
+        // - OR if the name/email has changed (which changes the QR content)
+        if (!existing || 
+            existing.participant_name !== req.body.participant_name || 
+            existing.email !== req.body.email) {
+            
+            console.log("Generating new QR and triggering email...");
+            
+            // ... [Insert your existing QR generation and Storage upload code here] ...
+            // qrCodeUrl = result.publicUrl;
+            const qrData = `Reunion-2026-${mobile}`;
+            const qrCodeBuffer = await QRCode.toBuffer(qrData);
+
+            // 3. Upload QR Code to Supabase Storage
+            const qrFileName = `qrcodes/${mobile}-${Date.now()}.png`;
+            const { data: uploadData, error: uploadError } = await supabase.storage
+                .from('images')
+                .upload(qrFileName, qrCodeBuffer, { contentType: 'image/png' });
+
+            if (uploadError) throw uploadError;
+            const { data: qrUrl } = supabase.storage.from('images').getPublicUrl(qrFileName);
+            
+            shouldSendEmail = true;
+        } else {
+            console.log("Silent update - no QR/Email needed.");
         }
 
-        // 3. Now we have user.id! 
-        const userId = user.id;
-        // Destructure all the fields from the new UI
-        const {
-            participant_name,
-            email, 
-            mobile, 
-            location, 
-            teens_adults, 
-            kids, 
-            thu_night, 
-            fri_reunion, 
-            fri_night, 
-            sat_reunion, 
-            sat_night 
-        } = req.body;
-
-        // 2. Generate QR Code as a Buffer
-        const qrData = `Reunion-2026-${mobile}`;
-        const qrCodeBuffer = await QRCode.toBuffer(qrData);
-
-        // 3. Upload QR Code to Supabase Storage
-        const qrFileName = `qrcodes/${mobile}-${Date.now()}.png`;
-        const { data: uploadData, error: uploadError } = await supabase.storage
-            .from('images')
-            .upload(qrFileName, qrCodeBuffer, { contentType: 'image/png' });
-
-        if (uploadError) throw uploadError;
-        const { data: qrUrl } = supabase.storage.from('images').getPublicUrl(qrFileName);
-
-
-        // console.log('New user data=', userId, ' ', participant_name, ' ', email, ' ', qrUrl.publicUrl);
-
-        // Insert into the 'submissions' table
-        const { data, error } = await supabase
+        // 3. Perform the Upsert
+        const { error: dbError } = await adminSupabase
             .from('submissions')
-            .insert([
-                { 
-                    user_id: userId,
-                    participant_name,
-                    mobile,
-                    email,
-                    location,
-                    teens_adults: parseInt(teens_adults) || 0,
-                    kids: parseInt(kids) || 0,
-                    thu_night,
-                    fri_reunion,
-                    fri_night,
-                    sat_reunion,
-                    sat_night,
-                    qr_code_url: qrUrl.publicUrl
-                }
-            ]);
+            .upsert({ 
+                user_id: user.id,
+                participant_name: req.body.participant_name,
+                email: req.body.email,
+                mobile: req.body.mobile,
+                location: req.body.location,
+                teens_adults: parseInt(req.body.teens_adults) || 0,
+                kids: parseInt(req.body.kids) || 0,
+                thu_night: req.body.thu_night,
+                fri_reunion: req.body.fri_reunion,
+                fri_night: req.body.fri_night,
+                sat_reunion: req.body.sat_reunion,
+                sat_night: req.body.sat_night,
+                qr_code_url: qrCodeUrl // Uses existing one if no change
+            }, { onConflict: 'user_id' });
 
-        if (error) throw error;
+        if (dbError) throw dbError;
 
-        // 5. Send Confirmation Email
-        // 3. Prepare the Email using Brevo's HTTP API (Bypasses Render's port blocks)
-        const sendSmtpEmail = new Brevo.SendSmtpEmail();
+        // 4. Send email ONLY if needed
+        if (shouldSendEmail) {
+            // ... [Insert your Brevo email code here] ...
+            // 5. Send Confirmation Email
+            // 3. Prepare the Email using Brevo's HTTP API (Bypasses Render's port blocks)
+            const sendSmtpEmail = new Brevo.SendSmtpEmail();
 
-        sendSmtpEmail.subject = "Your Family Reunion QR Code";
-        sendSmtpEmail.htmlContent = `
-            <div style="font-family: Arial, sans-serif; text-align: center;">
-                <h1>Hello ${participant_name}!</h1>
-                <p>Your registration is confirmed. Please present the code below at the resort check-in.</p>
-                <img src="${qrUrl.publicUrl}" alt="Check-in QR Code" width="250" />
-                <p><strong>Mobile:</strong> ${mobile}</p>
-                <p>We look forward to seeing you at Heritage Resort!</p>
-            </div>`;
-        
-        // IMPORTANT: The sender email MUST be verified in your Brevo account
-        sendSmtpEmail.sender = { "name": "Reunion Team", "email": "d.mahesh.0510@gmail.com" };
-        sendSmtpEmail.to = [{ "email": email, "name": participant_name }];
+            sendSmtpEmail.subject = "Your Family Reunion QR Code";
+            sendSmtpEmail.htmlContent = `
+                <div style="font-family: Arial, sans-serif; text-align: center;">
+                    <h1>Hello ${participant_name}!</h1>
+                    <p>Your registration is confirmed. Please present the code below at the resort check-in.</p>
+                    <img src="${qrUrl.publicUrl}" alt="Check-in QR Code" width="250" />
+                    <p><strong>Mobile:</strong> ${mobile}</p>
+                    <p>We look forward to seeing you at Heritage Resort!</p>
+                </div>`;
+            
+            // IMPORTANT: The sender email MUST be verified in your Brevo account
+            sendSmtpEmail.sender = { "name": "Reunion Team", "email": "d.mahesh.0510@gmail.com" };
+            sendSmtpEmail.to = [{ "email": email, "name": participant_name }];
 
-        // 4. Trigger the send
-        await apiInstance.sendTransacEmail(sendSmtpEmail);
+            // 4. Trigger the send
+            await apiInstance.sendTransacEmail(sendSmtpEmail);
+        }
 
-        // res.send("Registration Successful! Check your email for your unique QR code.");
-        res.status(200).json({ 
-            message: "Registration Successful! Check your email for your unique QR code." 
+        res.json({ 
+            message: shouldSendEmail ? "Registration updated and email sent!" : "Profile updated successfully!",
+            emailSent: shouldSendEmail 
         });
 
     } catch (err) {
-        console.error("Registration Error:", err.message);
-        res.status(500).json({ message: "Registration failed: " + err.message});
+        console.error("Register Error:", err.message);
+        res.status(500).json({ error: err.message });
     }
 });
 
