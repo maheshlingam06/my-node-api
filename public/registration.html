@@ -257,6 +257,7 @@
                     headers: { 'Authorization': `Bearer ${token}` }
                 });
                 const existingData = await response.json();
+                console.log('existingdata=', existingData);
 
                 if (existingData && existingData.participant_name) {
                     // Map the database fields to your form inputs
