@@ -3,6 +3,7 @@ const rateLimit = require('express-rate-limit');
 const multer = require('multer');
 const QRCode = require('qrcode');
 const axios = require('axios');
+const fs = require('fs');
 const path = require('path');
 // const nodemailer = require('nodemailer');
 // const { Resend } = require('resend');
@@ -89,10 +90,13 @@ app.get('/', (req, res) => {
 });
 
 app.get('/signup', (req, res) => {
-    const fs = require('fs');
+    // const path = require('path');
     let html = fs.readFileSync(path.join(__dirname, 'public', 'signup.html'), 'utf8');
+    console.log('html=', html);
+    console.log('sitekey=', process.env.YOUR_SITE_KEY);
     // Replace a placeholder in your HTML with the ENV variable
     html = html.replace(/__SITE_KEY__/g, process.env.YOUR_SITE_KEY);
+    console.log('html after replace=', html);
     res.send(html);
 });
 
