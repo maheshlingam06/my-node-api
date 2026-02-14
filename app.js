@@ -286,7 +286,7 @@ app.post('/register', async (req, res) => {
         if (authError || !user) return res.status(401).json({ error: "Unauthorized" });
 
         // 1. Fetch existing data first
-        const { data: existing } = await adminSupabase
+        const { data: existing } = await supabase
             .from('submissions')
             .select('participant_name, email, qr_code_url')
             .eq('user_id', user.id)
@@ -324,7 +324,7 @@ app.post('/register', async (req, res) => {
         }
 
         // 3. Perform the Upsert
-        const { error: dbError } = await adminSupabase
+        const { error: dbError } = await supabase
             .from('submissions')
             .upsert({ 
                 user_id: user.id,
