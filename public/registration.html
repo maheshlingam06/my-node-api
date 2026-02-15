@@ -64,7 +64,7 @@
         label { display: block; font-weight: 600; font-size: 14px; margin-bottom: 6px; }
 
         /* General Inputs */
-        input[type="text"], input[type="tel"], input[type="number"], select {
+        input[type="text"], input[type="tel"], input[type="number"], input[type="email"], select {
             width: 100%;
             padding: 12px;
             border: 1px solid var(--border);
@@ -191,8 +191,8 @@
             <table class="registration-table">
                 <caption>Participation Details<p>(including family if they will be attending)</p></caption>
                 <tr>
-                    <td><label>Total Persons (Age: 13 and above)</label></td>
-                    <td style="width: 120px;"><input type="number" name="teens_adults" value="0" min="0" required></td>
+                    <td><label>Total Persons (Age: 13 and above including you)</label></td>
+                    <td style="width: 145px;"><input type="number" name="teens_adults" value="0" min="0" required></td>
                 </tr>
                 <tr>
                     <td><label>Total Persons (Age 12 and below)</label></td>
@@ -264,8 +264,8 @@
         </div>
     </div>
 
-    <div class="sidebar">
-        <div class="card" style="position: sticky; top: 20px;">
+    <div class="sidebar" style="position: sticky; top: 20px;">
+        <div class="card">
             <h3>Registration Summary</h3>
             <div class="summary-item">
                 <span>Location</span>
@@ -327,10 +327,13 @@
                         <td>750</td>
                     </tr>
                 </tbody>
+                <tfoot>
+                    <tr style="background-color: #fef3c7; font-weight: bold;">
+                        <td colspan="3" style="text-align: right;">Total Estimated Cost:</td>
+                        <td id="total-cost-display">0</td>
+                    </tr>
+                </tfoot>
             </table>
-            <p style="font-size: 10px; color: #64748b; margin-top: 10px;">
-                * All prices are per person as per the provided tariff sheet.
-            </p>
         </div>
     </div>
 </form>
@@ -432,6 +435,64 @@ document.querySelector('form').addEventListener('submit', async function(e) {
         submitBtn.innerText = "Complete Registration";
         submitBtn.disabled = false;
     }
+});
+
+function calculateTotal() {
+    const form = document.getElementById('checkout-container');
+    
+    // Get Counts
+    const adults = parseInt(form.querySelector('[name="teens_adults"]').value) || 0;
+    const kids = parseInt(form.querySelector('[name="kids"]').value) || 0;
+    
+    // Handle Alumni logic: If adults > 0, the first adult is the Alumni
+    const alumniCount = adults > 0 ? 1 : 0;
+    const extraAdults = adults > 1 ? adults - 1 : 0;
+
+    // Get Selections
+    const thuNight = form.querySelector('[name="thu_night"]').value;
+    const friReunion = form.querySelector('[name="fri_reunion"]').value;
+    const friNight = form.querySelector('[name="fri_night"]').value;
+    const satReunion = form.querySelector('[name="sat_reunion"]').value;
+    const satNight = form.querySelector('[name="sat_night"]').value;
+
+    let total = 0;
+
+    // 1. Friday Night Stay (5000 Alumni/Adult, 2500 Kid)
+    if (friNight === 'yes_family') {
+        total += (alumniCount * 5000) + (extraAdults * 5000) + (kids * 2500);
+    }
+
+    // 2. Friday Event & Dinner (7000 Alumni, 3000 Adult, 2000 Kid)
+    if (friReunion === 'yes') {
+        total += (alumniCount * 7000) + (extraAdults * 3000) + (kids * 2000);
+    }
+
+    // 3. Saturday Event & Lunch (1500 Alumni/Adult, 750 Kid)
+    if (satReunion === 'yes_family') {
+        total += (alumniCount * 1500) + (extraAdults * 1500) + (kids * 750);
+    }
+
+    // Note: Thu/Sat night stay left at 0 as per the dash in the tariff sheet
+    
+    // Update Display
+    document.getElementById('total-cost-display').innerText = total.toLocaleString('en-IN');
+}
+
+// Attach listeners to all relevant inputs
+document.addEventListener('DOMContentLoaded', () => {
+    const inputs = [
+        'teens_adults', 'kids', 'thu_night', 
+        'fri_reunion', 'fri_night', 'sat_reunion', 'sat_night'
+    ];
+    
+    inputs.forEach(name => {
+        const el = document.querySelector(`[name="${name}"]`);
+        if (el) el.addEventListener('change', calculateTotal);
+        if (el && el.tagName === 'INPUT') el.addEventListener('input', calculateTotal);
+    });
+
+    // Run once on load to catch pre-filled data
+    setTimeout(calculateTotal, 1000); 
 });
 </script>
 </body>
