@@ -5,106 +5,136 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Class of 2000 Reunion</title>
     <style>
-        :root {
-            --primary: #2563eb;
-            --white: #ffffff;
-            --overlay: rgba(0, 0, 0, 0.6); /* Darkens image for readability */
-        }
+    /* Import a nice font to ensure consistency */
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
 
-        body, html {
-            margin: 0;
-            padding: 0;
-            height: 100%;
-            font-family: 'Inter', -apple-system, sans-serif;
-        }
+    :root {
+        --primary: #2563eb;
+        --primary-hover: #1d4ed8;
+        --white: #ffffff;
+        --overlay: rgba(15, 23, 42, 0.7); /* Darker blue-black overlay for better text pop */
+    }
 
-        /* Background Image Setup */
-        .bg-image {
-            /* REPLACE THIS URL WITH YOUR SUPABASE IMAGE URL */
-            background-image: url('https://pqpdxdwrgwcxvjsgdoiy.supabase.co/storage/v1/object/public/assets/MCA-Alumni.jpg');
-            
-            height: 100%;
-            background-position: center;
-            background-repeat: no-repeat;
-            background-size: cover;
-            position: relative;
-        }
+    body, html {
+        margin: 0;
+        padding: 0;
+        height: 100%;
+        font-family: 'Inter', sans-serif; /* Force consistent font everywhere */
+    }
 
-        /* Dark Overlay */
-        .overlay {
-            position: absolute;
-            top: 0; left: 0; right: 0; bottom: 0;
-            background-color: var(--overlay);
-            display: flex;
-            flex-direction: column;
-        }
+    .bg-image {
+        /* REPLACE WITH YOUR SUPABASE URL */
+        background-image: url('https://your-supabase-url.com/.../college_campus.jpg');
+        height: 100%;
+        background-position: center;
+        background-size: cover;
+        position: relative;
+    }
 
-        /* Navigation Bar */
-        .navbar {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: 20px 40px;
-        }
+    .overlay {
+        position: absolute;
+        top: 0; left: 0; right: 0; bottom: 0;
+        background-color: var(--overlay);
+        display: flex;
+        flex-direction: column;
+        overflow-y: auto; /* Allow scrolling if screen is short */
+    }
 
-        .logo {
-            color: var(--white);
-            font-size: 24px;
-            font-weight: bold;
-            text-decoration: none;
-        }
+    /* --- NAVIGATION BAR FIXES --- */
+    .navbar {
+        display: flex;
+        justify-content: space-between;
+        align-items: center; /* Vertically centers Logo and Menu */
+        padding: 20px 40px;
+        width: 100%;
+        box-sizing: border-box; /* Ensures padding doesn't widen the page */
+    }
 
-        .nav-links {
-            display: flex;
-            gap: 25px;
-        }
+    .logo {
+        color: var(--white);
+        font-size: 24px;
+        font-weight: 700;
+        text-decoration: none;
+        letter-spacing: -0.5px;
+    }
 
-        .nav-links a {
-            color: var(--white);
-            text-decoration: none;
-            font-weight: 500;
-            font-size: 16px;
-            transition: color 0.3s;
-        }
+    .nav-links {
+        display: flex;
+        gap: 30px; /* Consistent spacing between all items */
+        align-items: center; /* CRITICAL: Forces text and button to same center line */
+    }
 
-        .nav-links a:hover {
-            color: #bfdbfe;
-        }
+    /* Style ALL links consistently first */
+    .nav-links a {
+        color: var(--white);
+        text-decoration: none;
+        font-size: 15px;
+        font-weight: 500;
+        opacity: 0.9;
+        transition: all 0.2s ease;
+        white-space: nowrap; /* Prevents wrapping */
+    }
 
-        /* Special styling for the CTA button */
-        .btn-register {
-            background-color: var(--primary);
-            padding: 10px 20px;
-            border-radius: 6px;
-            font-weight: 600;
-        }
-        .btn-register:hover {
-            background-color: #1d4ed8;
-            color: white !important;
-        }
+    .nav-links a:hover {
+        opacity: 1;
+        color: #bfdbfe;
+    }
 
-        /* Main Content Area */
-        .hero-content {
-            flex-grow: 1;
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            align-items: center;
-            text-align: center;
-            color: var(--white);
-            padding: 20px;
-        }
+    /* Special styling ONLY for the button */
+    a.btn-register {
+        background-color: var(--primary);
+        padding: 10px 24px;
+        border-radius: 50px; /* Pill shape looks more modern */
+        color: white !important;
+        font-weight: 600;
+        opacity: 1;
+        box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+        border: 1px solid transparent;
+    }
 
-        h1 { font-size: 3.5rem; margin-bottom: 10px; }
-        p { font-size: 1.5rem; margin-top: 0; max-width: 600px; }
+    a.btn-register:hover {
+        background-color: var(--primary-hover);
+        transform: translateY(-1px); /* Subtle lift effect */
+        box-shadow: 0 6px 10px -1px rgba(0, 0, 0, 0.2);
+    }
 
-        /* Mobile Responsive */
-        @media (max-width: 768px) {
-            .navbar { flex-direction: column; gap: 15px; }
-            .nav-links { flex-direction: column; align-items: center; gap: 15px; }
-            h1 { font-size: 2.5rem; }
-        }
-    </style>
+    /* Admin Link Styling */
+    .admin-link {
+        font-size: 13px !important;
+        opacity: 0.6 !important;
+        border: 1px solid rgba(255,255,255,0.3);
+        padding: 4px 10px;
+        border-radius: 4px;
+    }
+    
+    .admin-link:hover {
+        opacity: 1 !important;
+        border-color: rgba(255,255,255,0.8);
+    }
+
+    /* Hero Text */
+    .hero-content {
+        flex-grow: 1;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+        text-align: center;
+        color: var(--white);
+        padding: 20px;
+        margin-top: -80px; /* Pulls text up slightly to balance visual center */
+    }
+
+    h1 { font-size: 3.5rem; margin-bottom: 15px; font-weight: 800; letter-spacing: -1px; }
+    p { font-size: 1.25rem; line-height: 1.6; max-width: 600px; color: #e2e8f0; }
+
+    /* Mobile Responsive */
+    @media (max-width: 900px) {
+        .navbar { flex-direction: column; gap: 20px; padding: 20px; }
+        .nav-links { flex-wrap: wrap; justify-content: center; gap: 15px; }
+        h1 { font-size: 2.2rem; }
+    }
+</style>
 </head>
 <body>
 
@@ -116,16 +146,18 @@
                 <div class="nav-links">
                     <a href="login.html">Sign-in</a>
                     <a href="#">Program</a>
-                    <a href="signup.html" class="btn-register">Register for the event!</a>
                     <a href="#">Blog</a>
                     <a href="#">Endowment Fund</a>
                     <a href="#">Contact Us</a>
-                    <a href="dashboard.html" style="font-size: 12px; opacity: 0.7;">Admin</a>
+                    
+                    <a href="signup.html" class="btn-register">Register Now</a>
+                    
+                    <a href="dashboard.html" class="admin-link">Admin</a>
                 </div>
             </nav>
 
             <div class="hero-content">
-                <h1>Welcome Back, Class of 2000</h1>
+                <h1>Welcome Back, Class of 1997</h1>
                 <p>Join us for a weekend of memories, celebration, and connection at the Heritage Resort.</p>
             </div>
 
