@@ -348,6 +348,7 @@ app.post('/register', async (req, res) => {
             const { error: dbError } = await userSupabase
                 .from('submissions')
                 .update({ 
+                    user_id: user.id,
                     participant_name: req.body.participant_name,
                     email: req.body.email,
                     mobile: req.body.mobile,
