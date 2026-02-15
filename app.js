@@ -362,6 +362,7 @@ app.post('/register', async (req, res) => {
                     sat_night: req.body.sat_night,
                     qr_code_url: qrCodeUrl // Uses existing one if no change
                 }, { onConflict: 'user_id' });
+                if (dbError) throw dbError;
         }
         else{
              // 3. Perform the Upsert
@@ -382,9 +383,9 @@ app.post('/register', async (req, res) => {
                 sat_night: req.body.sat_night,
                 qr_code_url: qrCodeUrl // Uses existing one if no change
             }, { onConflict: 'user_id' });
+            if (dbError) throw dbError;
         }
 
-        if (dbError) throw dbError;
         console.log("Before shouldSendEmail...");
 
         // 4. Send email ONLY if needed
