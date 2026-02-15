@@ -333,7 +333,7 @@ app.post('/register', async (req, res) => {
 
             console.log("After Generating new QR and triggering email...");
             if (uploadError) throw uploadError;
-            const { data: qrUrl } = userSupabase.storage.from('images').getPublicUrl(qrFileName);
+            const { data: qrUrl } = supabase.storage.from('images').getPublicUrl(qrFileName);
             qrCodeUrl = qrUrl.publicUrl;
             
             shouldSendEmail = true;
