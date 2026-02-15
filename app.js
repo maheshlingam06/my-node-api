@@ -340,10 +340,31 @@ app.post('/register', async (req, res) => {
             console.log("Silent update - no QR/Email needed.");
         }
 
-        // 3. Perform the Upsert
-        const { error: dbError } = await userSupabase
+        if (existing){
+            // 3. Perform the Upsert
+            const { error: dbError } = await userSupabase
+                .from('submissions')
+                .update({ 
+                    user_id: user.id,
+                    participant_name: req.body.participant_name,
+                    email: req.body.email,
+                    mobile: req.body.mobile,
+                    location: req.body.location,
+                    teens_adults: parseInt(req.body.teens_adults) || 0,
+                    kids: parseInt(req.body.kids) || 0,
+                    thu_night: req.body.thu_night,
+                    fri_reunion: req.body.fri_reunion,
+                    fri_night: req.body.fri_night,
+                    sat_reunion: req.body.sat_reunion,
+                    sat_night: req.body.sat_night,
+                    qr_code_url: qrCodeUrl // Uses existing one if no change
+                }, { onConflict: 'user_id' });
+        }
+        else{
+             // 3. Perform the Upsert
+            const { error: dbError } = await userSupabase
             .from('submissions')
-            .upsert({ 
+            .insert({ 
                 user_id: user.id,
                 participant_name: req.body.participant_name,
                 email: req.body.email,
@@ -358,7 +379,7 @@ app.post('/register', async (req, res) => {
                 sat_night: req.body.sat_night,
                 qr_code_url: qrCodeUrl // Uses existing one if no change
             }, { onConflict: 'user_id' });
-
+        }
 
         if (dbError) throw dbError;
 
