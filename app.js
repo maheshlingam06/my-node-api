@@ -348,7 +348,6 @@ app.post('/register', async (req, res) => {
             const { error: dbError } = await userSupabase
                 .from('submissions')
                 .update({ 
-                    user_id: user.id,
                     participant_name: req.body.participant_name,
                     email: req.body.email,
                     mobile: req.body.mobile,
@@ -361,7 +360,8 @@ app.post('/register', async (req, res) => {
                     sat_reunion: req.body.sat_reunion,
                     sat_night: req.body.sat_night,
                     qr_code_url: qrCodeUrl // Uses existing one if no change
-                }, { onConflict: 'user_id' });
+                }, { onConflict: 'user_id' })
+                .eq('user_id', user.id);
                 if (dbError) throw dbError;
         }
         else{
