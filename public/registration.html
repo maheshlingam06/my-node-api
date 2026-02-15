@@ -317,8 +317,13 @@ document.querySelector('form').addEventListener('submit', async function(e) {
         const result = await response.json();
 
         if (response.ok) {
-            alert("Success! Your QR code has been generated and emailed.");
-            window.location.href = "./signupcomplete.html"; // Redirect to gallery or success page
+            alert("Success! " + response.message);
+            if (response.message == 'Profile updated successfully!'){
+                window.location.href = "./updateComplete.html"; // Redirect to gallery or success page
+            }
+            else{
+                window.location.href = "./signupcomplete.html"; // Redirect to gallery or success page
+            }
         } else {
             alert("Registration failed: " + (result.error || "Unknown error"));
             submitBtn.innerText = "Complete Registration";
