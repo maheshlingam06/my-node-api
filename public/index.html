@@ -1,6 +1,136 @@
-<form action="https://my-node-api-jam2.onrender.com/upload-file" method="POST" enctype="multipart/form-data">
-    <input type="text" name="username" placeholder="Your Name"><br>
-    <input type="text" name="message" placeholder="A short message"><br>
-    <input type="file" name="myFile"><br>
-    <button type="submit">Upload and Save to Database</button>
-</form>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Class of 2000 Reunion</title>
+    <style>
+        :root {
+            --primary: #2563eb;
+            --white: #ffffff;
+            --overlay: rgba(0, 0, 0, 0.6); /* Darkens image for readability */
+        }
+
+        body, html {
+            margin: 0;
+            padding: 0;
+            height: 100%;
+            font-family: 'Inter', -apple-system, sans-serif;
+        }
+
+        /* Background Image Setup */
+        .bg-image {
+            /* REPLACE THIS URL WITH YOUR SUPABASE IMAGE URL */
+            background-image: url('https://pqpdxdwrgwcxvjsgdoiy.supabase.co/storage/v1/object/public/assets/MCA-Alumni.jpg');
+            
+            height: 100%;
+            background-position: center;
+            background-repeat: no-repeat;
+            background-size: cover;
+            position: relative;
+        }
+
+        /* Dark Overlay */
+        .overlay {
+            position: absolute;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background-color: var(--overlay);
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* Navigation Bar */
+        .navbar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 20px 40px;
+        }
+
+        .logo {
+            color: var(--white);
+            font-size: 24px;
+            font-weight: bold;
+            text-decoration: none;
+        }
+
+        .nav-links {
+            display: flex;
+            gap: 25px;
+        }
+
+        .nav-links a {
+            color: var(--white);
+            text-decoration: none;
+            font-weight: 500;
+            font-size: 16px;
+            transition: color 0.3s;
+        }
+
+        .nav-links a:hover {
+            color: #bfdbfe;
+        }
+
+        /* Special styling for the CTA button */
+        .btn-register {
+            background-color: var(--primary);
+            padding: 10px 20px;
+            border-radius: 6px;
+            font-weight: 600;
+        }
+        .btn-register:hover {
+            background-color: #1d4ed8;
+            color: white !important;
+        }
+
+        /* Main Content Area */
+        .hero-content {
+            flex-grow: 1;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            color: var(--white);
+            padding: 20px;
+        }
+
+        h1 { font-size: 3.5rem; margin-bottom: 10px; }
+        p { font-size: 1.5rem; margin-top: 0; max-width: 600px; }
+
+        /* Mobile Responsive */
+        @media (max-width: 768px) {
+            .navbar { flex-direction: column; gap: 15px; }
+            .nav-links { flex-direction: column; align-items: center; gap: 15px; }
+            h1 { font-size: 2.5rem; }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="bg-image">
+        <div class="overlay">
+            
+            <nav class="navbar">
+                <a href="#" class="logo">Reunion 2026</a>
+                <div class="nav-links">
+                    <a href="login.html">Sign-in</a>
+                    <a href="#">Program</a>
+                    <a href="signup.html" class="btn-register">Register for the event!</a>
+                    <a href="#">Blog</a>
+                    <a href="#">Endowment Fund</a>
+                    <a href="#">Contact Us</a>
+                    <a href="dashboard.html" style="font-size: 12px; opacity: 0.7;">Admin</a>
+                </div>
+            </nav>
+
+            <div class="hero-content">
+                <h1>Welcome Back, Class of 2000</h1>
+                <p>Join us for a weekend of memories, celebration, and connection at the Heritage Resort.</p>
+            </div>
+
+        </div>
+    </div>
+
+</body>
+</html>
