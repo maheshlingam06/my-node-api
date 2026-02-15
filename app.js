@@ -327,10 +327,11 @@ app.post('/register', async (req, res) => {
 
             // 3. Upload QR Code to userSupabase Storage
             const qrFileName = `qrcodes/${mobile}-${Date.now()}.png`;
-            const { data: uploadData, error: uploadError } = await userSupabase.storage
+            const { data: uploadData, error: uploadError } = await supabase.storage
                 .from('images')
                 .upload(qrFileName, qrCodeBuffer, { contentType: 'image/png' });
 
+            console.log("After Generating new QR and triggering email...");
             if (uploadError) throw uploadError;
             const { data: qrUrl } = userSupabase.storage.from('images').getPublicUrl(qrFileName);
             qrCodeUrl = qrUrl.publicUrl;
@@ -339,6 +340,8 @@ app.post('/register', async (req, res) => {
         } else {
             console.log("Silent update - no QR/Email needed.");
         }
+
+        console.log("Before existing...");
 
         if (existing){
             // 3. Perform the Upsert
@@ -382,6 +385,7 @@ app.post('/register', async (req, res) => {
         }
 
         if (dbError) throw dbError;
+        console.log("Before shouldSendEmail...");
 
         // 4. Send email ONLY if needed
         if (shouldSendEmail) {
@@ -408,6 +412,8 @@ app.post('/register', async (req, res) => {
             // 4. Trigger the send
             await apiInstance.sendTransacEmail(sendSmtpEmail);
         }
+
+        console.log("Before res json...");
 
         res.json({ 
             message: shouldSendEmail ? "Registration updated and email sent!" : "Profile updated successfully!",
