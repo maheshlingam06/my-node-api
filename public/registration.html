@@ -105,6 +105,35 @@
             .checkout-container { grid-template-columns: 1fr; }
             .sidebar { order: -1; } /* Summary shows first on mobile */
         }
+        .tariff-card {
+            margin-top: 20px;
+            padding: 15px !important;
+        }
+
+        .tariff-table {
+            width: 100%;
+            font-size: 11px;
+            border-collapse: collapse;
+            margin-top: 5px;
+        }
+
+        .tariff-table th, .tariff-table td {
+            border: 1px solid var(--border);
+            padding: 6px 4px;
+            text-align: center;
+        }
+
+        .tariff-table th {
+            background-color: var(--bg);
+            font-weight: 700;
+            color: var(--text);
+        }
+
+        .tariff-table td:first-child {
+            text-align: left;
+            font-weight: 500;
+            width: 40%;
+        }
     </style>
     <script src="https://www.google.com/recaptcha/api.js?render=__SITE_KEY__" defer></script>
     <script>
@@ -129,48 +158,62 @@
         <div class="card">
             <h2>Contact Information</h2>
             <div class="input-group">
-                <label>Participant Full Name</label>
+                <label>Your Name</label>
                 <input type="text" name="participant_name" placeholder="Enter your full name" required>
             </div>
-            
+            <div class="input-group">
+                <label>Department</label>
+                <input type="text" name="participant_name" placeholder="Enter your Department" required>
+            </div>
+            <div class="input-group">
+                <label>Department</label>
+                <input type="text" name="participant_name" placeholder="Enter your Department" required>
+            </div>
+            <div class="input-group">
+                <label>Your Class Registration Number</label>
+                <input type="text" name="participant_name" placeholder="Something like 97A55">
+            </div>
+
             <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
-                <div class="input-group">
-                    <label>Mobile Number (with Country Code)</label>
-                    <input type="tel" name="mobile" placeholder="+1 264 567 890" required>
-                </div>
                 <div class="input-group">
                     <label>Email Address</label>
                     <input type="email" name="email" id="email" placeholder="email@example.com" required>
                 </div>
                 <div class="input-group">
+                    <label>Mobile Number (with Country Code - preferrably WhatsApp)</label>
+                    <input type="tel" name="mobile" placeholder="+1 264 567 890" required>
+                </div>
+                <!-- <div class="input-group">
                     <label>Current Location (City/Country)</label>
                     <input type="text" name="location" placeholder="e.g. London, UK" required>
-                </div>
+                </div> -->
             </div>
         </div>
 
         <div class="card">
             <h2>Registration Details</h2>
             <table class="registration-table">
+                <caption>Participation Details<p>(including family if they will be attending)</p></caption>
                 <tr>
-                    <td><label>Teens and Adults (Age 13+)</label></td>
-                    <td style="width: 120px;"><input type="number" name="teens_adults" value="0" min="0"></td>
+                    <td><label>Total Persons (Age: 13 and above)</label></td>
+                    <td style="width: 120px;"><input type="number" name="teens_adults" value="0" min="0" required></td>
                 </tr>
                 <tr>
-                    <td><label>Kids (Age 12 and below)</label></td>
+                    <td><label>Total Persons (Age 12 and below)</label></td>
                     <td><input type="number" name="kids" value="0" min="0"></td>
                 </tr>
                 <tr>
-                    <td><label>Heritage resort stay (Thu night)?</label></td>
+                    <td><label>Staying at Heritage resort on (Thu, Jul 23) night?</label></td>
                     <td>
                         <select name="thu_night">
                             <option value="yes_family">Yes, with family</option>
+                            <option value="yes_single">Yes, without family</option>
                             <option value="no">No</option>
                         </select>
                     </td>
                 </tr>
                 <tr>
-                    <td><label>Attend reunion (Fri, July 24)?</label></td>
+                    <td><label>Family joining you for reunion on (Fri, Jul 24)?</label></td>
                     <td>
                         <select name="fri_reunion">
                             <option value="yes">Yes</option>
@@ -179,29 +222,45 @@
                     </td>
                 </tr>
                 <tr>
-                    <td><label>Heritage resort stay (Fri night)?</label></td>
+                    <td><label>Staying at Heritage resort on (Fri, Jul 24) night?</label></td>
                     <td>
                         <select name="fri_night">
                             <option value="yes_family">Yes, with family</option>
+                            <option value="yes_single">Yes, without family</option>
                             <option value="no">No</option>
                         </select>
                     </td>
                 </tr>
                 <tr>
-                    <td><label>Attend reunion (Sat, July 25)?</label></td>
+                    <td><label>Attending reunion on (Sat, Jul 25)?</label></td>
                     <td>
                         <select name="sat_reunion">
                             <option value="yes_family">Yes, with family</option>
+                            <option value="yes_single">Yes, without family</option>
                             <option value="no">No</option>
                         </select>
                     </td>
                 </tr>
                 <tr>
-                    <td><label>Heritage resort stay (Sat night)?</label></td>
+                    <td><label>Staying at Heritage resort on (Sat, Jul 25) night?</label></td>
                     <td>
                         <select name="sat_night">
-                            <option value="no">No</option>
                             <option value="yes_family">Yes, with family</option>
+                            <option value="yes_single">Yes, without family</option>
+                            <option value="no">No</option>
+                        </select>
+                    </td>
+                </tr>
+                <tr>
+                    <td><label>Your T-Shirt Size</label></td>
+                    <td>
+                        <select name="t-shirt">
+                            <option value="S">Small</option>
+                            <option value="M">Medium</option>
+                            <option value="L">Large</option>
+                            <option value="XL">X-Large</option>
+                            <option value="XXL">XX-Large</option>
+                            <option value="XXXL">XXX-Large</option>
                         </select>
                     </td>
                 </tr>
@@ -233,6 +292,53 @@
             <button type="submit" class="btn-submit">Complete Registration</button>
             <p style="font-size: 11px; color: #64748b; text-align: center; margin-top: 15px;">
                 By clicking, you agree to the family reunion event guidelines.
+            </p>
+        </div>
+    </div>
+    <div class="sidebar">
+        <div class="card" style="position: sticky; top: 20px;">
+            </div>
+
+        <div class="card tariff-card">
+            <h3>Tariff Details (INR)</h3>
+            <table class="tariff-table">
+                <thead>
+                    <tr>
+                        <th>Tariff</th>
+                        <th>Alumni</th>
+                        <th>Extra Adult</th>
+                        <th>Extra Kid</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>Friday Night Stay</td>
+                        <td>5000</td>
+                        <td>5000</td>
+                        <td>2500</td>
+                    </tr>
+                    <tr>
+                        <td>Thu/Sat Night Stay</td>
+                        <td>-</td>
+                        <td>-</td>
+                        <td>-</td>
+                    </tr>
+                    <tr>
+                        <td>Friday Event & Dinner</td>
+                        <td>7000</td>
+                        <td>3000</td>
+                        <td>2000</td>
+                    </tr>
+                    <tr>
+                        <td>Saturday Event & Lunch</td>
+                        <td>1500</td>
+                        <td>1500</td>
+                        <td>750</td>
+                    </tr>
+                </tbody>
+            </table>
+            <p style="font-size: 10px; color: #64748b; margin-top: 10px;">
+                * All prices are per person as per the provided tariff sheet.
             </p>
         </div>
     </div>
