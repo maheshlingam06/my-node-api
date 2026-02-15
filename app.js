@@ -283,12 +283,17 @@ app.post('/register', async (req, res) => {
     try {
         const token = req.headers.authorization?.split(' ')[1];
 
+        console.log('register api. token:', token);
         
         const { data: { user }, error: authError } = await supabase.auth.getUser(token);
+        console.log('register api. user:', user);
         if (authError || !user) return res.status(401).json({ error: "Unauthorized" });
         
+        console.log('register api. req body:', req.body);
         // Add this at the very top of app.post('/register')
         const { participant_name, email, mobile } = req.body;
+        console.log('register api. participant_name, email, mobile:', participant_name, email, mobile);
+
         
         // 1. Create a "User-Specific" client for this request
         // This is the clean way to handle RLS with the ANON key
@@ -298,7 +303,7 @@ app.post('/register', async (req, res) => {
         // 1. Fetch existing data first
         const { data: existing } = await userSupabase
             .from('submissions')
-            .select('participant_name, email, qr_code_url')
+            .select('participant_name, email, mobile, qr_code_url')
             .eq('user_id', user.id)
             .single();
 
@@ -310,7 +315,7 @@ app.post('/register', async (req, res) => {
         // - OR if the name/email has changed (which changes the QR content)
         if (!existing || 
             existing.participant_name !== req.body.participant_name || 
-            existing.email !== req.body.email) {
+            existing.email !== req.body.email || existing.mobile !== req.body.mobile) {
             
             console.log("Generating new QR and triggering email...");
             let mobile = req.body.mobile;
