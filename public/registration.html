@@ -318,7 +318,7 @@ document.querySelector('form').addEventListener('submit', async function(e) {
 
         if (response.ok) {
             alert("Success! " + response.message);
-            if (response.message == 'Profile updated successfully!'){
+            if (result.message == 'Profile updated successfully!'){
                 window.location.href = "./updateComplete.html"; // Redirect to gallery or success page
             }
             else{
