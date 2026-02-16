@@ -63,7 +63,7 @@ app.use(globalLimiter);
 
 // 1. Initialize Supabase
 const supabase = createClient(process.env.SUPABASE_URL, process.env.SUPABASE_ANON_KEY);
-// const supabase = createClient(process.env.SUPABASE_URL, process.env.SUPABASE_SERVICE_KEY);
+const adminSupabase = createClient(process.env.SUPABASE_URL, process.env.SUPABASE_SERVICE_KEY);
 
 // 2. Use Memory Storage (Safe for small files)
 const storage = multer.memoryStorage();
@@ -474,6 +474,41 @@ app.get('/get-registration', async (req, res) => {
 
         res.status(200).json(data || {}); 
     } catch (err) {
+        res.status(500).json({ error: err.message });
+    }
+});
+
+// --- ADMIN ROUTE ---
+app.get('/api/admin/all-registrations', async (req, res) => {
+    try {
+        const token = req.headers.authorization?.split(' ')[1];
+        if (!token) return res.status(401).json({ error: "Unauthorized" });
+
+        // 1. Verify who is asking
+        const { data: { user }, error: authError } = await supabase.auth.getUser(token);
+        if (authError || !user) return res.status(401).json({ error: "Invalid session" });
+
+        // 2. SECURITY CHECK: Only allow YOUR email to see this data
+        // Replace this string with the actual email you use to login as admin
+        const ADMIN_EMAILS = ['d.mahesh.0510@gmail.com']; 
+        
+        if (!ADMIN_EMAILS.includes(user.email)) {
+            return res.status(403).json({ error: "Access Denied: Admin rights required." });
+        }
+
+        // 3. Fetch ALL data using the Service Role (Bypassing RLS)
+        // Ensure you initialized 'adminSupabase' with the SERVICE_ROLE_KEY at the top of app.js
+        const { data: allRows, error: dbError } = await adminSupabase 
+            .from('submissions')
+            .select('*')
+            .order('created_at', { ascending: false });
+
+        if (dbError) throw dbError;
+
+        res.json(allRows);
+
+    } catch (err) {
+        console.error("Admin Fetch Error:", err);
         res.status(500).json({ error: err.message });
     }
 });
