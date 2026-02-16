@@ -12,7 +12,7 @@
         --primary: #2563eb;
         --primary-hover: #1d4ed8;
         --white: #ffffff;
-        --overlay: rgba(15, 23, 42, 0.7); /* Darker blue-black overlay for better text pop */
+        --overlay: rgba(15, 23, 42, 0.9); /* Darker blue-black overlay for better text pop */
     }
 
     body, html {
@@ -146,6 +146,17 @@
         .navbar { flex-direction: column; gap: 20px; padding: 20px; }
         .nav-links { flex-wrap: wrap; justify-content: center; gap: 15px; }
         h1 { font-size: 2.2rem; }
+    }
+    /* Mobile Responsive */
+    @media (min-width: 900px) {
+        .bg-image {
+            /* REPLACE WITH YOUR SUPABASE URL */
+            background-image: url('https://pqpdxdwrgwcxvjsgdoiy.supabase.co/storage/v1/object/public/assets/MCA-Alumni.jpg');
+            height: 100%;
+            background-position: center;
+            background-size: contain;
+            position: relative;
+        }
     }
 </style>
 </head>
