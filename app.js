@@ -481,12 +481,18 @@ app.get('/get-registration', async (req, res) => {
 // --- ADMIN ROUTE ---
 app.get('/api/admin/all-registrations', async (req, res) => {
     try {
+        console.log("--- ADMIN ACCESS ATTEMPT ---");
         const token = req.headers.authorization?.split(' ')[1];
         if (!token) return res.status(401).json({ error: "Unauthorized" });
+        const authHeader = req.headers.authorization;
+        console.log("1. Header received:", authHeader ? "YES" : "NO");
 
         // 1. Verify who is asking
         const { data: { user }, error: authError } = await supabase.auth.getUser(token);
-        if (authError || !user) return res.status(401).json({ error: "Invalid session" });
+        if (authError || !user) {
+            console.log("2. Auth Check Failed:", authError?.message);
+            return res.status(401).json({ error: "Invalid session" });
+        }
 
         // 2. SECURITY CHECK: Only allow YOUR email to see this data
         // Replace this string with the actual email you use to login as admin
