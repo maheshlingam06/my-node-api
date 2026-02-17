@@ -424,7 +424,7 @@ document.querySelector('form').addEventListener('submit', async function(e) {
         const result = await response.json();
 
         if (response.ok) {
-            alert("Success! " + response.message);
+            alert("Success! " + result.message);
             if (result.message == 'Profile updated successfully!'){
                 window.location.href = "./updateComplete.html"; // Redirect to gallery or success page
             }
