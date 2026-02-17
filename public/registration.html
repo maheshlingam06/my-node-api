@@ -102,8 +102,21 @@
         .btn-submit:hover { background: #1d4ed8; }
 
         @media (max-width: 850px) {
-            .checkout-container { grid-template-columns: 1fr; }
+            /*.checkout-container { grid-template-columns: 1fr; }
             .sidebar { order: -1; } /* Summary shows first on mobile */
+            .checkout-container { 
+                grid-template-columns: 1fr; 
+            }
+            
+            .sidebar { 
+                /* CHANGE THIS LINE */
+                order: 1; /* Positive number pushes it to the bottom */
+                
+                /* OPTIONAL: Remove sticky on mobile so it doesn't float over your form */
+                position: relative !important; 
+                top: 0 !important;
+                margin-top: 40px; /* Add space between form and summary */
+            }
         }
         .tariff-card {
             margin-top: 20px;
