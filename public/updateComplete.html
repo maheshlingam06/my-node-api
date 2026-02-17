@@ -112,5 +112,11 @@
     </p>
 </div>
 
+<script>
+    localStorage.removeItem('supabaseToken');
+    // Replace the current history entry
+    // This removes the current page from the "Back" stack
+    window.location.replace('updateComplete.html');
+</script>
 </body>
 </html>
