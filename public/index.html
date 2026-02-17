@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Class of 2000 Reunion</title>
+    <title>Class of 1997 Reunion</title>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
 
@@ -176,29 +176,32 @@
             border-bottom: 2px solid #2563eb;
         }
 
-        /* Notes List Styling */
+        /* Notes List Styling - FIXED FOR DARK BACKGROUND */
         .notes-list {
             list-style: none;
             padding: 0;
             margin: 0;
             font-size: 13px;
-            line-height: 1.5;
-            color: #334155;
+            line-height: 1.6; /* Increased line-height slightly for readability */
+            color: #f1f5f9; /* CHANGED: Bright white-gray for contrast */
             text-align: left;
         }
 
         .notes-list li {
-            margin-bottom: 10px;
+            margin-bottom: 12px;
             padding-left: 20px;
             position: relative;
         }
 
+        /* Custom Bullet Point Style */
         .notes-list li::before {
             content: "•";
-            color: #2563eb;
+            color: #93c5fd; /* CHANGED: Lighter blue to pop on dark bg */
             font-weight: bold;
+            font-size: 16px; /* Slightly larger bullet */
             position: absolute;
             left: 0;
+            top: -2px; /* Adjust vertical alignment */
         }
     </style>
 </head>
@@ -221,7 +224,7 @@
                 <div class="hero-grid">
                     
                     <div class="hero-text">
-                        <h1>Welcome Back,<br>Class of 2000</h1>
+                        <h1>Welcome Back,<br>Class of 1997</h1>
                         <p>Join us for a weekend of memories, celebration, and connection at the Heritage Resort. Reconnect with old friends and make new memories.</p>
                         
                         <div class="cta-group">
