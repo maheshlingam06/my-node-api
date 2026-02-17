@@ -151,7 +151,6 @@
     </style>
 </head>
 <body>
-
     <div class="bg-image">
         <div class="overlay">
             
@@ -163,22 +162,82 @@
                     <a href="#">Blog</a>
                     <a href="#">Endowment Fund</a>
                     <a href="#">Contact Us</a>
-                    
-                    <a href="signup.html" class="btn-register">Register Now</a>
-                    
-                    <a href="dashboard.html" class="admin-link">Admin</a>
                 </div>
             </nav>
 
-            <div class="hero-content">
-                <h1>Welcome Back, Class of 1997</h1>
-                <p>Join us for a weekend of memories, celebration, and connection at the Heritage Resort.</p>
+            <div class="hero-container">
+                <div class="hero-grid">
+                    
+                    <div class="hero-text">
+                        <h1>Welcome Back,<br>Class of 2000</h1>
+                        <p>Join us for a weekend of memories, celebration, and connection at the Heritage Resort. Reconnect with old friends and make new memories.</p>
+                        
+                        <div class="cta-group">
+                            <a href="signup.html" class="btn-hero btn-primary">Register Now</a>
+                            <a href="login.html" class="btn-hero btn-outline">Sign In</a>
+                        </div>
+                    </div>
+
+                    <div class="program-card">
+                        <h3>📅 Event Schedule</h3>
+                        
+                        <div class="carousel-container">
+                            <div class="carousel-slide fade">
+                                <div class="date-badge">Thu, July 23</div>
+                                <p>Arrive early and stay at Heritage resort (optional).</p>
+                                <p>Relax and unwind before the big day.</p>
+                            </div>
+
+                            <div class="carousel-slide fade">
+                                <div class="date-badge">Fri, July 24</div>
+                                <p><strong>9:00 AM:</strong> Arrive at College. Events until 5pm.</p>
+                                <p><strong>Evening:</strong> Leave for Resort. Culturals & Dinner.</p>
+                            </div>
+
+                            <div class="carousel-slide fade">
+                                <div class="date-badge">Sat, July 25</div>
+                                <p><strong>Morning:</strong> Relax at Resort.</p>
+                                <p><strong>11:30 AM:</strong> Lunch, get-togethers & sports.</p>
+                            </div>
+
+                            <div class="carousel-dots">
+                                <span class="dot" onclick="currentSlide(1)"></span> 
+                                <span class="dot" onclick="currentSlide(2)"></span> 
+                                <span class="dot" onclick="currentSlide(3)"></span> 
+                            </div>
+                        </div>
+                    </div>
+
+                </div>
             </div>
+
             <footer class="copyright-panel">
                 &copy; 2026 LEGENDS IT Consulting & Services. All rights reserved.
             </footer>
+
         </div>
     </div>
 
+    <script>
+        let slideIndex = 0;
+        showSlides();
+
+        function showSlides() {
+            let i;
+            let slides = document.getElementsByClassName("carousel-slide");
+            let dots = document.getElementsByClassName("dot");
+            for (i = 0; i < slides.length; i++) {
+                slides[i].style.display = "none";  
+            }
+            slideIndex++;
+            if (slideIndex > slides.length) {slideIndex = 1}    
+            for (i = 0; i < dots.length; i++) {
+                dots[i].className = dots[i].className.replace(" active-dot", "");
+            }
+            slides[slideIndex-1].style.display = "block";  
+            dots[slideIndex-1].className += " active-dot";
+            setTimeout(showSlides, 4000); // Change image every 4 seconds
+        }
+    </script>
 </body>
 </html>
