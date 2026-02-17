@@ -147,8 +147,28 @@
         }
 
         function handleLogout(){
-            window.location.href = "login.html";
+           /* window.location.href = "login.html"; */
+            localStorage.removeItem('supabaseToken');
+            //localStorage.removeItem('adminData'); // Clear admin cache too if it exists
+
+            // 2. Replace the current history entry
+            // This removes the current page from the "Back" stack
+            window.location.replace('login.html');
         }
+
+        // 1. Standard Auth Check
+        //const token = localStorage.getItem('supabaseToken');
+        if (!token) window.location.replace('login.html');
+
+        // 2. "Back Button" Detector
+        // This fires every time the page appears, even from the Back button cache
+        window.addEventListener('pageshow', function(event) {
+            // If the page was loaded from cache (event.persisted) OR no token exists
+            if (event.persisted || !localStorage.getItem('supabaseToken')) {
+                // Force a reload, which triggers the check in step 1
+                window.location.reload();
+            }
+        });
     </script>
     
 </head>

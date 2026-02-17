@@ -61,6 +61,17 @@ const uploadLimiter = rateLimit({
 
 app.use(globalLimiter);
 
+// --- ADD THIS NEAR THE TOP OF APP.JS ---
+// Prevent caching for HTML pages so "Back" button forces a reload
+app.use((req, res, next) => {
+    if (req.path.endsWith('.html') || req.path === '/admin' || req.path === '/registration') {
+        res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate, private');
+        res.setHeader('Pragma', 'no-cache');
+        res.setHeader('Expires', '0');
+    }
+    next();
+});
+
 // 1. Initialize Supabase
 const supabase = createClient(process.env.SUPABASE_URL, process.env.SUPABASE_ANON_KEY);
 const adminSupabase = createClient(process.env.SUPABASE_URL, process.env.SUPABASE_SERVICE_KEY);
