@@ -145,6 +145,10 @@
             alert("Please login first to access the registration form.");
             window.location.href = "login.html";
         }
+
+        function handleLogout(){
+            window.location.href = "login.html";
+        }
     </script>
     
 </head>
@@ -502,9 +506,6 @@ document.addEventListener('DOMContentLoaded', () => {
     setTimeout(calculateTotal, 1000); 
 });
 
-handleLogout(){
-    window.location.href = "login.html";
-}
 </script>
 </body>
 
