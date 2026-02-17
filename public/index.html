@@ -5,160 +5,150 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Class of 2000 Reunion</title>
     <style>
-    /* Import a nice font to ensure consistency */
-    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
 
-    :root {
-        --primary: #2563eb;
-        --primary-hover: #1d4ed8;
-        --white: #ffffff;
-        --overlay: rgba(15, 23, 42, 0.9); /* Darker blue-black overlay for better text pop */
-    }
+        :root {
+            --primary: #2563eb;
+            --primary-hover: #1d4ed8;
+            --white: #ffffff;
+            --overlay: rgba(15, 23, 42, 0.9); /* Darker blue-black overlay for better text pop */
+        }
 
-    body, html {
-        margin: 0;
-        padding: 0;
-        height: 100%;
-        font-family: 'Inter', sans-serif; /* Force consistent font everywhere */
-    }
+        body, html { margin: 0; padding: 0; height: 100%; font-family: 'Inter', sans-serif; }
 
-    .bg-image {
-        /* REPLACE WITH YOUR SUPABASE URL */
-        background-image: url('https://pqpdxdwrgwcxvjsgdoiy.supabase.co/storage/v1/object/public/assets/MCA-Alumni.jpg');
-        height: 100%;
-        background-position: center;
-        background-size: cover;
-        position: relative;
-    }
-
-    .overlay {
-        position: absolute;
-        top: 0; left: 0; right: 0; bottom: 0;
-        background-color: var(--overlay);
-        display: flex;
-        flex-direction: column;
-        overflow-y: auto; /* Allow scrolling if screen is short */
-    }
-
-    /* --- NAVIGATION BAR FIXES --- */
-    .navbar {
-        display: flex;
-        justify-content: space-between;
-        align-items: center; /* Vertically centers Logo and Menu */
-        padding: 20px 40px;
-        width: 100%;
-        box-sizing: border-box; /* Ensures padding doesn't widen the page */
-        z-index: 999;
-    }
-
-    .logo {
-        color: var(--white);
-        font-size: 24px;
-        font-weight: 700;
-        text-decoration: none;
-        letter-spacing: -0.5px;
-    }
-
-    .nav-links {
-        display: flex;
-        gap: 30px; /* Consistent spacing between all items */
-        align-items: center; /* CRITICAL: Forces text and button to same center line */
-    }
-
-    /* Style ALL links consistently first */
-    .nav-links a {
-        color: var(--white);
-        text-decoration: none;
-        font-size: 15px;
-        font-weight: 500;
-        opacity: 0.9;
-        transition: all 0.2s ease;
-        white-space: nowrap; /* Prevents wrapping */
-    }
-
-    .nav-links a:hover {
-        opacity: 1;
-        color: #bfdbfe;
-    }
-
-    /* Special styling ONLY for the button */
-    a.btn-register {
-        background-color: var(--primary);
-        padding: 10px 24px;
-        border-radius: 50px; /* Pill shape looks more modern */
-        color: white !important;
-        font-weight: 600;
-        opacity: 1;
-        box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
-        border: 1px solid transparent;
-    }
-
-    a.btn-register:hover {
-        background-color: var(--primary-hover);
-        transform: translateY(-1px); /* Subtle lift effect */
-        box-shadow: 0 6px 10px -1px rgba(0, 0, 0, 0.2);
-    }
-
-    /* Admin Link Styling */
-    .admin-link {
-        font-size: 13px !important;
-        opacity: 0.6 !important;
-        border: 1px solid rgba(255,255,255,0.3);
-        padding: 4px 10px;
-        border-radius: 4px;
-    }
-    
-    .admin-link:hover {
-        opacity: 1 !important;
-        border-color: rgba(255,255,255,0.8);
-    }
-
-    /* Hero Text */
-    .hero-content {
-        flex-grow: 1;
-        display: flex;
-        flex-direction: column;
-        justify-content: center;
-        align-items: center;
-        text-align: center;
-        color: var(--white);
-        padding: 20px;
-        margin-top: -200px; /* Pulls text up slightly to balance visual center */
-    }
-
-    .copyright-panel {
-        width: 100%;
-        padding: 15px 0;
-        text-align: center;
-        font-size: 12px;
-        color: rgba(255, 255, 255, 0.5); /* Subtle, semi-transparent white */
-        margin-top: auto; /* Pushes the footer to the very bottom */
-        font-weight: 400;
-        letter-spacing: 0.5px;
-        background: linear-gradient(to top, rgba(0,0,0,0.8), transparent); /* Optional fade for readability */
-    }
-
-    h1 { font-size: 3.5rem; margin-bottom: 15px; font-weight: 800; letter-spacing: -1px; }
-    p { font-size: 1.25rem; line-height: 1.6; max-width: 600px; color: #e2e8f0; }
-
-    /* Mobile Responsive */
-    @media (max-width: 900px) {
-        .navbar { flex-direction: column; gap: 20px; padding: 20px; }
-        .nav-links { flex-wrap: wrap; justify-content: center; gap: 15px; }
-        h1 { font-size: 2.2rem; }
-    }
-    /* Mobile Responsive */
-    @media (min-width: 900px) {
         .bg-image {
             /* REPLACE WITH YOUR SUPABASE URL */
             background-image: url('https://pqpdxdwrgwcxvjsgdoiy.supabase.co/storage/v1/object/public/assets/MCA-Alumni.jpg');
             height: 100%;
             background-position: center;
-            background-size: contain;
+            background-size: cover;
             position: relative;
         }
+
+        .overlay {
+            position: absolute; top: 0; left: 0; right: 0; bottom: 0;
+            background-color: var(--overlay);
+            display: flex; flex-direction: column;
+            overflow-y: auto;
+        }
+
+        /* Navbar */
+        .navbar {
+            display: flex; justify-content: space-between; align-items: center;
+            padding: 20px 60px; z-index: 10;
+        }
+        .logo { color: var(--white); font-size: 24px; font-weight: 700; text-decoration: none; }
+        .nav-links { display: flex; gap: 30px; align-items: center; }
+        .nav-links a { color: var(--white); text-decoration: none; font-size: 15px; font-weight: 500; opacity: 0.9; }
+        .nav-links a:hover { opacity: 1; color: #bfdbfe; }
+
+        /* --- NEW HERO LAYOUT (Split Screen) --- */
+        .hero-container {
+            flex-grow: 1;
+            display: flex;
+            align-items: center; /* Vertically center everything */
+            justify-content: center;
+            padding: 0 60px;
+            width: 100%;
+            box-sizing: border-box; /* Ensures padding doesn't widen the page */
+            z-index: 999;
     }
-</style>
+
+        .hero-grid {
+            display: grid;
+            grid-template-columns: 1.2fr 0.8fr; /* Text takes slightly more space */
+            gap: 80px;
+            max-width: 1200px;
+            width: 100%;
+            align-items: center;
+        }
+
+        /* Left Side: Text & Buttons */
+        .hero-text { text-align: left; color: var(--white); }
+        h1 { font-size: 3.5rem; margin-bottom: 20px; font-weight: 800; line-height: 1.1; }
+        p { font-size: 1.2rem; line-height: 1.6; color: #e2e8f0; margin-bottom: 30px; max-width: 500px; }
+
+        /* New CTA Buttons Group */
+        .cta-group { display: flex; gap: 15px; }
+        
+        .btn-hero {
+            padding: 14px 32px;
+            border-radius: 50px;
+            font-weight: 600;
+            text-decoration: none;
+            transition: all 0.2s;
+        }
+
+        .btn-primary {
+            background-color: var(--primary);
+            color: white;
+            box-shadow: 0 4px 15px rgba(37, 99, 235, 0.4);
+        }
+        .btn-primary:hover { background-color: var(--primary-hover); transform: translateY(-2px); }
+
+        .btn-outline {
+            border: 2px solid rgba(255,255,255,0.3);
+            color: white;
+        }
+        .btn-outline:hover { border-color: white; background: rgba(255,255,255,0.1); }
+
+
+        /* --- RIGHT SIDE: GLASS CAROUSEL --- */
+        .program-card {
+            background: rgba(255, 255, 255, 0.1); /* Glass effect */
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            padding: 30px;
+            border-radius: 16px;
+            color: white;
+            min-height: 200px;
+            position: relative;
+        }
+
+        .program-card h3 { margin-top: 0; color: #bfdbfe; font-size: 1.2rem; margin-bottom: 20px; border-bottom: 1px solid rgba(255,255,255,0.2); padding-bottom: 10px; }
+
+        .carousel-slide { display: none; animation: fade 1s; }
+        .carousel-slide p { font-size: 0.95rem; margin-bottom: 8px; color: #f1f5f9; }
+        
+        .date-badge {
+            background: rgba(37, 99, 235, 0.3);
+            color: #93c5fd;
+            padding: 4px 10px;
+            border-radius: 4px;
+            font-size: 12px;
+            font-weight: 700;
+            display: inline-block;
+            margin-bottom: 12px;
+            border: 1px solid rgba(147, 197, 253, 0.3);
+        }
+
+        /* Dots */
+        .carousel-dots { margin-top: 20px; text-align: center; }
+        .dot {
+            height: 8px; width: 8px; margin: 0 4px;
+            background-color: rgba(255,255,255,0.3);
+            border-radius: 50%; display: inline-block; cursor: pointer;
+        }
+        .active-dot { background-color: var(--primary); transform: scale(1.2); }
+
+        @keyframes fade { from {opacity: 0} to {opacity: 1} }
+
+        /* Footer */
+        .copyright-panel {
+            text-align: center; padding: 15px; font-size: 12px;
+            color: rgba(255,255,255,0.4); margin-top: auto;
+        }
+
+        /* Mobile Responsive */
+        @media (max-width: 900px) {
+            .navbar { flex-direction: column; padding: 20px; }
+            .hero-grid { grid-template-columns: 1fr; gap: 40px; text-align: center; }
+            .hero-text { align-items: center; display: flex; flex-direction: column; }
+            .cta-group { justify-content: center; }
+            .program-card { margin: 0 20px; }
+        }
+    </style>
 </head>
 <body>
 
