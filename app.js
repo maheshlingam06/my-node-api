@@ -327,13 +327,13 @@ app.post('/register', async (req, res) => {
 
             // 3. Upload QR Code to userSupabase Storage
             const qrFileName = `qrcodes/${mobile}-${Date.now()}.png`;
-            const { data: uploadData, error: uploadError } = await supabase.storage
+            const { data: uploadData, error: uploadError } = await adminSupabase.storage
                 .from('images')
                 .upload(qrFileName, qrCodeBuffer, { contentType: 'image/png' });
 
             console.log("After Generating new QR and triggering email...");
             if (uploadError) throw uploadError;
-            const { data: qrUrl } = supabase.storage.from('images').getPublicUrl(qrFileName);
+            const { data: qrUrl } = adminSupabase.storage.from('images').getPublicUrl(qrFileName);
             qrCodeUrl = qrUrl.publicUrl;
             
             shouldSendEmail = true;
