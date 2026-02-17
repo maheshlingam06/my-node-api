@@ -159,15 +159,15 @@
             <h2>Contact Information</h2>
             <div class="input-group">
                 <label>Your Name</label>
-                <input type="text" name="participant_name" placeholder="Enter your full name" required>
+                    <input type="text" name="participant_name" placeholder="Enter your full name" required>
             </div>
             <div class="input-group">
                 <label>Department</label>
-                <input type="text" name="participant_name" placeholder="Enter your Department" required>
+                <input type="text" name="department" placeholder="Enter your Department" required>
             </div>
             <div class="input-group">
                 <label>Your Class Registration Number</label>
-                <input type="text" name="participant_name" placeholder="Something like 97A55">
+                <input type="text" name="class_reg_no" placeholder="Something like 97A55">
             </div>
 
             <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
@@ -179,11 +179,11 @@
                     <label>Mobile Number (with Country Code - preferrably WhatsApp)</label>
                     <input type="tel" name="mobile" placeholder="+1 264 567 890" required>
                 </div>
+            </div>
                 <!-- <div class="input-group">
                     <label>Current Location (City/Country)</label>
                     <input type="text" name="location" placeholder="e.g. London, UK" required>
                 </div> -->
-            </div>
         </div>
 
         <div class="card">
@@ -254,7 +254,7 @@
                 <tr>
                     <td><label>Your T-Shirt Size</label></td>
                     <td>
-                        <select name="t-shirt">
+                        <select name="t_shirt_size">
                             <option value="S">Small</option>
                             <option value="M">Medium</option>
                             <option value="L">Large</option>
@@ -369,6 +369,9 @@
                     
                     // Text/Tel inputs
                     form.querySelector('[name="participant_name"]').value = existingData.participant_name;
+                    form.querySelector('[name="department"]').value = existingData.department || '';
+                    form.querySelector('[name="class_reg_no"]').value = existingData.class_reg_no || '';
+                    form.querySelector('[name="t_shirt_size"]').value = existingData.t_shirt_size || 'M';
                     form.querySelector('[name="mobile"]').value = existingData.mobile;
                     form.querySelector('[name="location"]').value = existingData.location;
                     form.querySelector('[name="teens_adults"]').value = existingData.teens_adults;

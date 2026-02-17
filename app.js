@@ -62,7 +62,7 @@ const uploadLimiter = rateLimit({
 app.use(globalLimiter);
 
 // 1. Initialize Supabase
-const supabase = createClient(process.env.SUPABASE_URL, process.env.SUPABASE_SERVICE_KEY);
+const supabase = createClient(process.env.SUPABASE_URL, process.env.SUPABASE_ANON_KEY);
 const adminSupabase = createClient(process.env.SUPABASE_URL, process.env.SUPABASE_SERVICE_KEY);
 
 // 2. Use Memory Storage (Safe for small files)
@@ -291,7 +291,7 @@ app.post('/register', async (req, res) => {
         
         console.log('register api. req body:', req.body);
         // Add this at the very top of app.post('/register')
-        const { participant_name, email, mobile } = req.body;
+        const { participant_name, email, mobile, department, class_reg_no, t_shirt_size } = req.body;
         console.log('register api. participant_name, email, mobile:', participant_name, email, mobile);
 
         
@@ -360,6 +360,9 @@ app.post('/register', async (req, res) => {
                     fri_night: req.body.fri_night,
                     sat_reunion: req.body.sat_reunion,
                     sat_night: req.body.sat_night,
+                    department,       
+                    class_reg_no,     
+                    t_shirt_size,     
                     qr_code_url: qrCodeUrl // Uses existing one if no change
                 }, { onConflict: 'user_id' })
                 .eq('user_id', user.id);
