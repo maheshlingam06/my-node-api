@@ -15,6 +15,8 @@
         .btn-submit { width: 100%; background: var(--primary); color: white; border: none; padding: 14px; border-radius: 8px; font-weight: 600; cursor: pointer; margin-top: 10px; }
         .btn-submit:hover { background: #1d4ed8; }
         .loader { display: none; text-align: center; margin-top: 10px; font-size: 14px; color: var(--primary); }
+        .copyright-panel { text-align: center; padding: 20px; font-size: 12px; color: rgba(255,255,255,0.4); margin-top: auto; }
+
     </style>
     
     <script src="https://www.google.com/recaptcha/api.js?render=__SITE_KEY__"></script>
@@ -38,6 +40,9 @@
     <button id="submitBtn" onclick="handleSignup()" class="btn-submit">Sign Up & Continue</button>
     <div id="loader" class="loader">Verifying...</div>
 </div>
+<footer class="copyright-panel">
+    &copy; 2026 LEGENDS IT Consulting & Services. All rights reserved.
+</footer>
 
 <script>
 async function handleSignup() {
