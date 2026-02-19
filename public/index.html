@@ -69,6 +69,13 @@
         .copyright-panel { text-align: center; padding: 20px; font-size: 12px; color: rgba(255,255,255,0.4); margin-top: auto; }
 
         /* --- MOBILE RESPONSIVE --- */
+        @media (min-width: 901px) and (max-width: 1080px) {
+             h1 { font-size: 1.5rem; } /* Reduced from 3rem */
+            .hero-text { width: 30%; padding: 3px;}
+            p { width: 50%; }
+        }
+
+        /* --- MOBILE RESPONSIVE --- */
         @media (max-width: 900px) {
             .navbar { flex-direction: column; padding: 20px; gap: 15px; }
             .nav-links { flex-wrap: wrap; justify-content: center; gap: 15px; }
@@ -96,7 +103,7 @@
 
             <div class="hero-container">
                 <div class="hero-text">
-                    <h1>Welcome Back, Class of 2000</h1>
+                    <h1>Welcome Back<br>Class of 2000</h1>
                     <p>Join us for a weekend of memories, celebration, and connection at the Heritage Resort. Reconnect with old friends and make new memories.</p>
                     
                     <div class="cta-group">
