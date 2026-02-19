@@ -27,9 +27,14 @@
             /* REPLACE THIS URL WITH YOUR SUPABASE PUBLIC IMAGE URL */
             background-image: url('https://pqpdxdwrgwcxvjsgdoiy.supabase.co/storage/v1/object/public/assets/JGems-TCE.jpg');
             height: 100%;
-            background-position: center;
-            background-size: cover;
+            
+            /* --- THE CHANGES --- */
+            background-position: center;   /* Keeps it dead center */
+            background-repeat: no-repeat;  /* Ensures it only appears once */
+            background-size: contain;      /* Shows the full image without cropping */
+            
             position: relative;
+            background-color: #0f172a;     /* Adds a dark slate color to fill the empty space around the image */
         }
 
         .overlay {
