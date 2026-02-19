@@ -3,7 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Class of 1997 Reunion</title>
+    <title>Class of 2000 Reunion</title>
+    
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
 
@@ -11,210 +12,77 @@
             --primary: #2563eb;
             --primary-hover: #1d4ed8;
             --white: #ffffff;
-            --overlay: rgba(15, 23, 42, 0.9); /* Darker blue-black overlay for better text pop */
+            --overlay: rgba(15, 23, 42, 0.85);
         }
 
         body, html { margin: 0; padding: 0; height: 100%; font-family: 'Inter', sans-serif; }
 
         .bg-image {
-            /* REPLACE WITH YOUR SUPABASE URL */
-            /*background-image: url('https://pqpdxdwrgwcxvjsgdoiy.supabase.co/storage/v1/object/public/assets/MCA-Alumni.jpg');*/
+            /* REPLACE THIS URL WITH YOUR SUPABASE PUBLIC IMAGE URL */
             background-image: url('https://pqpdxdwrgwcxvjsgdoiy.supabase.co/storage/v1/object/public/assets/JGems-TCE.jpg');
             height: 100%;
             background-position: center;
-            background-size:contain;
+            background-repeat: no-repeat;
+            background-size: contain;
             position: relative;
+            background-color: #0f172a;
         }
 
         .overlay {
             position: absolute; top: 0; left: 0; right: 0; bottom: 0;
             background-color: var(--overlay);
-            display: flex; flex-direction: column;
-            overflow-y: auto;
+            display: flex; flex-direction: column; overflow-y: auto;
         }
 
-        /* Navbar */
+        /* --- NAVIGATION BAR --- */
         .navbar {
             display: flex; justify-content: space-between; align-items: center;
             padding: 20px 60px; z-index: 10;
         }
         .logo { color: var(--white); font-size: 24px; font-weight: 700; text-decoration: none; }
         .nav-links { display: flex; gap: 30px; align-items: center; }
-        .nav-links a { color: var(--white); text-decoration: none; font-size: 15px; font-weight: 500; opacity: 0.9; }
+        .nav-links a { color: var(--white); text-decoration: none; font-size: 15px; font-weight: 500; opacity: 0.9; transition: all 0.2s; }
         .nav-links a:hover { opacity: 1; color: #bfdbfe; }
 
-        /* --- NEW HERO LAYOUT (Split Screen) --- */
+        /* --- HERO LAYOUT --- */
         .hero-container {
-            flex-grow: 1;
-            display: flex;
-            align-items: center; /* Vertically center everything */
-            justify-content: center;
-            padding: 0 60px;
-            width: 100%;
-            box-sizing: border-box; /* Ensures padding doesn't widen the page */
-            z-index: 999;
-    }
-
-        .hero-grid {
-            display: grid;
-            grid-template-columns: 1.2fr 0.8fr; /* Text takes slightly more space */
-            gap: 80px;
-            max-width: 1200px;
-            width: 100%;
-            align-items: center;
+            flex-grow: 1; display: flex; flex-direction: column;
+            align-items: center; justify-content: center; 
+            padding: 40px 20px; width: 100%; box-sizing: border-box; z-index: 5;
         }
 
-        /* Left Side: Text & Buttons */
-        .hero-text { text-align: left; color: var(--white); }
-        h1 { font-size: 3.5rem; margin-bottom: 20px; font-weight: 800; line-height: 1.1; }
-        p { font-size: 1.2rem; line-height: 1.6; color: #e2e8f0; margin-bottom: 30px; max-width: 500px; }
-
-        /* New CTA Buttons Group */
-        .cta-group { display: flex; gap: 15px; }
+        .hero-text { text-align: center; color: var(--white); display: flex; flex-direction: column; align-items: center; }
+        h1 { font-size: 4.5rem; margin-bottom: 20px; font-weight: 800; line-height: 1.1; letter-spacing: -1px; }
+        p { font-size: 1.25rem; line-height: 1.6; color: #e2e8f0; margin-bottom: 50px; max-width: 650px; }
         
-        .btn-hero {
-            padding: 14px 32px;
-            border-radius: 50px;
-            font-weight: 600;
-            text-decoration: none;
-            transition: all 0.2s;
-        }
-
-        .btn-primary {
-            background-color: var(--primary);
-            color: white;
-            box-shadow: 0 4px 15px rgba(37, 99, 235, 0.4);
-        }
+        .cta-group { display: flex; gap: 20px; justify-content: center; }
+        .btn-hero { padding: 14px 32px; border-radius: 50px; font-weight: 600; text-decoration: none; transition: all 0.2s; font-size: 16px; }
+        .btn-primary { background-color: var(--primary); color: white; box-shadow: 0 4px 15px rgba(37, 99, 235, 0.4); }
         .btn-primary:hover { background-color: var(--primary-hover); transform: translateY(-2px); }
+        .btn-outline { border: 2px solid rgba(255,255,255,0.3); color: white; }
+        .btn-outline:hover { border-color: white; background: rgba(255,255,255,0.1); transform: translateY(-2px); }
 
-        .btn-outline {
-            border: 2px solid rgba(255,255,255,0.3);
-            color: white;
-        }
-        .btn-outline:hover { border-color: white; background: rgba(255,255,255,0.1); }
+        .copyright-panel { text-align: center; padding: 20px; font-size: 12px; color: rgba(255,255,255,0.4); margin-top: auto; }
 
-
-        /* --- RIGHT SIDE: GLASS CAROUSEL --- */
-        .program-card {
-            background: rgba(255, 255, 255, 0.1); /* Glass effect */
-            backdrop-filter: blur(12px);
-            -webkit-backdrop-filter: blur(12px);
-            border: 1px solid rgba(255, 255, 255, 0.2);
-            padding: 30px;
-            border-radius: 16px;
-            color: white;
-            min-height: 200px;
-            position: relative;
-        }
-
-        .program-card h3 { margin-top: 0; color: #bfdbfe; font-size: 1.2rem; margin-bottom: 20px; border-bottom: 1px solid rgba(255,255,255,0.2); padding-bottom: 10px; }
-
-        .carousel-slide { display: none; animation: fade 1s; }
-        .carousel-slide p { font-size: 0.95rem; margin-bottom: 8px; color: #f1f5f9; }
-        
-        .date-badge {
-            background: rgba(37, 99, 235, 0.3);
-            color: #93c5fd;
-            padding: 4px 10px;
-            border-radius: 4px;
-            font-size: 12px;
-            font-weight: 700;
-            display: inline-block;
-            margin-bottom: 12px;
-            border: 1px solid rgba(147, 197, 253, 0.3);
-        }
-
-        /* Dots */
-        .carousel-dots { margin-top: 20px; text-align: center; }
-        .dot {
-            height: 8px; width: 8px; margin: 0 4px;
-            background-color: rgba(255,255,255,0.3);
-            border-radius: 50%; display: inline-block; cursor: pointer;
-        }
-        .active-dot { background-color: var(--primary); transform: scale(1.2); }
-
-        @keyframes fade { from {opacity: 0} to {opacity: 1} }
-
-        /* Footer */
-        .copyright-panel {
-            text-align: center; padding: 15px; font-size: 12px;
-            color: rgba(255,255,255,0.4); margin-top: auto;
-        }
-
-        /* Mobile Responsive */
         @media (max-width: 900px) {
-            .navbar { flex-direction: column; padding: 20px; }
-            .hero-grid { grid-template-columns: 1fr; gap: 40px; text-align: center; }
-            .hero-text { align-items: center; display: flex; flex-direction: column; }
-            .cta-group { justify-content: center; }
-            .program-card { margin: 0 20px; }
-        }
-
-        /* Tab Header Styling */
-        .tab-header {
-            display: flex;
-            border-bottom: 1px solid #e2e8f0;
-            margin-bottom: 15px;
-        }
-
-        .tab-btn {
-            background: none;
-            border: none;
-            padding: 10px 15px;
-            cursor: pointer;
-            font-weight: 600;
-            color: #64748b;
-            border-bottom: 2px solid transparent;
-            transition: all 0.3s;
-            font-size: 14px;
-            flex: 1; /* Equal width */
-        }
-
-        .tab-btn:hover { color: #2563eb; background-color: #f1f5f9; }
-
-        .tab-btn.active {
-            color: #2563eb;
-            border-bottom: 2px solid #2563eb;
-        }
-
-        /* Notes List Styling - FIXED FOR DARK BACKGROUND */
-        .notes-list {
-            list-style: none;
-            padding: 0;
-            margin: 0;
-            font-size: 13px;
-            line-height: 1.6; /* Increased line-height slightly for readability */
-            color: #f1f5f9; /* CHANGED: Bright white-gray for contrast */
-            text-align: left;
-        }
-
-        .notes-list li {
-            margin-bottom: 12px;
-            padding-left: 20px;
-            position: relative;
-        }
-
-        /* Custom Bullet Point Style */
-        .notes-list li::before {
-            content: "•";
-            color: #93c5fd; /* CHANGED: Lighter blue to pop on dark bg */
-            font-weight: bold;
-            font-size: 16px; /* Slightly larger bullet */
-            position: absolute;
-            left: 0;
-            top: -2px; /* Adjust vertical alignment */
+            .navbar { flex-direction: column; padding: 20px; gap: 15px; }
+            .nav-links { flex-wrap: wrap; justify-content: center; gap: 15px; }
+            h1 { font-size: 3rem; }
+            .cta-group { flex-direction: column; width: 100%; max-width: 300px; }
+            .btn-hero { width: 100%; box-sizing: border-box; text-align: center; }
         }
     </style>
 </head>
 <body>
+
     <div class="bg-image">
         <div class="overlay">
             
             <nav class="navbar">
-                <a href="#" class="logo">Reunion 2026</a>
+                <a href="/" class="logo">Reunion 2026</a>
                 <div class="nav-links">
                     <a href="login.html">Sign-in</a>
-                    <a href="#">Program</a>
+                    <a href="schedule.html">Program</a> 
                     <a href="#">Blog</a>
                     <a href="#">Endowment Fund</a>
                     <a href="#">Contact Us</a>
@@ -222,59 +90,14 @@
             </nav>
 
             <div class="hero-container">
-                <div class="hero-grid">
+                <div class="hero-text">
+                    <h1>Welcome Back,<br>Class of 2000</h1>
+                    <p>Join us for a weekend of memories, celebration, and connection at the Heritage Resort. Reconnect with old friends and make new memories.</p>
                     
-                    <div class="hero-text">
-                        <h1>Welcome Back,<br>Class of 1997</h1>
-                        <p>Join us for a weekend of memories, celebration, and connection at the Heritage Resort. Reconnect with old friends and make new memories.</p>
-                        
-                        <div class="cta-group">
-                            <a href="signup.html" class="btn-hero btn-primary">Register Now</a>
-                            <a href="login.html" class="btn-hero btn-outline">Sign In</a>
-                        </div>
+                    <div class="cta-group">
+                        <a href="signup.html" class="btn-hero btn-primary">Register Now</a>
+                        <a href="login.html" class="btn-hero btn-outline">Sign In</a>
                     </div>
-
-                    <div class="card program-card">
-                        <div class="tab-header">
-                            <button class="tab-btn active" onclick="openTab(event, 'schedule-tab')">📅 Schedule</button>
-                            <button class="tab-btn" onclick="openTab(event, 'notes-tab')">ℹ️ Notes</button>
-                        </div>
-
-                        <div id="schedule-tab" class="tab-content" style="display: block;">
-                            <div class="carousel-container">
-                                <div class="carousel-slide fade" style="display: block;">
-                                    <div class="date-badge">Thu, July 23</div>
-                                    <p>Arrive early and stay at Heritage resort (optional).</p>
-                                </div>
-                                <div class="carousel-slide fade">
-                                    <div class="date-badge">Fri, July 24</div>
-                                    <p><strong>9:00 AM:</strong> Arrive at College. Events until 5pm.</p>
-                                    <p><strong>Evening:</strong> Leave for Resort. Culturals & Dinner.</p>
-                                </div>
-                                <div class="carousel-slide fade">
-                                    <div class="date-badge">Sat, July 25</div>
-                                    <p><strong>Morning:</strong> Relax at Resort.</p>
-                                    <p><strong>11:30 AM:</strong> Lunch, get-togethers & sports.</p>
-                                </div>
-                                
-                                <div class="carousel-dots">
-                                    <span class="dot" onclick="currentSlide(1)"></span> 
-                                    <span class="dot" onclick="currentSlide(2)"></span> 
-                                    <span class="dot" onclick="currentSlide(3)"></span> 
-                                </div>
-                            </div>
-                        </div>
-
-                        <div id="notes-tab" class="tab-content" style="display: none;">
-                            <ul class="notes-list">
-                                <li><strong>Fri Night Stay:</strong> If not staying, you can still join Sat morning (breakfast not covered).</li>
-                                <li><strong>Dinner:</strong> Not covered on Thursday & Saturday nights.</li>
-                                <li><strong>Transport (Fri AM):</strong> Bus provided from Resort to College if staying Thu night.</li>
-                                <li><strong>Transport (Fri PM):</strong> Bus provided from College to Resort for evening culturals.</li>
-                            </ul>
-                        </div>
-                    </div>
-
                 </div>
             </div>
 
@@ -284,46 +107,5 @@
 
         </div>
     </div>
-
-    <script>
-        let slideIndex = 0;
-        showSlides();
-
-        function showSlides() {
-            let i;
-            let slides = document.getElementsByClassName("carousel-slide");
-            let dots = document.getElementsByClassName("dot");
-            for (i = 0; i < slides.length; i++) {
-                slides[i].style.display = "none";  
-            }
-            slideIndex++;
-            if (slideIndex > slides.length) {slideIndex = 1}    
-            for (i = 0; i < dots.length; i++) {
-                dots[i].className = dots[i].className.replace(" active-dot", "");
-            }
-            slides[slideIndex-1].style.display = "block";  
-            dots[slideIndex-1].className += " active-dot";
-            setTimeout(showSlides, 4000); // Change image every 4 seconds
-        }
-
-        function openTab(evt, tabName) {
-            // 1. Hide all tab contents
-            var i, tabcontent, tablinks;
-            tabcontent = document.getElementsByClassName("tab-content");
-            for (i = 0; i < tabcontent.length; i++) {
-                tabcontent[i].style.display = "none";
-            }
-
-            // 2. Remove "active" class from all buttons
-            tablinks = document.getElementsByClassName("tab-btn");
-            for (i = 0; i < tablinks.length; i++) {
-                tablinks[i].className = tablinks[i].className.replace(" active", "");
-            }
-
-            // 3. Show the specific tab and activate the button
-            document.getElementById(tabName).style.display = "block";
-            evt.currentTarget.className += " active";
-        }
-    </script>
 </body>
 </html>
