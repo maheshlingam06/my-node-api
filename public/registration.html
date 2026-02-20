@@ -594,9 +594,11 @@
                     form.querySelector('[name="fri_night"]').value = existingData.fri_night;
                     form.querySelector('[name="sat_reunion"]').value = existingData.sat_reunion;
                     form.querySelector('[name="sat_night"]').value = existingData.sat_night;
-
+                    calculateTotal();
+                    
                     // Update the button text if they are editing
                     document.querySelector('.btn-submit').innerText = "Update Registration";
+
                 }
             } catch (err) {
                 console.error("Error fetching saved data:", err);
@@ -722,7 +724,7 @@ document.addEventListener('DOMContentLoaded', () => {
         if (el && el.tagName === 'INPUT') el.addEventListener('input', calculateTotal);
     });
 
-    setTimeout(calculateTotal, 1000); 
+    //setTimeout(calculateTotal, 1000); 
 });
 
 let slideIndex = 0;
