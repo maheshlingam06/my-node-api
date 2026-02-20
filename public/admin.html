@@ -229,6 +229,43 @@
         // Run on Page Load
         window.onload = () => fetchData(); 
     </script>
+    <script>
+        // --- INACTIVITY AUTO-LOGOUT ---
+        let idleTime = 0;
+        const timeoutLimit = 15; // Set timeout limit in minutes
 
+        // Increment the idle time counter every minute
+        const idleInterval = setInterval(timerIncrement, 60000); // 1 minute = 60000 ms
+
+        // Reset the timer whenever the user interacts with the page
+        document.addEventListener('mousemove', resetTimer);
+        document.addEventListener('keypress', resetTimer);
+        document.addEventListener('click', resetTimer);
+        document.addEventListener('scroll', resetTimer);
+
+        function handleLogout(){
+           /* window.location.href = "login.html"; */
+            localStorage.removeItem('supabaseToken');
+            //localStorage.removeItem('adminData'); // Clear admin cache too if it exists
+
+            // 2. Replace the current history entry
+            // This removes the current page from the "Back" stack
+            window.location.replace('login.html');
+        }
+        
+        function timerIncrement() {
+            idleTime++;
+            if (idleTime >= timeoutLimit) {
+                // User has been idle for 15 minutes
+                clearInterval(idleInterval);
+                alert("Your session has expired due to inactivity. Please log in again.");
+                handleLogout(); // Calls your existing logout function
+            }
+        }
+
+        function resetTimer() {
+            idleTime = 0; // Reset counter on any interaction
+        }
+    </script>
 </body>
 </html>
