@@ -59,13 +59,13 @@
                     <th>Name</th>
                     <th>Mobile</th>
                     <th>Email</th>
-                    <th>Location</th>
-                    <th>Adults</th>
-                    <th>Kids</th>
-                    <th>Fri Stay</th>
-                    <th>Fri Event</th>
-                    <th>Sat Event</th>
-                    <th>Est. Cost</th>
+                    <th>Department</th>
+                    <th>Adults (>10y)</th>
+                    <th>Kids (6-10y)</th>
+                    <th>Fri Night Stay</th>
+                    <th>Fri Reunion</th>
+                    <th>Sat Reunion</th>
+                    <th>Total Cost</th>
                 </tr>
             </thead>
             <tbody id="tableBody">
@@ -78,25 +78,47 @@
 
     <script>
         // 1. Calculate Cost Helper (Same logic as registration page)
+        // 1. Updated Cost Calculation
         function calculateRowCost(row) {
-            let total = 0;
-            const adults = row.teens_adults || 0;
-            const kids = row.kids || 0;
-            
-            // Logic: 1st Adult is Alumni
-            const alumniCount = adults > 0 ? 1 : 0;
-            const extraAdults = adults > 1 ? adults - 1 : 0;
+            const adults = parseInt(row.teens_adults) || 0;
+            // Fallback to row.kids just in case older test data hasn't been migrated
+            const kids6to10 = parseInt(row.kids_6_10) || parseInt(row.kids) || 0; 
 
-            // Fri Stay
-            if (row.fri_night === 'yes_family') total += (alumniCount * 5000) + (extraAdults * 5000) + (kids * 2500);
-            // Fri Event
-            if (row.fri_reunion === 'yes') total += (alumniCount * 7000) + (extraAdults * 3000) + (kids * 2000);
-            // Sat Event
-            if (row.sat_reunion === 'yes_family') total += (alumniCount * 1500) + (extraAdults * 1500) + (kids * 750);
+            const alumniCount = adults > 0 ? 1 : 0;
+            const secondMemCount = adults > 1 ? 1 : 0;
+            const thirdMemPlusCount = adults > 2 ? adults - 2 : 0;
+
+            let total = 0;
+
+            function addStayCost(selection) {
+                if (selection === 'yes_single') {
+                    total += (alumniCount * 5650);
+                } else if (selection === 'yes_family') {
+                    total += (alumniCount * 5650) + (secondMemCount * 5500) + (thirdMemPlusCount * 2500) + (kids6to10 * 2000);
+                }
+            }
+
+            // Apply Resort Stay Costs
+            addStayCost(row.thu_night);
+            addStayCost(row.fri_night);
+            addStayCost(row.sat_night);
+
+            // Friday Event & Dinner
+            if (row.fri_reunion === 'yes') {
+                total += (alumniCount * 7000) + (secondMemCount * 1700) + (thirdMemPlusCount * 1700) + (kids6to10 * 850);
+            }
+
+            // Saturday Event & Lunch
+            if (row.sat_reunion === 'yes_single') {
+                total += (alumniCount * 1400);
+            } else if (row.sat_reunion === 'yes_family') {
+                total += (alumniCount * 1400) + (secondMemCount * 1100) + (thirdMemPlusCount * 1100) + (kids6to10 * 550);
+            }
 
             return total;
         }
 
+        // 2. Render Function
         // 2. Render Function
         function renderTable(data) {
             const tbody = document.getElementById('tableBody');
@@ -110,16 +132,23 @@
             data.forEach(row => {
                 const cost = calculateRowCost(row);
                 const tr = document.createElement('tr');
+                
+                // Use kids_6_10, but fallback to kids for old data
+                const displayKids = row.kids_6_10 !== undefined ? row.kids_6_10 : (row.kids || 0);
+                
+                // Show department, fallback to location if older data
+                const displayDept = row.department || row.location || '-';
+
                 tr.innerHTML = `
                     <td style="font-weight:500">${row.participant_name || '-'}</td>
                     <td>${row.mobile || '-'}</td>
                     <td>${row.email || '-'}</td>
-                    <td>${row.location || '-'}</td>
-                    <td>${row.teens_adults}</td>
-                    <td>${row.kids}</td>
-                    <td>${row.fri_night === 'yes_family' ? '<span class="badge badge-green">Yes</span>' : '-'}</td>
+                    <td>${displayDept}</td>
+                    <td>${row.teens_adults || 0}</td>
+                    <td>${displayKids}</td>
+                    <td>${row.fri_night === 'yes_family' || row.fri_night === 'yes_single' ? '<span class="badge badge-green">Yes</span>' : '-'}</td>
                     <td>${row.fri_reunion === 'yes' ? '<span class="badge badge-blue">Yes</span>' : '-'}</td>
-                    <td>${row.sat_reunion === 'yes_family' ? '<span class="badge badge-blue">Yes</span>' : '-'}</td>
+                    <td>${row.sat_reunion === 'yes_family' || row.sat_reunion === 'yes_single' ? '<span class="badge badge-blue">Yes</span>' : '-'}</td>
                     <td style="font-weight:bold">₹${cost.toLocaleString('en-IN')}</td>
                 `;
                 tbody.appendChild(tr);
