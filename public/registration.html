@@ -60,7 +60,8 @@
         h2 { margin-top: 0; font-size: 1.3rem; color: var(--primary); border-bottom: 1px solid var(--border); padding-bottom: 10px; margin-bottom: 20px; }
         h3 { margin-top: 0; font-size: 1.1rem; }
 
-        .copyright-panel { text-align: center; padding: 20px; font-size: 12px; color: rgba(255,255,255,0.4); margin-top: auto; }
+        .copyright-panel { text-align: center; padding: 20px; font-size: 12px; color: rgba(0,0,0,0.6); margin-top: auto; position: fixed; bottom: 10px;}
+
 
         .input-group { margin-bottom: 15px; }
         label { display: block; font-weight: 600; font-size: 14px; margin-bottom: 6px; }
@@ -358,12 +359,16 @@
                     </b>    
                 </tr>
                 <tr>
-                    <td><label>Total Persons (Age: 13 and above including you)</label></td>
+                    <td><label>Total Persons (>10 yrs old, including you)</label></td>
                     <td style="width: 145px;"><input type="number" name="teens_adults" value="0" min="0" required></td>
                 </tr>
                 <tr>
-                    <td><label>Total Persons (Age 12 and below)</label></td>
-                    <td><input type="number" name="kids" value="0" min="0"></td>
+                    <td><label>Total Persons (6 - 10 yrs old)</label></td>
+                    <td><input type="number" name="kids_6_10" value="0" min="0"></td>
+                </tr>
+                <tr>
+                    <td><label>Total Persons (<6 yrs old)</label></td>
+                    <td><input type="number" name="kids_under_6" value="0" min="0"></td>
                 </tr>
                 <tr>
                     <td><label>Staying at Heritage resort on (Thu, Jul 23) night?</label></td>
@@ -464,43 +469,42 @@
                     <tr>
                         <th>Tariff</th>
                         <th>Alumni</th>
-                        <th>Extra Adult</th>
-                        <th>Extra Kid</th>
+                        <th>2nd Mem (>10y)</th>
+                        <th>3rd+ Mem (>10y)</th>
+                        <th>Kid (6-10y)</th>
                     </tr>
                 </thead>
                 <tbody>
                     <tr>
-                        <td>Friday Night Stay</td>
-                        <td>5000</td>
-                        <td>5000</td>
+                        <td>1 Night Stay (Heritage Resort)</td>
+                        <td>5650</td>
+                        <td>5500</td>
                         <td>2500</td>
-                    </tr>
-                    <tr>
-                        <td>Thu/Sat Night Stay</td>
-                        <td>-</td>
-                        <td>-</td>
-                        <td>-</td>
-                    </tr>
-                    <tr>
-                        <td>Friday Event & Dinner</td>
-                        <td>7000</td>
-                        <td>3000</td>
                         <td>2000</td>
                     </tr>
                     <tr>
-                        <td>Saturday Event & Lunch</td>
-                        <td>1500</td>
-                        <td>1500</td>
-                        <td>750</td>
+                        <td>Fri Reunion (College + Dinner)</td>
+                        <td>7000</td>
+                        <td>1700</td>
+                        <td>1700</td>
+                        <td>850</td>
+                    </tr>
+                    <tr>
+                        <td>Sat Reunion (College Lunch)</td>
+                        <td>1400</td>
+                        <td>1100</td>
+                        <td>1100</td>
+                        <td>550</td>
                     </tr>
                 </tbody>
                 <tfoot>
                     <tr style="background-color: #fef3c7; font-weight: bold;">
-                        <td colspan="3" style="text-align: right;">Total Estimated Cost:</td>
+                        <td colspan="4" style="text-align: right;">Total Estimated Cost:</td>
                         <td id="total-cost-display">0</td>
                     </tr>
                 </tfoot>
             </table>
+            <p style="font-size: 10px; color: #64748b; margin-top: 5px; text-align: center;">* Kids under 6 are free of charge.</p>
         </div>
         <div class="card program-card">
             <div class="tab-header">
@@ -580,7 +584,9 @@
                     form.querySelector('[name="mobile"]').value = existingData.mobile;
                     //form.querySelector('[name="location"]').value = existingData.location;
                     form.querySelector('[name="teens_adults"]').value = existingData.teens_adults;
-                    form.querySelector('[name="kids"]').value = existingData.kids;
+                    //form.querySelector('[name="kids"]').value = existingData.kids;
+                    form.querySelector('[name="kids_6_10"]').value = existingData.kids_6_10 || 0;
+                    form.querySelector('[name="kids_under_6"]').value = existingData.kids_under_6 || 0;
                     
                     // Select dropdowns
                     form.querySelector('[name="thu_night"]').value = existingData.thu_night;
@@ -652,15 +658,17 @@ document.querySelector('form').addEventListener('submit', async function(e) {
 function calculateTotal() {
     const form = document.getElementById('checkout-container');
     
-    // Get Counts
+    // 1. Get Counts from inputs
     const adults = parseInt(form.querySelector('[name="teens_adults"]').value) || 0;
-    const kids = parseInt(form.querySelector('[name="kids"]').value) || 0;
-    
-    // Handle Alumni logic: If adults > 0, the first adult is the Alumni
-    const alumniCount = adults > 0 ? 1 : 0;
-    const extraAdults = adults > 1 ? adults - 1 : 0;
+    const kids6to10 = parseInt(form.querySelector('[name="kids_6_10"]').value) || 0;
+    // Kids under 6 are free, so we don't need to include them in the math
 
-    // Get Selections
+    // 2. Break down Adult (>10) categories based on new tariff rules
+    const alumniCount = adults > 0 ? 1 : 0;
+    const secondMemCount = adults > 1 ? 1 : 0;
+    const thirdMemPlusCount = adults > 2 ? adults - 2 : 0;
+
+    // 3. Get User Selections
     const thuNight = form.querySelector('[name="thu_night"]').value;
     const friReunion = form.querySelector('[name="fri_reunion"]').value;
     const friNight = form.querySelector('[name="fri_night"]').value;
@@ -669,32 +677,43 @@ function calculateTotal() {
 
     let total = 0;
 
-    // 1. Friday Night Stay (5000 Alumni/Adult, 2500 Kid)
-    if (friNight === 'yes_family') {
-        total += (alumniCount * 5000) + (extraAdults * 5000) + (kids * 2500);
+    // Helper function to calculate Resort Stay Costs per night
+    function addStayCost(selection) {
+        if (selection === 'yes_single') {
+            total += (alumniCount * 5650);
+        } else if (selection === 'yes_family') {
+            total += (alumniCount * 5650) + (secondMemCount * 5500) + (thirdMemPlusCount * 2500) + (kids6to10 * 2000);
+        }
     }
 
-    // 2. Friday Event & Dinner (7000 Alumni, 3000 Adult, 2000 Kid)
+    // Apply Resort Stay Costs (Calculates for each night they select)
+    addStayCost(thuNight);
+    addStayCost(friNight);
+    addStayCost(satNight);
+
+    // Friday Event & Dinner
     if (friReunion === 'yes') {
-        total += (alumniCount * 7000) + (extraAdults * 3000) + (kids * 2000);
+        // Assuming 'yes' means the registered family joins
+        total += (alumniCount * 7000) + (secondMemCount * 1700) + (thirdMemPlusCount * 1700) + (kids6to10 * 850);
     }
 
-    // 3. Saturday Event & Lunch (1500 Alumni/Adult, 750 Kid)
-    if (satReunion === 'yes_family') {
-        total += (alumniCount * 1500) + (extraAdults * 1500) + (kids * 750);
+    // Saturday Event & Lunch
+    if (satReunion === 'yes_single') {
+        total += (alumniCount * 1400);
+    } else if (satReunion === 'yes_family') {
+        total += (alumniCount * 1400) + (secondMemCount * 1100) + (thirdMemPlusCount * 1100) + (kids6to10 * 550);
     }
-
-    // Note: Thu/Sat night stay left at 0 as per the dash in the tariff sheet
     
     // Update Display
     document.getElementById('total-cost-display').innerText = total.toLocaleString('en-IN');
 }
 
-// Attach listeners to all relevant inputs
+// Attach listeners to trigger recalculation automatically
 document.addEventListener('DOMContentLoaded', () => {
+    // Note: Updated the input array to look for the new kid fields
     const inputs = [
-        'teens_adults', 'kids', 'thu_night', 
-        'fri_reunion', 'fri_night', 'sat_reunion', 'sat_night'
+        'teens_adults', 'kids_6_10', 'kids_under_6', 
+        'thu_night', 'fri_reunion', 'fri_night', 'sat_reunion', 'sat_night'
     ];
     
     inputs.forEach(name => {
@@ -703,7 +722,6 @@ document.addEventListener('DOMContentLoaded', () => {
         if (el && el.tagName === 'INPUT') el.addEventListener('input', calculateTotal);
     });
 
-    // Run once on load to catch pre-filled data
     setTimeout(calculateTotal, 1000); 
 });
 
