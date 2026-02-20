@@ -391,12 +391,16 @@ app.post('/register', async (req, res) => {
                 mobile: req.body.mobile,
                 location: req.body.location,
                 teens_adults: parseInt(req.body.teens_adults) || 0,
-                kids: parseInt(req.body.kids) || 0,
+                kids_6_10: parseInt(req.body.kids_6_10) || 0,
+                kids_under_6: parseInt(req.body.kids_under_6) || 0,
                 thu_night: req.body.thu_night,
                 fri_reunion: req.body.fri_reunion,
                 fri_night: req.body.fri_night,
                 sat_reunion: req.body.sat_reunion,
                 sat_night: req.body.sat_night,
+                department,       
+                class_reg_no,     
+                t_shirt_size,     
                 qr_code_url: qrCodeUrl // Uses existing one if no change
             }, { onConflict: 'user_id' });
             if (dbError) throw dbError;
