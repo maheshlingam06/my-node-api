@@ -232,10 +232,10 @@
     <script>
         // --- INACTIVITY AUTO-LOGOUT ---
         let idleTime = 0;
-        const timeoutLimit = 15; // Set timeout limit in minutes
+        const timeoutLimit = 2; // Set timeout limit in minutes
 
         // Increment the idle time counter every minute
-        const idleInterval = setInterval(timerIncrement, 60000); // 1 minute = 60000 ms
+        const idleInterval = setInterval(timerIncrement, 10000); // 1 minute = 60000 ms
 
         // Reset the timer whenever the user interacts with the page
         document.addEventListener('mousemove', resetTimer);
@@ -252,7 +252,7 @@
             // This removes the current page from the "Back" stack
             window.location.replace('login.html');
         }
-        
+
         function timerIncrement() {
             idleTime++;
             if (idleTime >= timeoutLimit) {
