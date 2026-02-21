@@ -68,9 +68,12 @@
                     <th>Department</th>
                     <th>Adults (>10y)</th>
                     <th>Kids (6-10y)</th>
+                    <th>Kids (<6y)</th>
+                    <th>Thu Night Stay</th>
+                    <th>Fri Reunion (College-Family attending?)</th>
                     <th>Fri Night Stay</th>
-                    <th>Fri Reunion</th>
-                    <th>Sat Reunion</th>
+                    <th>Sat Reunion (College)</th>
+                    <th>Sat Night Stay</th>
                     <th>Total Cost</th>
                 </tr>
             </thead>
@@ -141,6 +144,7 @@
                 
                 // Use kids_6_10, but fallback to kids for old data
                 const displayKids = row.kids_6_10 !== undefined ? row.kids_6_10 : (row.kids || 0);
+                const displayBabies = row.kids_under_6 !== undefined ? row.kids_under_6 : 0;
                 
                 // Show department, fallback to location if older data
                 const displayDept = row.department || row.location || '-';
@@ -152,9 +156,12 @@
                     <td>${displayDept}</td>
                     <td>${row.teens_adults || 0}</td>
                     <td>${displayKids}</td>
-                    <td>${row.fri_night === 'yes_family' || row.fri_night === 'yes_single' ? '<span class="badge badge-green">Yes</span>' : '-'}</td>
+                    <td>${displayBabies}</td>
+                    <td>${row.thu_night === 'yes_family' || row.thu_night === 'yes_single' ? '<span class="badge badge-green">row.thu_night</span>' : '-'}</td>
                     <td>${row.fri_reunion === 'yes' ? '<span class="badge badge-blue">Yes</span>' : '-'}</td>
-                    <td>${row.sat_reunion === 'yes_family' || row.sat_reunion === 'yes_single' ? '<span class="badge badge-blue">Yes</span>' : '-'}</td>
+                    <td>${row.fri_night === 'yes_family' || row.fri_night === 'yes_single' ? '<span class="badge badge-green">row.fri_night</span>' : '-'}</td>
+                    <td>${row.sat_reunion === 'yes_family' || row.sat_reunion === 'yes_single' ? '<span class="badge badge-blue">row.sat_reunion</span>' : '-'}</td>
+                    <td>${row.sat_night === 'yes_family' || row.sat_night === 'yes_single' ? '<span class="badge badge-blue">row.sat_night</span>' : '-'}</td>
                     <td style="font-weight:bold">₹${cost.toLocaleString('en-IN')}</td>
                 `;
                 tbody.appendChild(tr);
