@@ -495,9 +495,14 @@ app.post('/login', async (req, res) => {
         });
 
         if (error) throw error;
+
+        var isAdminUser = false;
+        if (ADMIN_EMAILS.includes(email)){
+            isAdminUser = true;
+        }
         
         // Return the user session
-        res.status(200).json({ message: "Login successful", session: data.session });
+        res.status(200).json({ message: "Login successful", session: data.session, userType: isAdminUser ? 'x' : '' });
     } catch (err) {
         res.status(401).json({ error: err.message });
     }

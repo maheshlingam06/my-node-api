@@ -273,9 +273,11 @@
                 return;
             }
 
+            const userType = localStorage.getItem('userType');
+
             // Check Cache first
             const cached = localStorage.getItem('adminData');
-            if (cached && !forceRefresh) {
+            if (cached && !forceRefresh && userType == 'x') {
                 console.log("Loading from LocalStorage...");
                 renderTable(JSON.parse(cached));
                 return;

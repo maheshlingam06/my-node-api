@@ -73,6 +73,7 @@ async function handleLogin() {
         if (response.ok) {
             // Store the token so the user stays logged in
             localStorage.setItem('supabaseToken', result.session.access_token);
+            localStorage.setItem('userType', result.userType);
             
             // Redirect to the registration form (Step 2)
             window.location.href = `registration.html?email=${encodeURIComponent(email)}`;
