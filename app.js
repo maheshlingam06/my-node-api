@@ -13,6 +13,9 @@ const dns = require('dns');
 const Brevo = require('@getbrevo/brevo');
 // 1. Initialize the Brevo Transactional Emails API
 const apiInstance = new Brevo.TransactionalEmailsApi();
+// --- ADMIN CONFIGURATION ---
+// Add the emails of anyone who should have access to the dashboard
+const ADMIN_EMAILS = ['d.mahesh.0510@gmail.com', 'another.admin@example.com'];
 
 // 2. Set your API Key
 // let defaultClient = Brevo.ApiClient.instance;
@@ -571,6 +574,44 @@ app.get('/api/admin/all-registrations', trackActivity('ADMIN_GETALL_REGISTRATION
     } catch (err) {
         console.error("Admin Fetch Error:", err);
         res.status(500).json({ error: err.message });
+    }
+});
+
+// --- FETCH AUDIT LOGS ROUTE (SECURED) ---
+app.get('/api/logs', trackActivity('ADMIN_GET_AUDITLOGS'), async (req, res) => {
+    const authHeader = req.headers.authorization;
+    if (!authHeader) return res.status(401).json({ error: 'Missing token' });
+    
+    const token = authHeader.split(' ')[1];
+
+    try {
+        // 1. Same logic used in /get-registration to verify the user
+        const { data: { user }, error: authError } = await supabase.auth.getUser(token);
+        
+        if (authError || !user) {
+            return res.status(401).json({ error: 'Unauthorized' });
+        }
+
+        // 2. NEW: Verify if the user is an Admin
+        if (!ADMIN_EMAILS.includes(user.email)) {
+            console.warn(`Unauthorized admin access attempt by: ${user.email}`);
+            return res.status(403).json({ error: 'Forbidden: Admin privileges required.' });
+        }
+
+        // 3. Fetch the logs (Only runs if they passed the admin check)
+        const { data, error } = await supabase
+            .from('user_logs')
+            .select('*')
+            .order('created_at', { ascending: false })
+            .limit(100);
+
+        if (error) throw error;
+
+        res.json(data);
+
+    } catch (error) {
+        console.error("Error fetching logs:", error);
+        res.status(500).json({ error: "Failed to fetch audit logs" });
     }
 });
 

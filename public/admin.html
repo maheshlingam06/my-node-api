@@ -81,6 +81,29 @@
                 </tbody>
         </table>
     </div>
+    <div class="card" style="margin-top: 40px; background: rgba(15, 23, 42, 0.65); backdrop-filter: blur(12px); border: 1px solid rgba(255, 255, 255, 0.1); padding: 30px; border-radius: 16px;">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+            <h2 style="color: white; margin: 0; font-size: 1.5rem;">System Audit Logs</h2>
+            <button onclick="fetchLogs()" style="background-color: transparent; border: 1px solid #3b82f6; color: #3b82f6; padding: 6px 12px; border-radius: 6px; cursor: pointer; transition: all 0.2s;">
+                ↻ Refresh Logs
+            </button>
+        </div>
+
+        <div style="overflow-x: auto;">
+            <table style="width: 100%; text-align: left; border-collapse: collapse; color: #f1f5f9; font-size: 14px;">
+                <thead>
+                    <tr style="border-bottom: 1px solid rgba(255,255,255,0.2); color: #94a3b8;">
+                        <th style="padding: 12px;">Timestamp</th>
+                        <th style="padding: 12px;">Email</th>
+                        <th style="padding: 12px;">Action</th>
+                    </tr>
+                </thead>
+                <tbody id="logsTableBody">
+                    <tr><td colspan="3" style="text-align: center; padding: 20px;">Loading logs...</td></tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
     <footer class="copyright-panel">
         &copy; 2026 LEGENDS IT Consulting & Services. All rights reserved.
     </footer>
@@ -291,7 +314,7 @@
         }
 
         // Run on Page Load
-        window.onload = () => fetchData(); 
+        window.onload = () => {fetchData(); fetchLogs();}
     </script>
     <script>
         // --- INACTIVITY AUTO-LOGOUT ---
@@ -330,6 +353,65 @@
         function resetTimer() {
             idleTime = 0; // Reset counter on any interaction
         }
+
+        // --- AUDIT LOGS LOGIC ---
+        async function fetchLogs() {
+            const token = localStorage.getItem('supabaseToken');
+            if (!token) return;
+
+            try {
+                const response = await fetch('/api/logs', {
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+                
+                const data = await response.json();
+                renderLogsTable(data);
+            } catch (error) {
+                console.error('Error fetching logs:', error);
+                document.getElementById('logsTableBody').innerHTML = '<tr><td colspan="3" style="text-align:center; color:#ef4444;">Failed to load logs.</td></tr>';
+            }
+        }
+
+        function renderLogsTable(logs) {
+            const tbody = document.getElementById('logsTableBody');
+            tbody.innerHTML = '';
+
+            if (!logs || logs.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="3" style="text-align:center; padding: 20px;">No recent activity found.</td></tr>';
+                return;
+            }
+
+            logs.forEach(log => {
+                const tr = document.createElement('tr');
+                tr.style.borderBottom = "1px solid rgba(255,255,255,0.05)";
+                
+                // Format the date to be easily readable (e.g., "Feb 24, 2026, 02:30 PM")
+                const dateObj = new Date(log.created_at);
+                const formattedDate = dateObj.toLocaleString('en-US', { 
+                    month: 'short', day: 'numeric', year: 'numeric', 
+                    hour: '2-digit', minute: '2-digit' 
+                });
+
+                // Add some color coding for different actions
+                let actionBadge = `<span style="background: rgba(255,255,255,0.1); padding: 4px 8px; border-radius: 4px;">${log.action}</span>`;
+                if (log.action === 'LOGIN') {
+                    actionBadge = `<span style="background: rgba(16, 185, 129, 0.2); color: #34d399; padding: 4px 8px; border-radius: 4px;">${log.action}</span>`;
+                } else if (log.action === 'LOGOUT') {
+                    actionBadge = `<span style="background: rgba(239, 68, 68, 0.2); color: #f87171; padding: 4px 8px; border-radius: 4px;">${log.action}</span>`;
+                } else if (log.action === 'UPDATED_REGISTRATION') {
+                    actionBadge = `<span style="background: rgba(59, 130, 246, 0.2); color: #60a5fa; padding: 4px 8px; border-radius: 4px;">${log.action}</span>`;
+                }
+
+                tr.innerHTML = `
+                    <td style="padding: 12px; color: #cbd5e1;">${formattedDate}</td>
+                    <td style="padding: 12px; font-weight: 500;">${log.email || 'Unknown User'}</td>
+                    <td style="padding: 12px;">${actionBadge}</td>
+                `;
+                tbody.appendChild(tr);
+            });
+        }
+        // Ensure this is called when the page loads, right next to your existing fetchData() call
+        // fetchLogs();
     </script>
 </body>
 </html>
