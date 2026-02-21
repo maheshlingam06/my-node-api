@@ -615,6 +615,57 @@ app.get('/api/logs', trackActivity('ADMIN_GET_AUDITLOGS'), async (req, res) => {
     }
 });
 
+// --- FETCH ALL BLOG POSTS ---
+app.get('/api/blog', async (req, res) => {
+    try {
+        const { data, error } = await userSupabase
+            .from('blog_posts')
+            .select('*')
+            .order('created_at', { ascending: false });
+
+        if (error) throw error;
+        res.json(data);
+    } catch (error) {
+        console.error("Error fetching blog posts:", error);
+        res.status(500).json({ error: "Failed to load posts" });
+    }
+});
+
+// --- CREATE A NEW BLOG POST ---
+// We reuse your trackActivity middleware to log this!
+app.post('/api/blog', trackActivity('CREATED_BLOG_POST'), async (req, res) => {
+    const authHeader = req.headers.authorization;
+    if (!authHeader) return res.status(401).json({ error: 'Missing token' });
+    
+    const token = authHeader.split(' ')[1];
+
+    try {
+        // 1. Verify user
+        const { data: { user }, error: authError } = await supabase.auth.getUser(token);
+        if (authError || !user) return res.status(401).json({ error: 'Unauthorized' });
+
+        // 2. Grab post details
+        const { title, content, author_name } = req.body;
+
+        // 3. Insert into database
+        const { error: dbError } = await supabase
+            .from('blog_posts')
+            .insert([{
+                user_id: user.id,
+                author_name: author_name || 'Alumnus',
+                title: title,
+                content: content
+            }]);
+
+        if (dbError) throw dbError;
+        res.json({ success: true });
+
+    } catch (error) {
+        console.error("Error creating post:", error);
+        res.status(500).json({ error: "Failed to publish post" });
+    }
+});
+
 app.post('/upload-file', uploadLimiter, upload.single('myFile'), async (req, res) => {
     try {
         if (!req.file) return res.status(400).send('No file.');

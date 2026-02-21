@@ -1,0 +1,260 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Alumni Blog - TCE Reunion 2026</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
+
+        :root {
+            --primary: #2563eb;
+            --primary-hover: #1d4ed8;
+            --white: #ffffff;
+            --overlay: rgba(15, 23, 42, 0.85);
+        }
+
+        body, html { margin: 0; padding: 0; height: 100%; font-family: 'Inter', sans-serif; }
+
+        .bg-image {
+            background-image: url('https://your-supabase-url.com/storage/v1/object/public/assets/college_campus.jpg');
+            height: 100%; background-position: center; background-repeat: no-repeat;
+            background-size: contain; position: relative; background-color: #0f172a;
+        }
+
+        .overlay {
+            position: absolute; top: 0; left: 0; right: 0; bottom: 0;
+            background-color: var(--overlay); display: flex; flex-direction: column; overflow-y: auto;
+        }
+
+        /* Navbar */
+        .navbar { display: flex; justify-content: space-between; align-items: center; padding: 20px 60px; z-index: 10; }
+        .logo { color: var(--white); font-size: 24px; font-weight: 700; text-decoration: none; }
+        .nav-links { display: flex; gap: 30px; align-items: center; }
+        .nav-links a { color: var(--white); text-decoration: none; font-size: 15px; font-weight: 500; opacity: 0.9; transition: all 0.2s; }
+        .nav-links a:hover { opacity: 1; color: #bfdbfe; }
+
+        /* Main Container */
+        .page-container {
+            flex-grow: 1; display: flex; flex-direction: column;
+            align-items: center; padding: 40px 20px; width: 100%; box-sizing: border-box; z-index: 5;
+        }
+
+        .page-header { text-align: center; color: white; margin-bottom: 30px; }
+        .page-header h1 { font-size: 3rem; margin: 0 0 10px 0; font-weight: 800; letter-spacing: -1px; }
+
+        /* Cards & Forms */
+        .glass-card {
+            background: rgba(15, 23, 42, 0.65); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.1); padding: 30px; border-radius: 12px;
+            color: white; width: 100%; max-width: 700px; margin-bottom: 25px; text-align: left;
+        }
+
+        .form-group { margin-bottom: 15px; }
+        .form-group label { display: block; margin-bottom: 8px; font-size: 14px; color: #cbd5e1; }
+        .form-control {
+            width: 100%; padding: 12px; border-radius: 6px; box-sizing: border-box;
+            background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.2);
+            color: white; font-family: 'Inter', sans-serif; font-size: 15px;
+        }
+        .form-control:focus { outline: none; border-color: var(--primary); }
+        
+        .btn {
+            background-color: var(--primary); color: white; border: none; padding: 10px 20px;
+            border-radius: 6px; font-weight: 600; cursor: pointer; transition: all 0.2s;
+        }
+        .btn:hover { background-color: var(--primary-hover); }
+
+        /* Blog Post Display */
+        .post-title { margin: 0 0 10px 0; font-size: 1.5rem; color: #f8fafc; }
+        .post-meta { font-size: 13px; color: #94a3b8; margin-bottom: 15px; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 15px; }
+        .post-content { font-size: 15px; line-height: 1.7; color: #e2e8f0; white-space: pre-wrap; }
+
+        @media (max-width: 900px) {
+            .navbar { flex-direction: column; padding: 20px; gap: 15px; }
+            .nav-links { flex-wrap: wrap; justify-content: center; gap: 15px; }
+            .page-header h1 { font-size: 2.2rem; }
+        }
+    </style>
+</head>
+<body>
+    <div class="bg-image">
+        <div class="overlay">
+            
+            <nav class="navbar">
+                <a href="/" class="logo">TCE Reunion 2026</a>
+                <div class="nav-links">
+                    <a href="registration.html">My Registration</a>
+                    <a href="schedule.html">Program</a>
+                    <a href="blog.html" style="color: #bfdbfe;">Blog</a>
+                </div>
+            </nav>
+
+            <div class="page-container">
+                <div class="page-header">
+                    <h1>Memory Lane</h1>
+                    <p style="color: #cbd5e1; margin-bottom: 20px;">Share your favorite stories, photos, and updates.</p>
+                    <button class="btn" id="togglePostBtn" onclick="togglePostForm()">+ Share a Memory</button>
+                </div>
+
+                <div class="glass-card" id="composeCard" style="display: none;">
+                    <h3 style="margin-top:0;">Write a Post</h3>
+                    <form id="blogForm" onsubmit="submitPost(event)">
+                        <div class="form-group">
+                            <label>Your Name</label>
+                            <input type="text" id="authorName" class="form-control" required placeholder="John Doe (CS Dept)">
+                        </div>
+                        <div class="form-group">
+                            <label>Title</label>
+                            <input type="text" id="postTitle" class="form-control" required placeholder="Remember the 1999 Cultural Fest?">
+                        </div>
+                        <div class="form-group">
+                            <label>Story</label>
+                            <textarea id="postContent" class="form-control" rows="5" required placeholder="Write your story here..."></textarea>
+                        </div>
+                        <button type="submit" class="btn" id="submitBtn">Publish Post</button>
+                        <button type="button" class="btn" style="background: transparent; border: 1px solid #64748b; margin-left: 10px;" onclick="togglePostForm()">Cancel</button>
+                    </form>
+                </div>
+
+                <div id="blogFeed" style="width: 100%; max-width: 700px; display: flex; flex-direction: column; align-items: center;">
+                    <p style="color: white;">Loading memories...</p>
+                </div>
+
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function togglePostForm() {
+            const form = document.getElementById('composeCard');
+            const btn = document.getElementById('togglePostBtn');
+            const token = localStorage.getItem('supabaseToken');
+
+            if (!token) {
+                alert("You must be signed in to post to the blog!");
+                window.location.href = 'login.html';
+                return;
+            }
+
+            if (form.style.display === 'none') {
+                form.style.display = 'block';
+                btn.style.display = 'none';
+                
+                // CALL THE NEW FUNCTION HERE
+                prefillAuthorName(); 
+                
+            } else {
+                form.style.display = 'none';
+                btn.style.display = 'inline-block';
+            }
+        }
+
+        async function submitPost(e) {
+            e.preventDefault();
+            const token = localStorage.getItem('supabaseToken');
+            const btn = document.getElementById('submitBtn');
+            
+            const author_name = document.getElementById('authorName').value;
+            const title = document.getElementById('postTitle').value;
+            const content = document.getElementById('postContent').value;
+
+            btn.disabled = true;
+            btn.innerText = 'Publishing...';
+
+            try {
+                const response = await fetch('/api/blog', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${token}`
+                    },
+                    body: JSON.stringify({ author_name, title, content })
+                });
+
+                if (response.ok) {
+                    document.getElementById('blogForm').reset();
+                    togglePostForm();
+                    loadPosts(); // Refresh the feed!
+                } else {
+                    alert("Failed to publish post.");
+                }
+            } catch (err) {
+                console.error("Error:", err);
+                alert("Network error occurred.");
+            } finally {
+                btn.disabled = false;
+                btn.innerText = 'Publish Post';
+            }
+        }
+
+        async function loadPosts() {
+            const feed = document.getElementById('blogFeed');
+            try {
+                const response = await fetch('/api/blog');
+                const posts = await response.json();
+
+                feed.innerHTML = ''; // Clear loading text
+
+                if (posts.length === 0) {
+                    feed.innerHTML = '<p style="color: #94a3b8;">No memories shared yet. Be the first!</p>';
+                    return;
+                }
+
+                posts.forEach(post => {
+                    const date = new Date(post.created_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+                    
+                    const card = document.createElement('div');
+                    card.className = 'glass-card';
+                    card.innerHTML = `
+                        <h2 class="post-title">${post.title}</h2>
+                        <div class="post-meta">By <strong>${post.author_name}</strong> • ${date}</div>
+                        <div class="post-content">${post.content}</div>
+                    `;
+                    feed.appendChild(card);
+                });
+            } catch (err) {
+                feed.innerHTML = '<p style="color: #ef4444;">Failed to load blog feed.</p>';
+            }
+        }
+
+        // --- NEW: Fetch and Auto-fill User Name ---
+        async function prefillAuthorName() {
+            const token = localStorage.getItem('supabaseToken');
+            if (!token) return; // If not logged in, do nothing
+
+            try {
+                const response = await fetch('/get-registration', {
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+                
+                if (response.ok) {
+                    const data = await response.json();
+                    
+                    if (data && data.participant_name) {
+                        const nameInput = document.getElementById('authorName');
+                        
+                        // Combine name and department if available
+                        let displayName = data.participant_name;
+                        if (data.department) {
+                            displayName += ` (${data.department})`;
+                        }
+                        
+                        nameInput.value = displayName;
+                        
+                        // Optional: Make it read-only so they can't change their identity
+                        nameInput.readOnly = true;
+                        nameInput.style.opacity = '0.7'; 
+                        nameInput.style.cursor = 'not-allowed';
+                    }
+                }
+            } catch (err) {
+                console.error("Could not fetch user profile for auto-fill:", err);
+            }
+        }
+
+        // Load posts as soon as page opens
+        document.addEventListener('DOMContentLoaded', loadPosts);
+    </script>
+</body>
+</html>
