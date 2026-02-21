@@ -78,6 +78,42 @@ const adminSupabase = createClient(process.env.SUPABASE_URL, process.env.SUPABAS
 
 // 2. Use Memory Storage (Safe for small files)
 const storage = multer.memoryStorage();
+
+// --- AUTO-LOGGING MIDDLEWARE ---
+const trackActivity = (actionName) => {
+    return async (req, res, next) => {
+        
+        // res.on('finish') ensures we only log the event AFTER it successfully completes
+        res.on('finish', async () => {
+            // Only log if the HTTP status was successful (200-299)
+            if (res.statusCode >= 200 && res.statusCode < 300) {
+                try {
+                    const authHeader = req.headers.authorization;
+                    if (!authHeader) return;
+                    
+                    const token = authHeader.split(' ')[1];
+                    const { data: { user }, error } = await supabase.auth.getUser(token);
+                    
+                    if (user) {
+                        await supabase.from('user_logs').insert([{
+                            user_id: user.id,
+                            email: user.email,
+                            action: actionName,
+                            details: { endpoint: req.originalUrl }
+                        }]);
+                    }
+                } catch (err) {
+                    console.error("Backend logging failed:", err);
+                }
+            }
+        });
+        
+        // Continue processing the original request
+        next();
+    };
+};
+
+
 // const upload = multer({ storage: storage });
 
 // Helper function to verify reCAPTCHA
@@ -157,7 +193,7 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
 // 1. New Signup API (Account Creation)
-app.post('/signup', uploadLimiter, async (req, res) => {
+app.post('/signup', trackActivity('USER_SIGNUP'), uploadLimiter, async (req, res) => {
     try {
         const { email, password, captchaToken } = req.body;
 
@@ -290,7 +326,7 @@ app.post('/signup', uploadLimiter, async (req, res) => {
 //     }
 // });
 
-app.post('/register', async (req, res) => {
+app.post('/register', trackActivity('UPDATED_REGISTRATION'), async (req, res) => {
     try {
         const token = req.headers.authorization?.split(' ')[1];
 
@@ -464,7 +500,7 @@ app.post('/login', async (req, res) => {
     }
 });
 
-app.get('/get-registration', async (req, res) => {
+app.get('/get-registration', trackActivity('GET_REGISTRATION'), async (req, res) => {
     try {
         const token = req.headers.authorization?.split(' ')[1];
         console.log('token=', token);
@@ -498,7 +534,7 @@ app.get('/get-registration', async (req, res) => {
 });
 
 // --- ADMIN ROUTE ---
-app.get('/api/admin/all-registrations', async (req, res) => {
+app.get('/api/admin/all-registrations', trackActivity('ADMIN_GETALL_REGISTRATIONS'), async (req, res) => {
     try {
         console.log("--- ADMIN ACCESS ATTEMPT ---");
         const token = req.headers.authorization?.split(' ')[1];
