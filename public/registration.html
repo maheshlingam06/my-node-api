@@ -479,7 +479,7 @@
             </div>
             <div class="summary-item">
                 <span>Event Dates</span>
-                <strong>July 23 - 26</strong>
+                <strong>July 23 - 25</strong>
             </div>
             <div class="summary-item">
                 <span>Status</span>
@@ -489,11 +489,11 @@
             <!-- <div class="summary-total">
                 <span>Total RSVP</span>
                 <span style="color: var(primary);">Reviewing</span>
-            </div> -->/
+            </div> -->
             
             <button type="submit" class="btn-submit">Complete Registration</button>
             <p style="font-size: 11px; color: #64748b; text-align: center; margin-top: 15px;">
-                By clicking, you agree to the family reunion event guidelines.
+                By clicking, you agree to the college reunion event guidelines.
             </p>
         </div>
         <div class="card tariff-card">
@@ -672,7 +672,7 @@ document.querySelector('form').addEventListener('submit', async function(e) {
 
         if (response.ok) {
             alert("Success! " + result.message);
-            if (result.message == 'Profile updated successfully!'){
+            if (result.message == 'Registration updated successfully!'){
                 window.location.href = "./updateComplete.html"; // Redirect to gallery or success page
             }
             else{

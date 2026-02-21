@@ -437,7 +437,7 @@ app.post('/register', async (req, res) => {
         console.log("Before res json...");
 
         res.json({ 
-            message: shouldSendEmail ? "Registration updated and email sent!" : "Profile updated successfully!",
+            message: shouldSendEmail ? "Registration updated and email sent!" : "Registration updated successfully!",
             emailSent: shouldSendEmail 
         });
 
