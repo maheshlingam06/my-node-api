@@ -615,16 +615,30 @@ app.get('/api/logs', trackActivity('ADMIN_GET_AUDITLOGS'), async (req, res) => {
     }
 });
 
-// --- FETCH ALL BLOG POSTS ---
+// --- FETCH ALL BLOG POSTS (SECURE) ---
 app.get('/api/blog', async (req, res) => {
+    // 1. Require the token
+    const authHeader = req.headers.authorization;
+    if (!authHeader) return res.status(401).json({ error: 'Missing token' });
+    
+    const token = authHeader.split(' ')[1];
+
     try {
-        const { data, error } = await userSupabase
+        // 2. Verify the token belongs to a valid logged-in user
+        const { data: { user }, error: authError } = await supabase.auth.getUser(token);
+        if (authError || !user) {
+            return res.status(401).json({ error: 'Unauthorized' });
+        }
+
+        // 3. Fetch the posts only if they passed the security check
+        const { data, error } = await adminSupabase
             .from('blog_posts')
             .select('*')
             .order('created_at', { ascending: false });
 
         if (error) throw error;
         res.json(data);
+
     } catch (error) {
         console.error("Error fetching blog posts:", error);
         res.status(500).json({ error: "Failed to load posts" });

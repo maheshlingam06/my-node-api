@@ -190,8 +190,23 @@
 
         async function loadPosts() {
             const feed = document.getElementById('blogFeed');
+            const token = localStorage.getItem('supabaseToken');
+            // 1. Check if they are logged in before trying to fetch
+            if (!token) {
+                feed.innerHTML = '<p style="color: #94a3b8;">Please sign in to view memories.</p>';
+                return;
+            }
             try {
-                const response = await fetch('/api/blog');
+                const response = await fetch('/api/blog', {
+                    headers: {
+                        'Authorization': `Bearer ${token}`
+                    }
+                });
+                if (!response.ok) {
+                    const errorText = await response.text();
+                    console.error("Backend Error Details:", response.status, errorText);
+                    throw new Error(`Server returned status ${response.status}`);
+                }
                 const posts = await response.json();
 
                 feed.innerHTML = ''; // Clear loading text
