@@ -732,6 +732,9 @@ function calculateTotal() {
         // Assuming 'yes' means the registered family joins
         total += (alumniCount * 7000) + (secondMemCount * 1700) + (thirdMemPlusCount * 1700) + (kids6to10 * 850);
     }
+    else{
+        total += (alumniCount * 7000);
+    }
 
     // Saturday Event & Lunch
     if (satReunion === 'yes_single') {
