@@ -81,7 +81,12 @@ async function handleLogin() {
                     // Redirect to the registration form (Step 2)
                     window.location.href = `registration.html?email=${encodeURIComponent(email)}`;
                 } else {
-                    alert("Login failed: " + (result.error || "Check your credentials."));
+                    // Check specifically for the unverified email error
+                    if (result.error && result.error.includes("Email not confirmed")) {
+                        alert("Please check your email and click the verification link before logging in!");
+                    } else {
+                        alert("Login failed: " + (result.error || "Invalid credentials"));
+                    }
                     btn.style.display = 'block';
                     loader.style.display = 'none';
                 }

@@ -71,11 +71,29 @@ async function handleSignup() {
                 if (response.ok) {
                     // SUCCESS: Redirect to your existing registration page
                     // 1. SAVE THE TOKEN immediately so registration.html can see it
-                    if (result.user && result.session) {
-                        localStorage.setItem('supabaseToken', result.session.access_token);
-                    }
+                    //if (result.user && result.session) {
+                   //     localStorage.setItem('supabaseToken', result.session.access_token);
+                   // }
                     // We pass the email in the URL so the next form can auto-fill it
-                    window.location.href = `registration.html?email=${encodeURIComponent(email)}`;
+                   // window.location.href = `registration.html?email=${encodeURIComponent(email)}`;
+                    // IF EMAIL VERIFICATION IS REQUIRED (Session is null)
+                    if (result.user && !result.session) {
+                        // Replace the form card with a success message
+                        const card = document.querySelector('.card');
+                        card.innerHTML = `
+                            <div style="text-align: center;">
+                                <h2 style="color: #10b981; margin-bottom: 10px;">Check Your Inbox</h2>
+                                <p style="color: #64748b; font-size: 15px; line-height: 1.5;">We just sent a verification link to<br><strong>${email}</strong></p>
+                                <p style="color: #64748b; font-size: 14px; margin-top: 15px;">Please click the link in the email to activate your account before logging in.</p>
+                                <button onclick="window.location.href='/login'" class="btn-submit" style="margin-top: 20px;">Proceed to Login</button>
+                            </div>
+                        `;
+                    } 
+                    // FALLBACK: If email verification is ever turned off (Session exists)
+                    else if (result.user && result.session) {
+                        localStorage.setItem('supabaseToken', result.session.access_token);
+                        window.location.href = `registration.html?email=${encodeURIComponent(email)}`;
+                    }
                 } else {
                     alert("Signup failed: " + (result.error || "Unknown error"));
                     btn.style.display = 'block';

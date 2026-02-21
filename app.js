@@ -208,6 +208,11 @@ app.post('/signup', trackActivity('USER_SIGNUP'), uploadLimiter, async (req, res
         const { data, error } = await supabase.auth.signUp({
             email,
             password,
+            options: {
+                // Change this to your live domain when you deploy!
+                // This dictates where the email link sends them after verifying.
+                emailRedirectTo: '/login' 
+            }
         });
 
         if (error) throw error;
