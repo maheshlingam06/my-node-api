@@ -157,11 +157,11 @@
                     <td>${row.teens_adults || 0}</td>
                     <td>${displayKids}</td>
                     <td>${displayBabies}</td>
-                    <td>${row.thu_night === 'yes_family' || row.thu_night === 'yes_single' ? '<span class="badge badge-green">' || row.thu_night || '</span>' : '-'}</td>
+                    <td>${row.thu_night === 'yes_family' || row.thu_night === 'yes_single' ? '<span class="badge badge-green">' + row.thu_night + '</span>' : '-'}</td>
                     <td>${row.fri_reunion === 'yes' ? '<span class="badge badge-blue">Yes</span>' : '-'}</td>
-                    <td>${row.fri_night === 'yes_family' || row.fri_night === 'yes_single' ? '<span class="badge badge-green">' || row.fri_night || '</span>' : '-'}</td>
-                    <td>${row.sat_reunion === 'yes_family' || row.sat_reunion === 'yes_single' ? '<span class="badge badge-blue">' || row.sat_reunion || '</span>' : '-'}</td>
-                    <td>${row.sat_night === 'yes_family' || row.sat_night === 'yes_single' ? '<span class="badge badge-blue">' || row.sat_night || '</span>' : '-'}</td>
+                    <td>${row.fri_night === 'yes_family' || row.fri_night === 'yes_single' ? '<span class="badge badge-green">' + row.fri_night + '</span>' : '-'}</td>
+                    <td>${row.sat_reunion === 'yes_family' || row.sat_reunion === 'yes_single' ? '<span class="badge badge-blue">' + row.sat_reunion + '</span>' : '-'}</td>
+                    <td>${row.sat_night === 'yes_family' || row.sat_night === 'yes_single' ? '<span class="badge badge-blue">' + row.sat_night + '</span>' : '-'}</td>
                     <td style="font-weight:bold">₹${cost.toLocaleString('en-IN')}</td>
                 `;
                 tbody.appendChild(tr);
