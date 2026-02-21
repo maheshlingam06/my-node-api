@@ -314,22 +314,22 @@
         if (!token) {
             // No token found? Send them to login
             alert("Please login first to access the registration form.");
-            window.location.href = "login.html";
+            window.location.href = "login";
         }
 
         function handleLogout(){
-           /* window.location.href = "login.html"; */
+           /* window.location.href = "login"; */
             localStorage.removeItem('supabaseToken');
             //localStorage.removeItem('adminData'); // Clear admin cache too if it exists
 
             // 2. Replace the current history entry
             // This removes the current page from the "Back" stack
-            window.location.replace('login.html');
+            window.location.replace('login');
         }
 
         // 1. Standard Auth Check
         //const token = localStorage.getItem('supabaseToken');
-        if (!token) window.location.replace('login.html');
+        if (!token) window.location.replace('login');
 
         // 2. "Back Button" Detector
         // This fires every time the page appears, even from the Back button cache

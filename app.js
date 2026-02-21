@@ -508,6 +508,16 @@ app.post('/login', async (req, res) => {
     }
 });
 
+app.get('/login', (req, res) => {
+    // const path = require('path');
+    let html = fs.readFileSync(path.join(__dirname, 'public', 'login'), 'utf8');
+    console.log('html=', html);
+    console.log('sitekey=', process.env.YOUR_SITE_KEY);
+    // Replace a placeholder in your HTML with the ENV variable
+    html = html.replace(/__SITE_KEY__/g, process.env.YOUR_SITE_KEY);
+    res.send(html);
+});
+
 app.get('/get-registration', trackActivity('GET_REGISTRATION'), async (req, res) => {
     try {
         const token = req.headers.authorization?.split(' ')[1];

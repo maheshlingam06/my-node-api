@@ -21,6 +21,7 @@
 
 
     </style>
+    <script src="https://www.google.com/recaptcha/api.js?render=__SITE_KEY__"></script>
 </head>
 <body>
 
@@ -61,32 +62,36 @@ async function handleLogin() {
     btn.style.display = 'none';
     loader.style.display = 'block';
 
-    try {
-        const response = await fetch('../login', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ email, password })
+    grecaptcha.ready(function() {
+        grecaptcha.execute('__SITE_KEY__', {action: 'signup'}).then(async (token) => {
+            try {
+                const response = await fetch('../login', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ email, password })
+                });
+
+                const result = await response.json();
+
+                if (response.ok) {
+                    // Store the token so the user stays logged in
+                    localStorage.setItem('supabaseToken', result.session.access_token);
+                    localStorage.setItem('userType', result.userType);
+                    
+                    // Redirect to the registration form (Step 2)
+                    window.location.href = `registration.html?email=${encodeURIComponent(email)}`;
+                } else {
+                    alert("Login failed: " + (result.error || "Check your credentials."));
+                    btn.style.display = 'block';
+                    loader.style.display = 'none';
+                }
+            } catch (err) {
+                alert("Server error. Please try again.");
+                btn.style.display = 'block';
+                loader.style.display = 'none';
+            }
         });
-
-        const result = await response.json();
-
-        if (response.ok) {
-            // Store the token so the user stays logged in
-            localStorage.setItem('supabaseToken', result.session.access_token);
-            localStorage.setItem('userType', result.userType);
-            
-            // Redirect to the registration form (Step 2)
-            window.location.href = `registration.html?email=${encodeURIComponent(email)}`;
-        } else {
-            alert("Login failed: " + (result.error || "Check your credentials."));
-            btn.style.display = 'block';
-            loader.style.display = 'none';
-        }
-    } catch (err) {
-        alert("Server error. Please try again.");
-        btn.style.display = 'block';
-        loader.style.display = 'none';
-    }
+    });
 }
 </script>
 

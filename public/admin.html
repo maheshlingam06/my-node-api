@@ -269,7 +269,7 @@
             const token = localStorage.getItem('supabaseToken');
             if (!token) {
                 alert("You must be logged in to view this page.");
-                window.location.href = '/login.html';
+                window.location.href = '/login';
                 return;
             }
 
@@ -333,13 +333,13 @@
         document.addEventListener('scroll', resetTimer);
 
         function handleLogout(){
-           /* window.location.href = "login.html"; */
+           /* window.location.href = "login"; */
             localStorage.removeItem('supabaseToken');
             //localStorage.removeItem('adminData'); // Clear admin cache too if it exists
 
             // 2. Replace the current history entry
             // This removes the current page from the "Back" stack
-            window.location.replace('login.html');
+            window.location.replace('login');
         }
 
         function timerIncrement() {

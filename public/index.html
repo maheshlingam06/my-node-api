@@ -93,7 +93,7 @@
             <nav class="navbar">
                 <a href="/" class="logo">Reunion 2026</a>
                 <div class="nav-links">
-                    <a href="login.html">Sign-in</a>
+                    <a href="login">Sign-in</a>
                     <a href="schedule.html">Program</a> 
                     <a href="blog.html">Blog</a>
                     <a href="#">Endowment Fund</a>
@@ -109,7 +109,7 @@
                     
                     <div class="cta-group">
                         <a href="signup.html" class="btn-hero btn-primary">Register Now</a>
-                        <a href="login.html" class="btn-hero btn-outline">Sign In</a>
+                        <a href="login" class="btn-hero btn-outline">Sign In</a>
                     </div>
                 </div>
             </div>
@@ -135,13 +135,13 @@
     document.addEventListener('scroll', resetTimer);
 
     function handleLogout(){
-        /* window.location.href = "login.html"; */
+        /* window.location.href = "login"; */
         localStorage.removeItem('supabaseToken');
         //localStorage.removeItem('adminData'); // Clear admin cache too if it exists
 
         // 2. Replace the current history entry
         // This removes the current page from the "Back" stack
-        window.location.replace('login.html');
+        window.location.replace('login');
     }
 
     function timerIncrement() {
