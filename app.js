@@ -599,7 +599,7 @@ app.get('/api/logs', trackActivity('ADMIN_GET_AUDITLOGS'), async (req, res) => {
         }
 
         // 3. Fetch the logs (Only runs if they passed the admin check)
-        const { data, error } = await supabase
+        const { data, error } = await adminSupabase
             .from('user_logs')
             .select('*')
             .order('created_at', { ascending: false })
