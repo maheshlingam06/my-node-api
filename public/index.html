@@ -149,8 +149,10 @@
         if (idleTime >= timeoutLimit) {
             // User has been idle for 15 minutes
             clearInterval(idleInterval);
-            alert("Your session has expired due to inactivity. Please log in again.");
-            handleLogout(); // Calls your existing logout function
+            if (localStorage.getItem('supabaseToken')){
+                alert("Your session has expired due to inactivity. Please log in again.");
+                handleLogout(); // Calls your existing logout function
+            }
         }
     }
 

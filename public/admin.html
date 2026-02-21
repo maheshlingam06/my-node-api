@@ -47,6 +47,12 @@
         <h2>Registration Dashboard</h2>
         <div class="controls">
             <input type="text" id="searchInput" placeholder="Search any field (Name, Email, City)...">
+            <div style="display: flex; justify-content: flex-end; margin-bottom: 15px;">
+                <button onclick="exportTableToCSV('Reunion_Registrations_2026.csv')" style="background-color: #10b981; color: white; border: none; padding: 10px 20px; border-radius: 6px; font-weight: 600; cursor: pointer; display: flex; align-items: center; gap: 8px; font-size: 14px; transition: all 0.2s;">
+                    <svg width="18" height="18" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path></svg>
+                    Export to Excel (CSV)
+                </button>
+            </div>
             <button class="btn-refresh" onclick="fetchData(true)">🔄 Refresh Data</button>
             <button class="btn-clear" onclick="window.location.href='/'">Back to Home</button>
         </div>
@@ -177,6 +183,54 @@
             }
         });
 
+
+        // --- EXPORT TO EXCEL (CSV) LOGIC ---
+        function exportTableToCSV(filename) {
+            // Make sure 'registrationsTable' matches the ID of your <table> tag
+            const table = document.getElementById("registrationsTable"); 
+            let csv = [];
+            
+            // Loop through all table rows (including headers)
+            for (let i = 0; i < table.rows.length; i++) {
+                let row = [];
+                let cols = table.rows[i].querySelectorAll("td, th");
+                
+                for (let j = 0; j < cols.length; j++) {
+                    // Get the text, remove newlines, and trim whitespace
+                    let data = cols[j].innerText.replace(/(\r\n|\n|\r)/gm, "").trim();
+                    
+                    // Escape double quotes inside the data
+                    data = data.replace(/"/g, '""');
+                    
+                    // Wrap in quotes to prevent commas in the data from breaking the columns
+                    row.push('"' + data + '"');
+                }
+                csv.push(row.join(","));
+            }
+            
+            // Trigger the download
+            downloadCSV(csv.join("\n"), filename);
+        }
+
+        function downloadCSV(csv, filename) {
+            let csvFile;
+            let downloadLink;
+
+            // Create a Blob with the CSV data
+            csvFile = new Blob([csv], {type: "text/csv;charset=utf-8;"});
+
+            // Create a hidden link, attach the Blob, and click it
+            downloadLink = document.createElement("a");
+            downloadLink.download = filename;
+            downloadLink.href = window.URL.createObjectURL(csvFile);
+            downloadLink.style.display = "none";
+            document.body.appendChild(downloadLink);
+            
+            downloadLink.click();
+            
+            // Clean up
+            document.body.removeChild(downloadLink);
+        }
         // 4. Fetch Logic (Cache First Strategy)
         async function fetchData(forceRefresh = false) {
             const token = localStorage.getItem('supabaseToken');
@@ -232,7 +286,7 @@
     <script>
         // --- INACTIVITY AUTO-LOGOUT ---
         let idleTime = 0;
-        const timeoutLimit = 2; // Set timeout limit in minutes
+        const timeoutLimit = 10; // Set timeout limit in minutes
 
         // Increment the idle time counter every minute
         const idleInterval = setInterval(timerIncrement, 10000); // 1 minute = 60000 ms
