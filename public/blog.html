@@ -237,6 +237,7 @@
                 feed.innerHTML = '<p style="color: #94a3b8;">Please sign in to view memories.</p>';
                 return;
             }
+            const currentUserId = getCurrentUserId(); // Grab the logged-in user's ID
             try {
                 const response = await fetch('/api/blog', {
                     headers: {
@@ -260,13 +261,25 @@
                 posts.forEach(post => {
                     const date = new Date(post.created_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
                     
+                    // NEW: Conditionally build the delete button
+                    let deleteBtnHTML = '';
+                    if (post.user_id === currentUserId) {
+                        deleteBtnHTML = `
+                            <div style="margin-top: 15px; border-top: 1px solid rgba(255,255,255,0.1); padding-top: 10px; text-align: right;">
+                                <button onclick="deletePost('${post.id}')" style="background: transparent; color: #ef4444; border: 1px solid rgba(239, 68, 68, 0.5); padding: 6px 12px; border-radius: 6px; cursor: pointer; font-size: 13px; transition: all 0.2s;">
+                                    Delete Post
+                                </button>
+                            </div>
+                        `;
+                    }
+                    
                     const card = document.createElement('div');
                     card.className = 'glass-card';
                     card.innerHTML = `
                         <h2 class="post-title">${post.title}</h2>
                         <div class="post-meta">By <strong>${post.author_name}</strong> • ${date}</div>
                         <div class="post-content">${post.content}</div>
-                    `;
+                        ${deleteBtnHTML} `;
                     feed.appendChild(card);
                 });
             } catch (err) {
@@ -311,6 +324,36 @@
 
         // Load posts as soon as page opens
         document.addEventListener('DOMContentLoaded', loadPosts);
+
+        // --- DELETE POST LOGIC ---
+        async function deletePost(postId) {
+            // Add a confirmation so they don't accidentally delete a massive story
+            if (!confirm("Are you sure you want to delete this memory? This cannot be undone.")) {
+                return;
+            }
+
+            const token = localStorage.getItem('supabaseToken');
+            
+            try {
+                const response = await fetch(`/api/blog/${postId}`, {
+                    method: 'DELETE',
+                    headers: {
+                        'Authorization': `Bearer ${token}`
+                    }
+                });
+
+                if (response.ok) {
+                    // It worked! Reload the feed to make the card disappear
+                    loadPosts(); 
+                } else {
+                    const data = await response.json();
+                    alert("Failed to delete post: " + (data.error || "Unknown error"));
+                }
+            } catch (err) {
+                console.error("Error deleting post:", err);
+                alert("A network error occurred while trying to delete.");
+            }
+        }
 
         function handleLogout(){
            /* window.location.href = "login"; */
@@ -473,6 +516,25 @@
                 btn.innerText = 'Publish Post';
             }
         }
+        // --- DECODE JWT TO GET USER ID ---
+        function getCurrentUserId() {
+            const token = localStorage.getItem('supabaseToken');
+            if (!token) return null;
+            
+            try {
+                // A JWT is 3 parts separated by dots. The middle part is the payload data.
+                const payloadBase64 = token.split('.')[1];
+                // Decode the base64 string
+                const decodedPayload = JSON.parse(atob(payloadBase64));
+                
+                // In Supabase, 'sub' (Subject) holds the unique User ID
+                return decodedPayload.sub; 
+            } catch (e) {
+                console.error("Failed to decode token", e);
+                return null;
+            }
+        }
     </script>
+    
 </body>
 </html>

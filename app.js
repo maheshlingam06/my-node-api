@@ -774,7 +774,84 @@ app.post('/api/upload-image', uploadLimiter, upload.single('image'), async (req,
     }
 });
 
+// --- DELETE A BLOG POST & ATTACHED IMAGES ---
+app.delete('/api/blog/:id', trackActivity('DELETED_BLOG_POST'), async (req, res) => {
+    const authHeader = req.headers.authorization;
+    if (!authHeader) return res.status(401).json({ error: 'Missing token' });
+    
+    const token = authHeader.split(' ')[1];
 
+    try {
+        // 1. Verify user identity
+        const { data: { user }, error: authError } = await supabase.auth.getUser(token);
+        if (authError || !user) return res.status(401).json({ error: 'Unauthorized' });
+
+        const postId = req.params.id;
+
+        // 2. FETCH THE POST FIRST (To check ownership and find images)
+        const { data: post, error: fetchError } = await supabase
+            .from('blog_posts')
+            .select('content, user_id')
+            .eq('id', postId)
+            .single();
+
+        if (fetchError || !post) {
+            return res.status(404).json({ error: 'Post not found' });
+        }
+
+        // 3. SECURITY: Make sure this user actually owns the post
+        if (post.user_id !== user.id) {
+            return res.status(403).json({ error: 'Forbidden: You can only delete your own posts' });
+        }
+
+        // 4. FIND AND DELETE ATTACHED IMAGES
+        // We use a regular expression to find all image URLs inside the rich text HTML
+        const imgRegex = /<img[^>]+src="([^">]+)"/g;
+        let match;
+        const filePathsToDelete = [];
+        
+        // This is the base URL Supabase uses for your 'images' bucket
+        const storageBaseUrl = `${process.env.SUPABASE_URL}/storage/v1/object/public/images/`;
+
+        while ((match = imgRegex.exec(post.content)) !== null) {
+            const imgUrl = match[1];
+            // Only try to delete images that are hosted in our Supabase bucket
+            if (imgUrl.startsWith(storageBaseUrl)) {
+                // Strip the base URL to get the exact file path (e.g., 'blog-photos/123-img.jpg')
+                const filePath = imgUrl.replace(storageBaseUrl, '');
+                filePathsToDelete.push(filePath);
+            }
+        }
+
+        // If we found images, tell Supabase Storage to delete them
+        if (filePathsToDelete.length > 0) {
+            console.log("Deleting orphaned blog images:", filePathsToDelete);
+            // We use adminSupabase to bypass any strict Storage RLS policies
+            const { error: storageError } = await adminSupabase.storage
+                .from('images')
+                .remove(filePathsToDelete);
+                
+            if (storageError) {
+                console.error("Warning: Failed to delete images from storage:", storageError);
+                // We log the error, but we still proceed to delete the post row!
+            }
+        }
+
+        // 5. FINALLY, DELETE THE DATABASE ROW
+        const { error: dbError } = await supabase
+            .from('blog_posts')
+            .delete()
+            .eq('id', postId);
+
+        if (dbError) throw dbError;
+
+        res.json({ success: true, deletedImages: filePathsToDelete.length });
+
+    } catch (error) {
+        console.error("Error deleting post:", error);
+        res.status(500).json({ error: "Failed to delete post" });
+    }
+});
 
 app.post('/api/salesforce/upload', upload.any(), async (req, res) => {
     try {
