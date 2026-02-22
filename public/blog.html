@@ -333,6 +333,7 @@
         }
     </script>
     <script src="https://cdn.quilljs.com/1.3.6/quill.min.js"></script>
+    <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/browser-image-compression@2.0.1/dist/browser-image-compression.js"></script>
     <script>
         // --- 1. INITIALIZE QUILL WITH CUSTOM TOOLBAR ---
         const quill = new Quill('#editor-container', {
@@ -371,17 +372,34 @@
             };
         }
 
-        async function uploadImageToServer(file) {
-            const token = localStorage.getItem('supabaseToken');
-            const formData = new FormData();
-            formData.append('image', file);
-
+       async function uploadImageToServer(file) {
             // Save the user's current cursor position in the editor
             const range = quill.getSelection();
 
             try {
-                // Show a temporary loading placeholder in the editor (optional but looks great)
-                quill.insertText(range.index, 'Uploading image...', 'italic', true);
+                // --- 1. COMPRESS THE IMAGE ---
+                quill.insertText(range.index, 'Compressing image...', 'italic', true);
+
+                const options = {
+                    maxSizeMB: .05,           // Max file size (1MB is plenty for a blog)
+                    maxWidthOrHeight: 1200, // Scale down massive 4K phone photos
+                    useWebWorker: true      // Keeps the browser from freezing during compression
+                };
+
+                // Do the actual compression
+                const compressedFile = await imageCompression(file, options);
+
+                // Update the loading text
+                quill.deleteText(range.index, 20); // Remove "Compressing image..."
+                quill.insertText(range.index, 'Uploading to server...', 'italic', true);
+
+
+                // --- 2. UPLOAD TO BACKEND ---
+                const token = localStorage.getItem('supabaseToken');
+                const formData = new FormData();
+                
+                // Append the newly compressed file instead of the original!
+                formData.append('image', compressedFile, file.name);
 
                 const response = await fetch('/api/upload-image', {
                     method: 'POST',
@@ -392,21 +410,19 @@
                 const data = await response.json();
 
                 // Remove the "Uploading..." text
-                quill.deleteText(range.index, 18); 
+                quill.deleteText(range.index, 22); 
 
                 if (response.ok) {
-                    // Insert the actual image URL into the editor right where their cursor was
+                    // Insert the actual image URL into the editor
                     quill.insertEmbed(range.index, 'image', data.url);
-                    
-                    // Move the cursor to the next line so they can keep typing
                     quill.setSelection(range.index + 1);
                 } else {
                     alert("Failed to upload image.");
                 }
             } catch (error) {
-                console.error("Upload error:", error);
-                quill.deleteText(range.index, 18); // Clean up the loading text on failure
-                alert("Network error during image upload.");
+                console.error("Compression/Upload error:", error);
+                quill.deleteText(range.index, 22); // Clean up the loading text
+                alert("An error occurred while processing the image.");
             }
         }
 
