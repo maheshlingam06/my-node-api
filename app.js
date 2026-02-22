@@ -809,6 +809,7 @@ app.delete('/api/blog/:id', trackActivity('DELETED_BLOG_POST'), async (req, res)
         }
 
     console.log('reached 2');
+    console.log('recid=', postId);
 
 
         // 3. SECURITY: Make sure this user actually owns the post
