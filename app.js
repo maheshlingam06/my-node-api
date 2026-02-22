@@ -742,6 +742,38 @@ app.post('/upload-file', uploadLimiter, upload.single('myFile'), async (req, res
     }
 });
 
+// --- UPLOAD BLOG IMAGE ---
+app.post('/api/upload-image', uploadLimiter, upload.single('image'), async (req, res) => {
+    // Optional: Secure this route just like the others
+    const authHeader = req.headers.authorization;
+    if (!authHeader) return res.status(401).json({ error: 'Missing token' });
+
+    try {
+        if (!req.file) return res.status(400).json({ error: 'No image provided' });
+
+        const file = req.file;
+        // Clean the filename and add a timestamp so files don't overwrite each other
+        const cleanName = file.originalname.replace(/[^a-zA-Z0-9.]/g, '');
+        const fileName = `blog-photos/${Date.now()}-${cleanName}`;
+
+        // Upload to your existing 'images' bucket in Supabase
+        const { data, error } = await adminSupabase.storage
+            .from('images')
+            .upload(fileName, file.buffer, { contentType: file.mimetype });
+
+        if (error) throw error;
+
+        // Get the public URL to send back to the Quill editor
+        const { data: urlData } = adminSupabase.storage.from('images').getPublicUrl(fileName);
+
+        res.json({ url: urlData.publicUrl });
+
+    } catch (err) {
+        console.error("Blog Image Upload Error:", err);
+        res.status(500).json({ error: "Failed to upload image" });
+    }
+});
+
 
 
 app.post('/api/salesforce/upload', upload.any(), async (req, res) => {
