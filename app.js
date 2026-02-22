@@ -776,6 +776,7 @@ app.post('/api/upload-image', uploadLimiter, upload.single('image'), async (req,
 
 // --- DELETE A BLOG POST & ATTACHED IMAGES ---
 app.delete('/api/blog/:id', trackActivity('DELETED_BLOG_POST'), async (req, res) => {
+    console.log('reached app delete');
     const authHeader = req.headers.authorization;
     if (!authHeader) return res.status(401).json({ error: 'Missing token' });
     
@@ -788,8 +789,16 @@ app.delete('/api/blog/:id', trackActivity('DELETED_BLOG_POST'), async (req, res)
 
         const postId = req.params.id;
 
+    console.log('reached 1');
+
+
+        // This is the clean way to handle RLS with the ANON key
+        const userSupabase = createClient(process.env.SUPABASE_URL, process.env.SUPABASE_ANON_KEY, {
+            global: { headers: { Authorization: `Bearer ${token}` } }
+        });
+
         // 2. FETCH THE POST FIRST (To check ownership and find images)
-        const { data: post, error: fetchError } = await supabase
+        const { data: post, error: fetchError } = await userSupabase
             .from('blog_posts')
             .select('content, user_id')
             .eq('id', postId)
@@ -798,6 +807,9 @@ app.delete('/api/blog/:id', trackActivity('DELETED_BLOG_POST'), async (req, res)
         if (fetchError || !post) {
             return res.status(404).json({ error: 'Post not found' });
         }
+
+    console.log('reached 2');
+
 
         // 3. SECURITY: Make sure this user actually owns the post
         if (post.user_id !== user.id) {
@@ -823,6 +835,9 @@ app.delete('/api/blog/:id', trackActivity('DELETED_BLOG_POST'), async (req, res)
             }
         }
 
+    console.log('reached 3');
+
+
         // If we found images, tell Supabase Storage to delete them
         if (filePathsToDelete.length > 0) {
             console.log("Deleting orphaned blog images:", filePathsToDelete);
@@ -837,13 +852,19 @@ app.delete('/api/blog/:id', trackActivity('DELETED_BLOG_POST'), async (req, res)
             }
         }
 
+    console.log('reached 4');
+
+
         // 5. FINALLY, DELETE THE DATABASE ROW
-        const { error: dbError } = await supabase
+        const { error: dbError } = await userSupabase
             .from('blog_posts')
             .delete()
             .eq('id', postId);
 
         if (dbError) throw dbError;
+
+    console.log('reached 5');
+
 
         res.json({ success: true, deletedImages: filePathsToDelete.length });
 
