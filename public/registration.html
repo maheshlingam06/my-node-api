@@ -827,7 +827,7 @@ function openTab(evt, tabName) {
     const timeoutLimit = 5; // Set timeout limit in minutes
 
     // Increment the idle time counter every minute
-    const idleInterval = setInterval(timerIncrement, 10000); // 1 minute = 60000 ms
+    const idleInterval = setInterval(timerIncrement, 60000); // 1 minute = 60000 ms
 
     // Reset the timer whenever the user interacts with the page
     document.addEventListener('mousemove', resetTimer);

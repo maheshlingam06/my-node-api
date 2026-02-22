@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Alumni Blog - TCE Reunion 2026</title>
+    <link href="https://cdn.quilljs.com/1.3.6/quill.snow.css" rel="stylesheet">
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
 
@@ -66,6 +67,25 @@
         }
         .btn:hover { background-color: var(--primary-hover); }
 
+        /* Quill Editor Dark Theme Overrides */
+        .ql-toolbar.ql-snow {
+            background: rgba(241, 245, 249, 0.95); /* Light grey for the toolbar buttons so they remain visible */
+            border: 1px solid rgba(255,255,255,0.2);
+            border-radius: 6px 6px 0 0;
+        }
+        .ql-container.ql-snow {
+            border: 1px solid rgba(255,255,255,0.2);
+            border-top: none;
+            border-radius: 0 0 6px 6px;
+            background: rgba(255,255,255,0.05);
+            color: white;
+            font-family: 'Inter', sans-serif;
+            font-size: 15px;
+        }
+        .ql-editor.ql-blank::before {
+            color: rgba(255,255,255,0.4); /* Make the placeholder text visible on dark background */
+        }
+
         /* Blog Post Display */
         .post-title { margin: 0 0 10px 0; font-size: 1.5rem; color: #f8fafc; }
         .post-meta { font-size: 13px; color: #94a3b8; margin-bottom: 15px; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 15px; }
@@ -111,7 +131,11 @@
                         </div>
                         <div class="form-group">
                             <label>Story</label>
-                            <textarea id="postContent" class="form-control" rows="5" required placeholder="Write your story here..."></textarea>
+                            <!-- <textarea id="postContent" class="form-control" rows="5" required placeholder="Write your story here..."></textarea> -->
+                             <div class="form-group">
+                                <label>Story</label>
+                                <div id="editor-container" style="height: 200px;"></div>
+                            </div>
                         </div>
                         <button type="submit" class="btn" id="submitBtn">Publish Post</button>
                         <button type="button" class="btn" style="background: transparent; border: 1px solid #64748b; margin-left: 10px;" onclick="togglePostForm()">Cancel</button>
@@ -127,6 +151,13 @@
     </div>
 
     <script>
+        // --- INACTIVITY AUTO-LOGOUT ---
+        let idleTime = 0;
+        const timeoutLimit = 10; // Set timeout limit in minutes
+
+        // Increment the idle time counter every minute
+        const idleInterval = setInterval(timerIncrement, 60000); // 1 minute = 60000 ms
+
         function togglePostForm() {
             const form = document.getElementById('composeCard');
             const btn = document.getElementById('togglePostBtn');
@@ -271,6 +302,89 @@
 
         // Load posts as soon as page opens
         document.addEventListener('DOMContentLoaded', loadPosts);
+
+        function handleLogout(){
+           /* window.location.href = "login"; */
+            localStorage.removeItem('supabaseToken');
+            //localStorage.removeItem('adminData'); // Clear admin cache too if it exists
+
+            // 2. Replace the current history entry
+            // This removes the current page from the "Back" stack
+            window.location.replace('login');
+        }
+
+        function timerIncrement() {
+            idleTime++;
+            if (idleTime >= timeoutLimit) {
+                // User has been idle for 15 minutes
+                clearInterval(idleInterval);
+                alert("Your session has expired due to inactivity. Please log in again.");
+                handleLogout(); // Calls your existing logout function
+            }
+        }
+    </script>
+    <script src="https://cdn.quilljs.com/1.3.6/quill.min.js"></script>
+    <script>
+        // 1. Initialize Quill immediately
+        const quill = new Quill('#editor-container', {
+            theme: 'snow',
+            placeholder: 'Write your story here...',
+            modules: {
+                toolbar: [
+                    ['bold', 'italic', 'underline'],        // Text formatting
+                    [{ 'list': 'ordered'}, { 'list': 'bullet' }], // Lists
+                    ['clean']                               // Remove formatting button
+                ]
+            }
+        });
+
+        // 2. Update your submitPost function
+        async function submitPost(e) {
+            e.preventDefault();
+            const token = localStorage.getItem('supabaseToken');
+            const btn = document.getElementById('submitBtn');
+            
+            const author_name = document.getElementById('authorName').value;
+            const title = document.getElementById('postTitle').value;
+            
+            // NEW: Grab the raw HTML content directly from Quill
+            const content = quill.root.innerHTML; 
+            
+            // Safety check: Prevent submitting if the editor is completely empty
+            if (quill.getText().trim() === '') {
+                alert("Please write a story before publishing!");
+                return;
+            }
+
+            btn.disabled = true;
+            btn.innerText = 'Publishing...';
+
+            try {
+                const response = await fetch('/api/blog', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${token}`
+                    },
+                    body: JSON.stringify({ author_name, title, content })
+                });
+
+                if (response.ok) {
+                    document.getElementById('blogForm').reset();
+                    quill.setContents([]); // NEW: Clear the Quill editor
+                    togglePostForm();
+                    loadPosts(); 
+                } else {
+                    alert("Failed to publish post.");
+                }
+            } catch (err) {
+                console.error("Error:", err);
+                alert("Network error occurred.");
+            } finally {
+                btn.disabled = false;
+                btn.innerText = 'Publish Post';
+            }
+        }
     </script>
 </body>
 </html>
