@@ -811,6 +811,8 @@ function currentSlide(n) {
 }
 
 function openTab(evt, tabName) {
+    //event.preventDefault();
+    event.stopPropagation();
     // 1. Hide all tab contents
     var i, tabcontent, tablinks;
     tabcontent = document.getElementsByClassName("tab-content");
