@@ -19,7 +19,8 @@
             background-color: var(--bg);
             color: var(--text);
             display: flex;
-            justify-content: center;
+            flex-direction: column; /* NEW: Forces elements to stack top-to-bottom */
+            align-items: center;    /* NEW: Centers everything horizontally */
             padding: 40px 20px;
             margin: 0;
         }
@@ -587,7 +588,7 @@
     </div>
 </form>
 
-<div style="text-align: center; margin: 0 auto 80px; padding: 15px 20px; max-width: 800px; background-color: #eff6ff; border-radius: 8px; border: 1px dashed #93c5fd;">
+<div style="width: 100%; max-width: 1100px; text-align: center; margin: 0 auto 80px; padding: 15px 20px; background-color: #eff6ff; border-radius: 8px; border: 1px dashed #93c5fd; box-sizing: border-box;">
     <p style="margin: 0; color: #1e3a8a; font-size: 15px;">
         🌟 <strong>Donate to Endowment fund!</strong> Check details at <a href="#" target="_blank" style="color: #2563eb; font-weight: 600; text-decoration: underline;">this link</a>
     </p>
