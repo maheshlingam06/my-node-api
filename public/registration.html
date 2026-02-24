@@ -19,8 +19,8 @@
             background-color: var(--bg);
             color: var(--text);
             display: flex;
-            flex-direction: column; /* NEW: Forces elements to stack top-to-bottom */
-            align-items: center;    /* NEW: Centers everything horizontally */
+            flex-direction: column; 
+            align-items: center;    
             padding: 40px 20px;
             margin: 0;
         }
@@ -145,7 +145,6 @@
                 order: 1; 
                 position: relative !important; 
                 top: 0 !important;
-                /*margin-top: 40px; */
             }
         }
         .tariff-card {
@@ -295,6 +294,56 @@
             left: 0;
             top: -2px;
         }
+        /* --- NEW MODAL STYLES --- */
+        .modal {
+            display: none; 
+            position: fixed; 
+            z-index: 1001; 
+            left: 0;
+            top: 0;
+            width: 100%; 
+            height: 100%; 
+            overflow: auto; 
+            background-color: rgb(0,0,0); 
+            background-color: rgba(0,0,0,0.4); 
+        }
+
+        .modal-content {
+            background-color: #fefefe;
+            margin: 10% auto; 
+            padding: 20px;
+            border: 1px solid #888;
+            width: 80%;
+            max-width: 800px; 
+            border-radius: 12px;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+        }
+
+        .close {
+            color: #aaa;
+            float: right;
+            font-size: 28px;
+            font-weight: bold;
+        }
+
+        .close:hover,
+        .close:focus {
+            color: black;
+            text-decoration: none;
+            cursor: pointer;
+        }
+        .size-chart-link {
+            color: var(--primary);
+            font-size: 13px;
+            margin-left: 8px;
+            cursor: pointer;
+            text-decoration: underline;
+            display: inline-flex;
+            align-items: center;
+        }
+        .size-chart-link:hover {
+            color: #1d4ed8;
+        }
     </style>
     <script src="https://www.google.com/recaptcha/api.js?render=__SITE_KEY__" defer></script>
     <script>
@@ -337,7 +386,15 @@
             </div>
             <div class="input-group">
                 <label>Department</label>
-                <input type="text" name="department" placeholder="Enter your Department" required>
+                <select name="department" required>
+                    <option value="" disabled selected>Select your Department</option>
+                    <option value="Arch">Arch</option>
+                    <option value="Civil">Civil</option>
+                    <option value="CSE">CSE</option>
+                    <option value="ECE">ECE</option>
+                    <option value="EEE">EEE</option>
+                    <option value="Mech">Mech</option>
+                </select>
             </div>
             <div class="input-group">
                 <label>Your Class Registration Number</label>
@@ -366,9 +423,9 @@
                 </tr>
                 <tr>
                     <td>
-                        <label>Number of adults & >10 year old kids in your family</label>
+                        <label>Number of adults &amp; &gt;10 year old kids in your family</label>
                         <small style="color: #64748b; font-size: 12px; display: block; margin-top: 6px; line-height: 1.3;">
-                            *Note: The 1st person is calculated at the Spouse rate. Additional persons are calculated at the >10 yr old kid rate.
+                            *Note: The 1st person is calculated at the Spouse rate. Additional persons are calculated at the &gt;10 yr old kid rate.
                         </small>
                     </td>
                     <td style="width: 145px;"><input type="number" name="adults_and_above_10" value="0" min="0" required></td>
@@ -378,7 +435,7 @@
                     <td><input type="number" name="kids_6_10" value="0" min="0"></td>
                 </tr>
                 <tr>
-                    <td><label>Number of <6 year old kids in your family</label></td>
+                    <td><label>Number of &lt;6 year old kids in your family</label></td>
                     <td><input type="number" name="kids_under_6" value="0" min="0"></td>
                 </tr>
                 <tr>
@@ -453,7 +510,7 @@
                     </td>
                 </tr>
                 <tr>
-                    <td><label>Your T-Shirt Size*</label></td>
+                    <td><label>Your T-Shirt Size* <span id="size-chart-btn" class="size-chart-link">Is this the right size? 📏 Size Chart</span></label></td>
                     <td>
                         <select name="t_shirt_size">
                             <option value="S">Small</option>
@@ -498,9 +555,9 @@
                         <th>Tariff</th>
                         <th>Alumni</th>
                         <th>Spouse</th>
-                        <th>>10y Kid</th>
+                        <th>&gt;10y Kid</th>
                         <th>Kid (6-10y)</th>
-                        <th>Kid (<6y)</th>
+                        <th>Kid (&lt;6y)</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -593,6 +650,13 @@
         </p>
     </div>
 </form>
+
+<div id="sizeChartModal" class="modal">
+  <div class="modal-content">
+    <span class="close">&times;</span>
+    <img src="https://pqpdxdwrgwcxvjsgdoiy.supabase.co/storage/v1/object/public/assets/T-Shirt%20Size%20Chart-C.jpg" alt="T-Shirt Size Chart" style="width: 100%; height: auto; display: block;">
+  </div>
+</div>
 
 <footer class="copyright-panel">
     &copy; 2026 LEGENDS IT Consulting & Services. All rights reserved.
@@ -758,6 +822,8 @@ document.addEventListener('DOMContentLoaded', () => {
         if (el) el.addEventListener('change', calculateTotal);
         if (el && el.tagName === 'INPUT') el.addEventListener('input', calculateTotal);
     });
+
+    calculateTotal(); 
 });
 
 let slideIndex = 0;
@@ -803,6 +869,30 @@ function openTab(evt, tabName) {
     document.getElementById(tabName).style.display = "block";
     evt.currentTarget.className += " active";
 }
+
+// NEW: Script for the Size Chart Modal
+document.addEventListener('DOMContentLoaded', () => {
+    var modal = document.getElementById("sizeChartModal");
+    var btn = document.getElementById("size-chart-btn");
+    var span = document.getElementsByClassName("close")[0];
+
+    // When the user clicks on the button, open the modal
+    btn.onclick = function() {
+      modal.style.display = "block";
+    }
+
+    // When the user clicks on <span> (x), close the modal
+    span.onclick = function() {
+      modal.style.display = "none";
+    }
+
+    // When the user clicks anywhere outside of the modal, close it
+    window.onclick = function(event) {
+      if (event.target == modal) {
+        modal.style.display = "none";
+      }
+    }
+});
 </script>
 <script>
     let idleTime = 0;
