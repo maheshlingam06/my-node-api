@@ -592,15 +592,8 @@ app.post('/register', trackActivity('UPDATED_REGISTRATION'), async (req, res) =>
             const sendSmtpEmail = new Brevo.SendSmtpEmail();
             let mobile = req.body.mobile;
 
-            sendSmtpEmail.subject = "Your Family Reunion QR Code";
-            sendSmtpEmail.htmlContent = `
-                <div style="font-family: Arial, sans-serif; text-align: center;">
-                    <h1>Hello ${participant_name}!</h1>
-                    <p>Your registration is confirmed. Please present the code below at the resort check-in.</p>
-                    <img src="${qrCodeUrl}" alt="Check-in QR Code" width="250" />
-                    <p><strong>Mobile:</strong> ${mobile}</p>
-                    <p>We look forward to seeing you at Heritage Resort!</p>
-                </div>`;
+            sendSmtpEmail.subject = "TCE Reunion 2026 Confirmation";
+            sendSmtpEmail.htmlContent = emailHTML;
             
             // IMPORTANT: The sender email MUST be verified in your Brevo account
             sendSmtpEmail.sender = { "name": "Reunion Team", "email": "d.mahesh.0510@gmail.com" };
