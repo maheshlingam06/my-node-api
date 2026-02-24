@@ -471,6 +471,124 @@ app.post('/register', trackActivity('UPDATED_REGISTRATION'), async (req, res) =>
             // ... [Insert your Brevo email code here] ...
             // 5. Send Confirmation Email
             // 3. Prepare the Email using Brevo's HTTP API (Bypasses Render's port blocks)
+            // ... (Inside your /register route, after saving to Supabase) ...
+
+            // 1. RECALCULATE THE TOTAL COST SECURELY ON THE BACKEND
+            const familyAdults = parseInt(adults_and_above_10) || 0;
+            const kids6to10 = parseInt(kids_6_10) || 0;
+            const donation = parseInt(donation_amount) || 0;
+
+            let totalCost = 0;
+
+            // Friday Event
+            totalCost += 7000; 
+            if (fri_family_join === 'family') {
+                if (familyAdults > 0) totalCost += 2000 + ((familyAdults - 1) * 1500);
+                totalCost += (kids6to10 * 1000);
+            }
+
+            // Saturday Event
+            if (sat_attend_type !== 'no') {
+                totalCost += 1500;
+                if (sat_attend_type === 'family') {
+                    if (familyAdults > 0) totalCost += 1000 + ((familyAdults - 1) * 1000);
+                    totalCost += (kids6to10 * 500);
+                }
+            }
+
+            // Stay Helper
+            function getStayCost(type) {
+                if (!type || type === 'no') return 0;
+                let cost = 5500;
+                if (type === 'family') {
+                    if (familyAdults > 0) cost += 5500 + ((familyAdults - 1) * 2500);
+                    cost += (kids6to10 * 2000);
+                }
+                return cost;
+            }
+
+            totalCost += getStayCost(thu_stay_type);
+            totalCost += getStayCost(fri_stay_type);
+            totalCost += getStayCost(sat_stay_type);
+            totalCost += donation;
+
+            // 2. HELPER TO MAKE EMAIL TEXT LOOK CLEAN
+            const formatSelection = (val) => {
+                if (val === 'family') return 'Yes, with family';
+                if (val === 'self') return 'Yes, without family';
+                if (val === 'yes') return 'Yes';
+                return 'No';
+            };
+
+            // 3. BUILD THE HTML EMAIL TEMPLATE (with QR Code!)
+            const emailHTML = `
+                <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; color: #1e293b; border: 1px solid #e2e8f0; border-radius: 12px; padding: 20px; background-color: #ffffff;">
+                    
+                    <h2 style="color: #2563eb; text-align: center;">Registration Confirmed!</h2>
+                    <p>Hi ${participant_name},</p>
+                    <p>Thank you for registering for the Class of 2000 Reunion. Your digital pass and registration summary are below.</p>
+                    
+                    <div style="text-align: center; margin: 30px 0; padding: 20px; background-color: #f8fafc; border-radius: 12px; border: 2px dashed #cbd5e1;">
+                        <h3 style="color: #0f172a; margin-top: 0; margin-bottom: 5px;">Your Digital Pass</h3>
+                        <p style="font-size: 13px; color: #64748b; margin-top: 0; margin-bottom: 15px;">Please present this QR code at the registration desk upon arrival.</p>
+                        <img src="${qrCodeUrl}" alt="Registration QR Code" style="max-width: 200px; height: auto; border-radius: 8px; background: white; padding: 10px; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);" />
+                    </div>
+
+                    <h3 style="border-bottom: 2px solid #e2e8f0; padding-bottom: 8px; margin-top: 30px;">Registration Summary</h3>
+                    <table style="width: 100%; border-collapse: collapse; margin-bottom: 20px; font-size: 14px;">
+                        <tr style="border-bottom: 1px solid #f1f5f9;">
+                            <td style="padding: 10px 0; font-weight: bold; width: 45%;">Family Members:</td>
+                            <td style="padding: 10px 0;">${familyAdults} Adults/>10y, ${kids6to10} Kids (6-10y), ${kids_under_6} Kids (<6y)</td>
+                        </tr>
+                        <tr style="border-bottom: 1px solid #f1f5f9;">
+                            <td style="padding: 10px 0; font-weight: bold;">Thursday Stay:</td>
+                            <td style="padding: 10px 0;">${formatSelection(thu_stay_type)}</td>
+                        </tr>
+                        <tr style="border-bottom: 1px solid #f1f5f9;">
+                            <td style="padding: 10px 0; font-weight: bold;">Friday Reunion:</td>
+                            <td style="padding: 10px 0;">${formatSelection(fri_family_join)}</td>
+                        </tr>
+                        <tr style="border-bottom: 1px solid #f1f5f9;">
+                            <td style="padding: 10px 0; font-weight: bold;">Friday Stay:</td>
+                            <td style="padding: 10px 0;">${formatSelection(fri_stay_type)}</td>
+                        </tr>
+                        <tr style="border-bottom: 1px solid #f1f5f9;">
+                            <td style="padding: 10px 0; font-weight: bold;">Saturday Reunion:</td>
+                            <td style="padding: 10px 0;">${formatSelection(sat_attend_type)}</td>
+                        </tr>
+                        <tr style="border-bottom: 1px solid #f1f5f9;">
+                            <td style="padding: 10px 0; font-weight: bold;">Saturday Stay:</td>
+                            <td style="padding: 10px 0;">${formatSelection(sat_stay_type)}</td>
+                        </tr>
+                        <tr style="border-bottom: 1px solid #f1f5f9;">
+                            <td style="padding: 10px 0; font-weight: bold;">T-Shirt Size:</td>
+                            <td style="padding: 10px 0;">${t_shirt_size}</td>
+                        </tr>
+                        <tr style="border-bottom: 1px solid #f1f5f9;">
+                            <td style="padding: 10px 0; font-weight: bold;">Culturals / Volunteering:</td>
+                            <td style="padding: 10px 0;">${performing_culturals} / ${volunteering}</td>
+                        </tr>
+                    </table>
+
+                    <div style="background-color: #fef3c7; padding: 15px; border-radius: 8px; text-align: center; margin-bottom: 20px; border: 1px solid #fde68a;">
+                        <h3 style="margin: 0; color: #b45309;">Total Estimated Cost: ₹${totalCost.toLocaleString('en-IN')}</h3>
+                        ${donation > 0 ? `<p style="margin: 5px 0 0 0; font-size: 13px; color: #b45309;">(Includes your generous ₹${donation} additional contribution)</p>` : ''}
+                    </div>
+
+                    <p style="font-size: 15px; font-weight: bold; color: #ef4444; border-left: 4px solid #ef4444; padding-left: 15px; background-color: #fef2f2; padding: 15px; border-radius: 0 8px 8px 0;">
+                        One of the coordinators from your class will contact you for payment shortly.
+                    </p>
+
+                    <p style="margin-top: 30px; font-size: 13px; color: #64748b; text-align: center;">
+                        We look forward to seeing you!<br>
+                        <strong>— The Reunion Organizing Committee</strong>
+                    </p>
+                </div>
+            `;
+
+            // 4. NOW SEND THE EMAIL using Brevo/Nodemailer
+            // Replace your existing email content parameter with `html: emailHTML`
+            // e.g., await sendEmail({ to: email, subject: "Reunion Registration Confirmed", html: emailHTML });
             const sendSmtpEmail = new Brevo.SendSmtpEmail();
             let mobile = req.body.mobile;
 
