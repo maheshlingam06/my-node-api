@@ -346,7 +346,15 @@ app.post('/register', trackActivity('UPDATED_REGISTRATION'), async (req, res) =>
         
         console.log('register api. req body:', req.body);
         // Add this at the very top of app.post('/register')
-        const { participant_name, email, mobile, department, class_reg_no, t_shirt_size } = req.body;
+        // const { participant_name, email, mobile, department, class_reg_no, t_shirt_size } = req.body;
+        // Destructure the exact fields from the updated UI
+        const { 
+            participant_name, email, mobile, department, class_reg_no,  location, t_shirt_size,
+            adults_and_above_10, kids_6_10, kids_under_6,
+            fri_family_join, fri_stay_type, sat_attend_type, thu_stay_type, sat_stay_type,
+            donation_amount, performing_culturals, volunteering
+        } = req.body;
+
         console.log('register api. participant_name, email, mobile:', participant_name, email, mobile);
 
         
@@ -404,21 +412,24 @@ app.post('/register', trackActivity('UPDATED_REGISTRATION'), async (req, res) =>
                 .from('submissions')
                 .update({ 
                     user_id: user.id,
-                    participant_name: req.body.participant_name,
-                    email: req.body.email,
-                    mobile: req.body.mobile,
-                    location: req.body.location,
-                    teens_adults: parseInt(req.body.teens_adults) || 0,
-                    kids_6_10: parseInt(req.body.kids_6_10) || 0,
-                    kids_under_6: parseInt(req.body.kids_under_6) || 0,
-                    thu_night: req.body.thu_night,
-                    fri_reunion: req.body.fri_reunion,
-                    fri_night: req.body.fri_night,
-                    sat_reunion: req.body.sat_reunion,
-                    sat_night: req.body.sat_night,
+                    participant_name: participant_name,
+                    email: email,
+                    mobile: mobile,
+                    location: location,
                     department,       
                     class_reg_no,     
-                    t_shirt_size,     
+                    t_shirt_size: t_shirt_size,
+                    adults_and_above_10: parseInt(adults_and_above_10) || 0,
+                    kids_6_10: parseInt(kids_6_10) || 0,
+                    kids_under_6: parseInt(kids_under_6) || 0,
+                    fri_family_join: fri_family_join,
+                    fri_stay_type: fri_stay_type,
+                    sat_attend_type: sat_attend_type,
+                    thu_stay_type: thu_stay_type,
+                    sat_stay_type: sat_stay_type,
+                    donation_amount: parseInt(donation_amount) || 0,
+                    performing_culturals: performing_culturals,
+                    volunteering: volunteering,
                     qr_code_url: qrCodeUrl // Uses existing one if no change
                 }, { onConflict: 'user_id' })
                 .eq('user_id', user.id);
@@ -430,21 +441,24 @@ app.post('/register', trackActivity('UPDATED_REGISTRATION'), async (req, res) =>
             .from('submissions')
             .insert({ 
                 user_id: user.id,
-                participant_name: req.body.participant_name,
-                email: req.body.email,
-                mobile: req.body.mobile,
-                location: req.body.location,
-                teens_adults: parseInt(req.body.teens_adults) || 0,
-                kids_6_10: parseInt(req.body.kids_6_10) || 0,
-                kids_under_6: parseInt(req.body.kids_under_6) || 0,
-                thu_night: req.body.thu_night,
-                fri_reunion: req.body.fri_reunion,
-                fri_night: req.body.fri_night,
-                sat_reunion: req.body.sat_reunion,
-                sat_night: req.body.sat_night,
+                participant_name: participant_name,
+                email: email,
+                mobile: mobile,
+                location: location,
                 department,       
                 class_reg_no,     
-                t_shirt_size,     
+                t_shirt_size: t_shirt_size,
+                adults_and_above_10: parseInt(adults_and_above_10) || 0,
+                kids_6_10: parseInt(kids_6_10) || 0,
+                kids_under_6: parseInt(kids_under_6) || 0,
+                fri_family_join: fri_family_join,
+                fri_stay_type: fri_stay_type,
+                sat_attend_type: sat_attend_type,
+                thu_stay_type: thu_stay_type,
+                sat_stay_type: sat_stay_type,
+                donation_amount: parseInt(donation_amount) || 0,
+                performing_culturals: performing_culturals,
+                volunteering: volunteering,
                 qr_code_url: qrCodeUrl // Uses existing one if no change
             }, { onConflict: 'user_id' });
             if (dbError) throw dbError;
