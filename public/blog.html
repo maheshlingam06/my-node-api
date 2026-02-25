@@ -379,24 +379,43 @@
     <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/browser-image-compression@2.0.1/dist/browser-image-compression.js"></script>
     <script>
         // --- 1. INITIALIZE QUILL WITH CUSTOM TOOLBAR ---
-        const quill = new Quill('#editor-container', {
-            theme: 'snow',
-            placeholder: 'Write your story and share memories...',
-            modules: {
-                toolbar: {
-                    container: [
-                        ['bold', 'italic', 'underline'],
-                        [{ 'list': 'ordered'}, { 'list': 'bullet' }],
-                        ['image', 'link'], // Added the image and link buttons!
-                        ['clean']
-                    ],
-                    handlers: {
-                        // Intercept the default image button click
-                        image: selectLocalImage 
+        let quill;
+        const userType = localStorage.getItem('userType');
+        if (userType == 'x'){
+            quill = new Quill('#editor-container', {
+                theme: 'snow',
+                placeholder: 'Write your story and share memories...',
+                modules: {
+                    toolbar: {
+                        container: [
+                            ['bold', 'italic', 'underline'],
+                            [{ 'list': 'ordered'}, { 'list': 'bullet' }],
+                            ['image', 'link'], // Added the image and link buttons!
+                            ['clean']
+                        ],
+                        handlers: {
+                            // Intercept the default image button click
+                            image: selectLocalImage 
+                        }
                     }
                 }
-            }
-        });
+            });
+        }
+        else{
+            quill = new Quill('#editor-container', {
+                theme: 'snow',
+                placeholder: 'Write your story and share memories...',
+                modules: {
+                    toolbar: {
+                        container: [
+                            ['bold', 'italic', 'underline'],
+                            [{ 'list': 'ordered'}, { 'list': 'bullet' }],
+                            ['clean']
+                        ]
+                    }
+                }
+            });
+        }
 
         // --- 2. CUSTOM IMAGE UPLOAD LOGIC ---
         function selectLocalImage() {
