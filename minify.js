@@ -16,7 +16,7 @@ const minifyOptions = {
     removeComments: true,          // Strips out your comments
     minifyCSS: true,               // Compresses the <style> blocks
     minifyJS: true,                // Compresses the <script> blocks
-    removeRedundantAttributes: true,
+    removeRedundantAttributes: false,
     removeEmptyAttributes: true
 };
 
