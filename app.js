@@ -1016,6 +1016,252 @@ app.delete('/api/blog/:id', trackActivity('DELETED_BLOG_POST'), async (req, res)
     }
 });
 
+// --- NIGHTLY BATCH PROCESS ENDPOINT ---
+app.post('/api/cron/nightly-updates', async (req, res) => {
+    
+    // 1. Basic Security Check
+    const cronSecret = req.headers['x-cron-secret'];
+    if (cronSecret !== process.env.CRON_SECRET) {
+        return res.status(403).json({ error: 'Unauthorized' });
+    }
+
+    try {
+        // 2. Fetch all records that need an update email
+        const { data: updatedSubmissions, error } = await userSupabase
+            .from('submissions')
+            .select('*')
+            .eq('needs_update_email', true);
+
+        if (error) throw error;
+        
+        if (!updatedSubmissions || updatedSubmissions.length === 0) {
+            return res.status(200).json({ message: 'No updates to process today.' });
+        }
+
+        // Helper to format dropdown values cleanly
+        const formatSelection = (val) => {
+            if (val === 'family') return 'Yes, with family';
+            if (val === 'self') return 'Yes, without family';
+            if (val === 'yes') return 'Yes';
+            if (!val || val === 'no') return 'No';
+            return val;
+        };
+
+        let committeeTableRows = '';
+        const processedUserIds = [];
+
+        // 3. Loop through each updated record
+        for (const sub of updatedSubmissions) {
+            
+            // --- A. RECALCULATE COST FOR THIS SPECIFIC RECORD ---
+            const familyAdults = parseInt(sub.adults_and_above_10) || 0;
+            const kids6to10 = parseInt(sub.kids_6_10) || 0;
+            const kidsUnder6 = parseInt(sub.kids_under_6) || 0;
+            const donation = parseInt(sub.donation_amount) || 0;
+
+            let totalCost = 0;
+
+            // Friday Event
+            totalCost += 7000; 
+            if (sub.fri_family_join === 'family') {
+                if (familyAdults > 0) totalCost += 2000 + ((familyAdults - 1) * 1500);
+                totalCost += (kids6to10 * 1000);
+            }
+
+            // Saturday Event
+            if (sub.sat_attend_type !== 'no') {
+                totalCost += 1500;
+                if (sub.sat_attend_type === 'family') {
+                    if (familyAdults > 0) totalCost += 1000 + ((familyAdults - 1) * 1000);
+                    totalCost += (kids6to10 * 500);
+                }
+            }
+
+            // Stay Helper
+            function getStayCost(type) {
+                if (!type || type === 'no') return 0;
+                let cost = 5500;
+                if (type === 'family') {
+                    if (familyAdults > 0) cost += 5500 + ((familyAdults - 1) * 2500);
+                    cost += (kids6to10 * 2000);
+                }
+                return cost;
+            }
+
+            totalCost += getStayCost(sub.thu_stay_type);
+            totalCost += getStayCost(sub.fri_stay_type);
+            totalCost += getStayCost(sub.sat_stay_type);
+            totalCost += donation;
+
+            // --- B. BUILD PARTICIPANT EMAIL ---
+            const participantHtml = `
+                <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; color: #1e293b; border: 1px solid #e2e8f0; border-radius: 12px; padding: 20px;">
+                    <h2 style="color: #2563eb; text-align: center;">Registration Update Confirmed</h2>
+                    <p>Hi ${sub.participant_name},</p>
+                    <p>We successfully recorded the recent changes to your Class of 2000 Reunion registration. Here is your updated summary:</p>
+                    
+                    <table style="width: 100%; border-collapse: collapse; margin-bottom: 20px; font-size: 14px;">
+                        <tr style="border-bottom: 1px solid #f1f5f9;">
+                            <td style="padding: 10px 0; font-weight: bold; width: 45%;">Family Members:</td>
+                            <td style="padding: 10px 0;">${familyAdults} Adults/>10y, ${kids6to10} Kids (6-10y), ${kidsUnder6} Kids (<6y)</td>
+                        </tr>
+                        <tr style="border-bottom: 1px solid #f1f5f9;">
+                            <td style="padding: 10px 0; font-weight: bold;">Thursday Stay:</td>
+                            <td style="padding: 10px 0;">${formatSelection(sub.thu_stay_type)}</td>
+                        </tr>
+                        <tr style="border-bottom: 1px solid #f1f5f9;">
+                            <td style="padding: 10px 0; font-weight: bold;">Friday Reunion:</td>
+                            <td style="padding: 10px 0;">${formatSelection(sub.fri_family_join)}</td>
+                        </tr>
+                        <tr style="border-bottom: 1px solid #f1f5f9;">
+                            <td style="padding: 10px 0; font-weight: bold;">Friday Stay:</td>
+                            <td style="padding: 10px 0;">${formatSelection(sub.fri_stay_type)}</td>
+                        </tr>
+                        <tr style="border-bottom: 1px solid #f1f5f9;">
+                            <td style="padding: 10px 0; font-weight: bold;">Saturday Reunion:</td>
+                            <td style="padding: 10px 0;">${formatSelection(sub.sat_attend_type)}</td>
+                        </tr>
+                        <tr style="border-bottom: 1px solid #f1f5f9;">
+                            <td style="padding: 10px 0; font-weight: bold;">Saturday Stay:</td>
+                            <td style="padding: 10px 0;">${formatSelection(sub.sat_stay_type)}</td>
+                        </tr>
+                        <tr style="border-bottom: 1px solid #f1f5f9;">
+                            <td style="padding: 10px 0; font-weight: bold;">T-Shirt Size:</td>
+                            <td style="padding: 10px 0;">${sub.t_shirt_size}</td>
+                        </tr>
+                        <tr style="border-bottom: 1px solid #f1f5f9;">
+                            <td style="padding: 10px 0; font-weight: bold;">Culturals / Volunteering:</td>
+                            <td style="padding: 10px 0;">${sub.performing_culturals} / ${sub.volunteering}</td>
+                        </tr>
+                    </table>
+
+                    <div style="background-color: #fef3c7; padding: 15px; border-radius: 8px; text-align: center;">
+                        <h3 style="margin: 0; color: #b45309;">Updated Estimated Cost: ₹${totalCost.toLocaleString('en-IN')}</h3>
+                        ${donation > 0 ? `<p style="margin: 5px 0 0 0; font-size: 13px; color: #b45309;">(Includes your ₹${donation} donation)</p>` : ''}
+                    </div>
+                </div>
+            `;
+            
+            // Trigger Brevo API to send participantHtml to sub.email here
+
+            // --- C. BUILD COMMITTEE ROW ---
+            committeeTableRows += `
+                <tr style="border-bottom: 1px solid #e2e8f0; font-size: 13px;">
+                    <td style="padding: 10px 8px; font-weight: bold; color: #0f172a;">${sub.participant_name}<br><span style="font-weight: normal; color: #64748b; font-size: 11px;">${sub.mobile}</span></td>
+                    <td style="padding: 10px 8px;">${familyAdults}A, ${kids6to10}K, ${kidsUnder6}I</td>
+                    <td style="padding: 10px 8px;">${formatSelection(sub.thu_stay_type)}</td>
+                    <td style="padding: 10px 8px;">${formatSelection(sub.fri_family_join)}</td>
+                    <td style="padding: 10px 8px;">${formatSelection(sub.fri_stay_type)}</td>
+                    <td style="padding: 10px 8px;">${formatSelection(sub.sat_attend_type)}</td>
+                    <td style="padding: 10px 8px;">${formatSelection(sub.sat_stay_type)}</td>
+                    <td style="padding: 10px 8px; font-weight: bold; color: #047857;">₹${totalCost.toLocaleString('en-IN')}</td>
+                </tr>
+            `;
+
+            processedUserIds.push(sub.user_id);
+        }
+
+        // --- 4. BUILD & SEND COMMITTEE CONSOLIDATED EMAIL ---
+        const committeeHtml = `
+            <div style="font-family: Arial, sans-serif; color: #1e293b; max-width: 1000px; margin: 0 auto;">
+                <h2 style="color: #0f172a;">Daily Registration Updates</h2>
+                <p>The following ${updatedSubmissions.length} alumni modified their registrations in the last 24 hours.</p>
+                <table style="width: 100%; border-collapse: collapse; text-align: left; background: #ffffff; border: 1px solid #cbd5e1;">
+                    <tr style="background-color: #f8fafc; border-bottom: 2px solid #cbd5e1; font-size: 12px; text-transform: uppercase; color: #475569;">
+                        <th style="padding: 12px 8px;">Alumnus</th>
+                        <th style="padding: 12px 8px;">Family</th>
+                        <th style="padding: 12px 8px;">Thu Stay</th>
+                        <th style="padding: 12px 8px;">Fri Event</th>
+                        <th style="padding: 12px 8px;">Fri Stay</th>
+                        <th style="padding: 12px 8px;">Sat Event</th>
+                        <th style="padding: 12px 8px;">Sat Stay</th>
+                        <th style="padding: 12px 8px;">New Total</th>
+                    </tr>
+                    ${committeeTableRows}
+                </table>
+            </div>
+        `;
+        
+        // Trigger Brevo API to send committeeHtml to reunion-committee@yourdomain.com here
+
+        // 5. Un-flag all records
+        await userSupabase
+            .from('submissions')
+            .update({ needs_update_email: false })
+            .in('user_id', processedUserIds);
+
+        return res.status(200).json({ message: `Successfully processed ${updatedSubmissions.length} updates.` });
+
+    } catch (err) {
+        console.error("Nightly Batch Error:", err);
+        return res.status(500).json({ error: 'Batch process failed' });
+    }
+});
+
+// --- FORGOT PASSWORD ENDPOINT ---
+app.post('/forgot-password', async (req, res) => {
+    const { email } = req.body;
+
+    if (!email) {
+        return res.status(400).json({ error: 'Email is required.' });
+    }
+
+    try {
+        const { data, error } = await adminSupabase.auth.resetPasswordForEmail(email, {
+            // IMPORTANT: Change this to your live domain once you deploy!
+            // This is the page the user will land on when they click the link in their email.
+            redirectTo: 'http://localhost:3000/update-password.html' 
+        });
+
+        if (error) {
+            throw error;
+        }
+
+        // Security best practice: Always return success even if the email doesn't exist in the DB
+        // This prevents malicious bots from guessing which emails belong to registered users.
+        return res.status(200).json({ message: 'If an account exists, a reset link has been sent.' });
+
+    } catch (err) {
+        console.error("Forgot Password Error:", err);
+        return res.status(500).json({ error: err.message || 'Failed to send reset link.' });
+    }
+});
+
+// --- UPDATE PASSWORD ENDPOINT ---
+app.post('/update-password', async (req, res) => {
+    const { password } = req.body;
+    const authHeader = req.headers['authorization'];
+    
+    // Extract the token from the "Bearer <token>" format
+    const token = authHeader && authHeader.split(' ')[1];
+
+    if (!token || !password) {
+        return res.status(400).json({ error: 'Missing token or password.' });
+    }
+
+    try {
+        // First, verify who this token belongs to
+        const { data: { user }, error: userError } = await adminSupabase.auth.getUser(token);
+        
+        if (userError || !user) {
+            return res.status(401).json({ error: 'Session expired. Please request a new reset link.' });
+        }
+
+        // Second, use the Supabase Admin API to forcefully update that user's password
+        const { error: updateError } = await adminSupabase.auth.admin.updateUserById(user.id, { 
+            password: password 
+        });
+
+        if (updateError) throw updateError;
+
+        return res.status(200).json({ message: 'Password updated successfully!' });
+
+    } catch (err) {
+        console.error("Update Password Error:", err);
+        return res.status(500).json({ error: 'Failed to update password.' });
+    }
+});
+
 app.post('/api/salesforce/upload', upload.any(), async (req, res) => {
     try {
         const { brokercode, hashcode } = req.body;
