@@ -137,7 +137,7 @@ async function verifyRecaptcha(token) {
 }
 
 app.get('/', (req, res) => {
-    res.sendFile(path.join(__dirname, 'signup.html'));
+    res.sendFile(path.join(__dirname, 'signup'));
 });
 
 app.get('/signup', (req, res) => {
@@ -586,23 +586,37 @@ app.post('/register', trackActivity('UPDATED_REGISTRATION'), async (req, res) =>
                 </div>
             `;
 
-            // 4. NOW SEND THE EMAIL using Brevo/Nodemailer
-            // Replace your existing email content parameter with `html: emailHTML`
-            // e.g., await sendEmail({ to: email, subject: "Reunion Registration Confirmed", html: emailHTML });
-            const sendSmtpEmail = new Brevo.SendSmtpEmail();
-            let mobile = req.body.mobile;
+            try{
+                // 4. NOW SEND THE EMAIL using Brevo/Nodemailer
+                // Replace your existing email content parameter with `html: emailHTML`
+                // e.g., await sendEmail({ to: email, subject: "Reunion Registration Confirmed", html: emailHTML });
+                const sendSmtpEmail = new Brevo.SendSmtpEmail();
+                let mobile = req.body.mobile;
 
-            sendSmtpEmail.subject = "TCE Reunion 2026 Confirmation";
-            sendSmtpEmail.htmlContent = emailHTML;
-            
-            // IMPORTANT: The sender email MUST be verified in your Brevo account
-            sendSmtpEmail.sender = { "name": "Reunion Team", "email": "d.mahesh.0510@gmail.com" };
-            sendSmtpEmail.to = [{ "email": email, "name": participant_name }];
-            // sendSmtpEmail.cc = [{ "email": 'tce2001reunion@gmail.com', "name": "New User Registration" }];
-            sendSmtpEmail.cc = [{ "email": 'tcealumni2026@gmail.com', "name": "New User Registration" }];
+                sendSmtpEmail.subject = "TCE Reunion 2026 Confirmation";
+                sendSmtpEmail.htmlContent = emailHTML;
+                
+                // IMPORTANT: The sender email MUST be verified in your Brevo account
+                sendSmtpEmail.sender = { "name": "Reunion Team", "email": "d.mahesh.0510@gmail.com" };
+                sendSmtpEmail.to = [{ "email": email, "name": participant_name }];
+                // sendSmtpEmail.cc = [{ "email": 'tce2001reunion@gmail.com', "name": "New User Registration" }];
+                sendSmtpEmail.cc = [{ "email": 'tcealumni2026@gmail.com', "name": "New User Registration" }];
 
-            // 4. Trigger the send
-            await apiInstance.sendTransacEmail(sendSmtpEmail);
+                // 4. Trigger the send
+                await apiInstance.sendTransacEmail(sendSmtpEmail);
+            }catch (emailError) {
+                // 3. THE SAFETY NET
+                // If Brevo blocks the send (e.g., 300 daily limit reached), it lands here instead of crashing your app.
+                
+                console.error(`[BREVO WARNING] Failed to send confirmation email to ${email}. Check daily quota!`);
+                
+                // Logs the exact reason Brevo rejected it
+                const errorMessage = emailError.response ? emailError.response.text : emailError.message;
+                console.error(`Error Details: ${errorMessage}`);
+                
+                // We deliberately do NOT throw an error to the frontend.
+                // The data is safe in Supabase, so we let the function continue to the success response below.
+            }
         }
 
         console.log("Before res json...");
