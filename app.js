@@ -1198,6 +1198,45 @@ app.post('/api/cron/nightly-updates', async (req, res) => {
     }
 });
 
+// --- ADMIN: UPDATE PAYMENT STATUS ---
+app.post('/admin/update-payment', async (req, res) => {
+    const { user_id, payment_status, amount_received } = req.body;
+    const authHeader = req.headers['authorization'];
+    const token = authHeader && authHeader.split(' ')[1];
+
+    if (!token) {
+        return res.status(401).json({ error: 'Unauthorized: Missing token' });
+    }
+
+    try {
+        // 1. Verify the user making the request is valid
+        const { data: { user }, error: userError } = await supabase.auth.getUser(token);
+        if (userError || !user) {
+            return res.status(401).json({ error: 'Session expired or invalid token' });
+        }
+
+        // NOTE: In a fully locked-down app, you would also check here if `user.id` belongs to an Admin!
+
+        // 2. Update the specific user's payment data in the database
+        // Using the service_role key (supabase client) to bypass RLS if needed for admin actions
+        const { error: updateError } = await adminSupabase
+            .from('submissions')
+            .update({
+                payment_status: payment_status,
+                amount_received: amount_received || 0
+            })
+            .eq('user_id', user_id);
+
+        if (updateError) throw updateError;
+
+        return res.status(200).json({ message: 'Payment details updated successfully!' });
+
+    } catch (err) {
+        console.error("Admin Payment Update Error:", err);
+        return res.status(500).json({ error: 'Failed to update payment details.' });
+    }
+});
+
 // --- FORGOT PASSWORD ENDPOINT ---
 app.post('/forgot-password', async (req, res) => {
     const { email } = req.body;

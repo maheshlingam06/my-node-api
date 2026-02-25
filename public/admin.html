@@ -17,8 +17,7 @@
             padding: 10px; border: 1px solid #cbd5e1; border-radius: 6px; width: 300px;
         }
 
-        .copyright-panel { text-align: center; padding: 20px; font-size: 12px; color: rgba(0,0,0,0.6); margin-top: auto; position: fixed; bottom: 10px;}
-
+        .copyright-panel { text-align: center; padding: 20px; font-size: 12px; color: rgba(0,0,0,0.6); margin-top: 40px;}
         
         button {
             padding: 10px 20px; border: none; border-radius: 6px; cursor: pointer; font-weight: 600;
@@ -29,14 +28,14 @@
 
         /* Table Styling */
         .table-container { background: white; border-radius: 8px; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1); overflow-x: auto; }
-        table { width: 100%; border-collapse: collapse; min-width: 1000px; }
+        table { width: 100%; border-collapse: collapse; min-width: 1400px; }
         
-        th, td { padding: 12px 15px; text-align: left; border-bottom: 1px solid #e2e8f0; font-size: 14px; }
+        th, td { padding: 12px 10px; text-align: left; border-bottom: 1px solid #e2e8f0; font-size: 13px; }
         th { background-color: #f8fafc; font-weight: 600; color: #475569; position: sticky; top: 0; }
         tr:hover { background-color: #f8fafc; }
 
         /* Status Badges */
-        .badge { padding: 4px 8px; border-radius: 12px; font-size: 11px; font-weight: 600; }
+        .badge { padding: 4px 8px; border-radius: 12px; font-size: 11px; font-weight: 600; display: inline-block;}
         .badge-green { background-color: #dcfce7; color: #166534; }
         .badge-blue { background-color: #dbeafe; color: #1e40af; }
     </style>
@@ -46,11 +45,11 @@
     <div class="header">
         <h2>Registration Dashboard</h2>
         <div class="controls">
-            <input type="text" id="searchInput" placeholder="Search any field (Name, Email, City)...">
+            <input type="text" id="searchInput" placeholder="Search Name, Email, Dept...">
             <div style="display: flex; justify-content: flex-end; margin-bottom: 15px;">
                 <button onclick="exportTableToCSV('Reunion_Registrations_2026.csv')" style="background-color: #10b981; color: white; border: none; padding: 10px 20px; border-radius: 6px; font-weight: 600; cursor: pointer; display: flex; align-items: center; gap: 8px; font-size: 14px; transition: all 0.2s;">
                     <svg width="18" height="18" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path></svg>
-                    Export to Excel (CSV)
+                    Export to Excel
                 </button>
             </div>
             <button class="btn-refresh" onclick="fetchData(true)">🔄 Refresh Data</button>
@@ -65,22 +64,27 @@
                     <th>Name</th>
                     <th>Mobile</th>
                     <th>Email</th>
-                    <th>Department</th>
-                    <th>Adults (>10y)</th>
-                    <th>Kids (6-10y)</th>
-                    <th>Kids (<6y)</th>
-                    <th>Thu Night Stay</th>
-                    <th>Fri Reunion (College-Family attending?)</th>
-                    <th>Fri Night Stay</th>
-                    <th>Sat Reunion (College)</th>
-                    <th>Sat Night Stay</th>
+                    <th>Dept</th>
+                    <th>Adults(>10y)</th>
+                    <th>Kids(6-10y)</th>
+                    <th>Kids(<6y)</th>
+                    <th>Thu Stay</th>
+                    <th>Fri Event</th>
+                    <th>Fri Stay</th>
+                    <th>Sat Event</th>
+                    <th>Sat Stay</th>
+                    <th>Donation</th>
                     <th>Total Cost</th>
+                    <th>Payment Status</th>
+                    <th>Amount Rcvd</th>
+                    <th>Action</th>
                 </tr>
             </thead>
             <tbody id="tableBody">
                 </tbody>
         </table>
     </div>
+    
     <div class="card" style="margin-top: 40px; background: rgba(15, 23, 42, 0.65); backdrop-filter: blur(12px); border: 1px solid rgba(255, 255, 255, 0.1); padding: 30px; border-radius: 16px;">
         <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
             <h2 style="color: white; margin: 0; font-size: 1.5rem;">System Audit Logs</h2>
@@ -104,63 +108,70 @@
             </table>
         </div>
     </div>
+    
     <footer class="copyright-panel">
         &copy; 2026 LEGENDS IT Consulting & Services. All rights reserved.
     </footer>
 
     <script>
-        // 1. Calculate Cost Helper (Same logic as registration page)
-        // 1. Updated Cost Calculation
+        // 1. UPDATED COST CALCULATION (Matches Backend perfectly)
         function calculateRowCost(row) {
-            const adults = parseInt(row.teens_adults) || 0;
-            // Fallback to row.kids just in case older test data hasn't been migrated
-            const kids6to10 = parseInt(row.kids_6_10) || parseInt(row.kids) || 0; 
-
-            const alumniCount = adults > 0 ? 1 : 0;
-            const secondMemCount = adults > 1 ? 1 : 0;
-            const thirdMemPlusCount = adults > 2 ? adults - 2 : 0;
+            const familyAdults = parseInt(row.adults_and_above_10) || parseInt(row.teens_adults) || 0;
+            const kids6to10 = parseInt(row.kids_6_10) || parseInt(row.kids) || 0;
+            const donation = parseInt(row.donation_amount) || 0;
 
             let total = 0;
 
-            function addStayCost(selection) {
-                if (selection === 'yes_single') {
-                    total += (alumniCount * 5650);
-                } else if (selection === 'yes_family') {
-                    total += (alumniCount * 5650) + (secondMemCount * 5500) + (thirdMemPlusCount * 2500) + (kids6to10 * 2000);
+            // Friday Event
+            total += 7000; 
+            if (row.fri_family_join === 'family' || row.fri_reunion === 'yes') {
+                if (familyAdults > 0) total += 2000 + ((familyAdults - 1) * 1500);
+                total += (kids6to10 * 1000);
+            }
+
+            // Saturday Event
+            if (row.sat_attend_type && row.sat_attend_type !== 'no') {
+                total += 1500;
+                if (row.sat_attend_type === 'family') {
+                    if (familyAdults > 0) total += 1000 + ((familyAdults - 1) * 1000);
+                    total += (kids6to10 * 500);
                 }
             }
 
-            // Apply Resort Stay Costs
-            addStayCost(row.thu_night);
-            addStayCost(row.fri_night);
-            addStayCost(row.sat_night);
-
-            // Friday Event & Dinner
-            if (row.fri_reunion === 'yes') {
-                total += (alumniCount * 7000) + (secondMemCount * 1700) + (thirdMemPlusCount * 1700) + (kids6to10 * 850);
-            }
-            else {
-                total += (alumniCount * 7000);
+            // Stay Helper
+            function getStayCost(type) {
+                if (!type || type === 'no') return 0;
+                let cost = 5500;
+                if (type === 'family' || type === 'yes_family') {
+                    if (familyAdults > 0) cost += 5500 + ((familyAdults - 1) * 2500);
+                    cost += (kids6to10 * 2000);
+                }
+                return cost;
             }
 
-            // Saturday Event & Lunch
-            if (row.sat_reunion === 'yes_single') {
-                total += (alumniCount * 1400);
-            } else if (row.sat_reunion === 'yes_family') {
-                total += (alumniCount * 1400) + (secondMemCount * 1100) + (thirdMemPlusCount * 1100) + (kids6to10 * 550);
-            }
+            total += getStayCost(row.thu_stay_type || row.thu_night);
+            total += getStayCost(row.fri_stay_type || row.fri_night);
+            total += getStayCost(row.sat_stay_type || row.sat_night);
+            
+            total += donation;
 
             return total;
         }
 
-        // 2. Render Function
-        // 2. Render Function
+        // Helper to format selections beautifully in the table
+        const formatSel = (v) => {
+            if(v === 'family' || v === 'yes_family') return '<span class="badge badge-green">Family</span>';
+            if(v === 'self' || v === 'yes_single' || v === 'yes') return '<span class="badge badge-blue">Self/Yes</span>';
+            return '-';
+        };
+
+        // 2. RENDER FUNCTION
         function renderTable(data) {
             const tbody = document.getElementById('tableBody');
-            tbody.innerHTML = ''; // Clear current rows
+            tbody.innerHTML = ''; 
 
             if (data.length === 0) {
-                tbody.innerHTML = '<tr><td colspan="10" style="text-align:center; padding: 20px;">No records found.</td></tr>';
+                tbody.innerHTML = '<tr><td colspan="17" style="text-align:center; padding: 20px;">No records found.</td></tr>';
                 return;
             }
 
@@ -168,11 +179,9 @@
                 const cost = calculateRowCost(row);
                 const tr = document.createElement('tr');
                 
-                // Use kids_6_10, but fallback to kids for old data
+                const displayAdults = row.adults_and_above_10 !== undefined ? row.adults_and_above_10 : (row.teens_adults || 0);
                 const displayKids = row.kids_6_10 !== undefined ? row.kids_6_10 : (row.kids || 0);
                 const displayBabies = row.kids_under_6 !== undefined ? row.kids_under_6 : 0;
-                
-                // Show department, fallback to location if older data
                 const displayDept = row.department || row.location || '-';
 
                 tr.innerHTML = `
@@ -180,18 +189,70 @@
                     <td>${row.mobile || '-'}</td>
                     <td>${row.email || '-'}</td>
                     <td>${displayDept}</td>
-                    <td>${row.teens_adults || 0}</td>
+                    <td>${displayAdults}</td>
                     <td>${displayKids}</td>
                     <td>${displayBabies}</td>
-                    <td>${row.thu_night === 'yes_family' || row.thu_night === 'yes_single' ? '<span class="badge badge-green">' + row.thu_night + '</span>' : '-'}</td>
-                    <td>${row.fri_reunion === 'yes' ? '<span class="badge badge-blue">Yes</span>' : '-'}</td>
-                    <td>${row.fri_night === 'yes_family' || row.fri_night === 'yes_single' ? '<span class="badge badge-green">' + row.fri_night + '</span>' : '-'}</td>
-                    <td>${row.sat_reunion === 'yes_family' || row.sat_reunion === 'yes_single' ? '<span class="badge badge-blue">' + row.sat_reunion + '</span>' : '-'}</td>
-                    <td>${row.sat_night === 'yes_family' || row.sat_night === 'yes_single' ? '<span class="badge badge-blue">' + row.sat_night + '</span>' : '-'}</td>
-                    <td style="font-weight:bold">₹${cost.toLocaleString('en-IN')}</td>
+                    
+                    <td>${formatSel(row.thu_stay_type || row.thu_night)}</td>
+                    <td>${formatSel(row.fri_family_join || row.fri_reunion)}</td>
+                    <td>${formatSel(row.fri_stay_type || row.fri_night)}</td>
+                    <td>${formatSel(row.sat_attend_type || row.sat_reunion)}</td>
+                    <td>${formatSel(row.sat_stay_type || row.sat_night)}</td>
+                    
+                    <td>₹${(row.donation_amount || 0).toLocaleString('en-IN')}</td>
+                    <td style="font-weight:bold; color: #1e3a8a;">₹${cost.toLocaleString('en-IN')}</td>
+                    
+                    <td>
+                        <select id="status-${row.user_id}" style="padding: 4px; border-radius: 4px; border: 1px solid #cbd5e1; font-size: 12px;">
+                            <option value="Pending" ${!row.payment_status || row.payment_status === 'Pending' ? 'selected' : ''}>Pending</option>
+                            <option value="Partial" ${row.payment_status === 'Partial' ? 'selected' : ''}>Partial</option>
+                            <option value="Full" ${row.payment_status === 'Full' ? 'selected' : ''}>Full</option>
+                        </select>
+                    </td>
+                    <td>
+                        <input type="number" id="amount-${row.user_id}" value="${row.amount_received || 0}" style="width: 70px; padding: 4px; border-radius: 4px; border: 1px solid #cbd5e1; font-size: 12px;">
+                    </td>
+                    <td>
+                        <button onclick="savePayment('${row.user_id}')" style="background: #059669; color: white; border: none; padding: 6px 12px; border-radius: 4px; cursor: pointer; font-size: 11px;">Save</button>
+                    </td>
                 `;
                 tbody.appendChild(tr);
             });
+        }
+
+        // --- NEW: SAVE PAYMENT ACTION ---
+        async function savePayment(userId) {
+            const status = document.getElementById(`status-${userId}`).value;
+            const amount = document.getElementById(`amount-${userId}`).value;
+            const token = localStorage.getItem('supabaseToken');
+
+            try {
+                const response = await fetch('/admin/update-payment', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${token}` 
+                    },
+                    body: JSON.stringify({
+                        user_id: userId,
+                        payment_status: status,
+                        amount_received: amount
+                    })
+                });
+
+                const result = await response.json();
+
+                if (response.ok) {
+                    alert("Payment updated successfully!");
+                    // Silently clear cache so the next refresh pulls fresh DB values
+                    localStorage.removeItem('adminData'); 
+                } else {
+                    alert("Error: " + (result.error || "Failed to save"));
+                }
+            } catch (err) {
+                console.error("Fetch Error:", err);
+                alert("Server error. Please try again.");
+            }
         }
 
         // 3. Search Logic
@@ -202,13 +263,12 @@
             if (storedData) {
                 const allData = JSON.parse(storedData);
                 const filtered = allData.filter(row => {
-                    // Combine all searchable fields into one string for easy checking
                     const searchableStr = `
                         ${row.participant_name} 
                         ${row.email} 
                         ${row.mobile} 
                         ${row.department} 
-                        ${row.location}
+                        ${row.payment_status}
                     `.toLowerCase();
                     return searchableStr.includes(term);
                 });
@@ -219,51 +279,44 @@
 
         // --- EXPORT TO EXCEL (CSV) LOGIC ---
         function exportTableToCSV(filename) {
-            // Make sure 'registrationsTable' matches the ID of your <table> tag
             const table = document.getElementById("regTable"); 
             let csv = [];
             
-            // Loop through all table rows (including headers)
             for (let i = 0; i < table.rows.length; i++) {
                 let row = [];
                 let cols = table.rows[i].querySelectorAll("td, th");
                 
-                for (let j = 0; j < cols.length; j++) {
-                    // Get the text, remove newlines, and trim whitespace
-                    let data = cols[j].innerText.replace(/(\r\n|\n|\r)/gm, "").trim();
+                // Skip the last 'Actions' column in the export
+                for (let j = 0; j < cols.length - 1; j++) {
+                    let data = "";
                     
-                    // Escape double quotes inside the data
+                    // NEW: If the column has an input or select, grab its value instead of innerText
+                    const inputElement = cols[j].querySelector('input, select');
+                    if (inputElement) {
+                        data = inputElement.value;
+                    } else {
+                        data = cols[j].innerText.replace(/(\r\n|\n|\r)/gm, "").trim();
+                    }
+                    
                     data = data.replace(/"/g, '""');
-                    
-                    // Wrap in quotes to prevent commas in the data from breaking the columns
                     row.push('"' + data + '"');
                 }
                 csv.push(row.join(","));
             }
-            
-            // Trigger the download
             downloadCSV(csv.join("\n"), filename);
         }
 
         function downloadCSV(csv, filename) {
-            let csvFile;
-            let downloadLink;
-
-            // Create a Blob with the CSV data
-            csvFile = new Blob([csv], {type: "text/csv;charset=utf-8;"});
-
-            // Create a hidden link, attach the Blob, and click it
-            downloadLink = document.createElement("a");
+            let csvFile = new Blob([csv], {type: "text/csv;charset=utf-8;"});
+            let downloadLink = document.createElement("a");
             downloadLink.download = filename;
             downloadLink.href = window.URL.createObjectURL(csvFile);
             downloadLink.style.display = "none";
             document.body.appendChild(downloadLink);
-            
             downloadLink.click();
-            
-            // Clean up
             document.body.removeChild(downloadLink);
         }
+
         // 4. Fetch Logic (Cache First Strategy)
         async function fetchData(forceRefresh = false) {
             const token = localStorage.getItem('supabaseToken');
@@ -275,15 +328,14 @@
 
             const userType = localStorage.getItem('userType');
 
-            // Check Cache first
-            const cached = localStorage.getItem('adminData');
-            if (cached && !forceRefresh && userType == 'x') {
-                console.log("Loading from LocalStorage...");
-                renderTable(JSON.parse(cached));
-                return;
+            if (!forceRefresh && userType == 'x') {
+                const cached = localStorage.getItem('adminData');
+                if (cached) {
+                    renderTable(JSON.parse(cached));
+                    return;
+                }
             }
 
-            // Fetch from Server
             try {
                 const btn = document.querySelector('.btn-refresh');
                 btn.innerText = "Loading...";
@@ -302,10 +354,7 @@
 
                 const data = await response.json();
                 
-                // Save to Cache
                 localStorage.setItem('adminData', JSON.stringify(data));
-                
-                // Render
                 renderTable(data);
                 btn.innerText = "🔄 Refresh Data";
 
@@ -317,44 +366,32 @@
 
         // Run on Page Load
         window.onload = () => {fetchData(); fetchLogs();}
-    </script>
-    <script>
+
         // --- INACTIVITY AUTO-LOGOUT ---
         let idleTime = 0;
-        const timeoutLimit = 10; // Set timeout limit in minutes
+        const timeoutLimit = 10; 
+        const idleInterval = setInterval(timerIncrement, 60000); 
 
-        // Increment the idle time counter every minute
-        const idleInterval = setInterval(timerIncrement, 60000); // 1 minute = 60000 ms
-
-        // Reset the timer whenever the user interacts with the page
         document.addEventListener('mousemove', resetTimer);
         document.addEventListener('keypress', resetTimer);
         document.addEventListener('click', resetTimer);
         document.addEventListener('scroll', resetTimer);
 
         function handleLogout(){
-           /* window.location.href = "login"; */
             localStorage.removeItem('supabaseToken');
-            //localStorage.removeItem('adminData'); // Clear admin cache too if it exists
-
-            // 2. Replace the current history entry
-            // This removes the current page from the "Back" stack
             window.location.replace('login');
         }
 
         function timerIncrement() {
             idleTime++;
             if (idleTime >= timeoutLimit) {
-                // User has been idle for 15 minutes
                 clearInterval(idleInterval);
                 alert("Your session has expired due to inactivity. Please log in again.");
-                handleLogout(); // Calls your existing logout function
+                handleLogout(); 
             }
         }
 
-        function resetTimer() {
-            idleTime = 0; // Reset counter on any interaction
-        }
+        function resetTimer() { idleTime = 0; }
 
         // --- AUDIT LOGS LOGIC ---
         async function fetchLogs() {
@@ -365,11 +402,9 @@
                 const response = await fetch('/api/logs', {
                     headers: { 'Authorization': `Bearer ${token}` }
                 });
-                
                 const data = await response.json();
                 renderLogsTable(data);
             } catch (error) {
-                console.error('Error fetching logs:', error);
                 document.getElementById('logsTableBody').innerHTML = '<tr><td colspan="3" style="text-align:center; color:#ef4444;">Failed to load logs.</td></tr>';
             }
         }
@@ -387,14 +422,12 @@
                 const tr = document.createElement('tr');
                 tr.style.borderBottom = "1px solid rgba(255,255,255,0.05)";
                 
-                // Format the date to be easily readable (e.g., "Feb 24, 2026, 02:30 PM")
                 const dateObj = new Date(log.created_at);
                 const formattedDate = dateObj.toLocaleString('en-US', { 
                     month: 'short', day: 'numeric', year: 'numeric', 
                     hour: '2-digit', minute: '2-digit' 
                 });
 
-                // Add some color coding for different actions
                 let actionBadge = `<span style="background: rgba(255,255,255,0.1); padding: 4px 8px; border-radius: 4px;">${log.action}</span>`;
                 if (log.action === 'LOGIN') {
                     actionBadge = `<span style="background: rgba(16, 185, 129, 0.2); color: #34d399; padding: 4px 8px; border-radius: 4px;">${log.action}</span>`;
@@ -412,8 +445,6 @@
                 tbody.appendChild(tr);
             });
         }
-        // Ensure this is called when the page loads, right next to your existing fetchData() call
-        // fetchLogs();
     </script>
 </body>
 </html>
