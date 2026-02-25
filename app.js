@@ -1210,7 +1210,7 @@ app.post('/forgot-password', async (req, res) => {
         const { data, error } = await adminSupabase.auth.resetPasswordForEmail(email, {
             // IMPORTANT: Change this to your live domain once you deploy!
             // This is the page the user will land on when they click the link in their email.
-            redirectTo: 'http://localhost:3000/update-password.html' 
+            redirectTo: 'https://my-node-api-jam2.onrender.com/update-password.html' 
         });
 
         if (error) {
