@@ -353,15 +353,6 @@
             window.location.href = "login";
         }
 
-        const userType = localStorage.getItem('userType');
-
-        if (userType != 'x') {
-            var dBoard = document.getElementById('admin-board');
-            if (dBoard){
-                dBoard.style.display = 'none';
-            }
-        }
-
         function handleLogout(){
             localStorage.removeItem('supabaseToken');
             window.location.replace('login');
@@ -833,6 +824,15 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 
     calculateTotal(); 
+
+    const userType = localStorage.getItem('userType');
+
+    if (userType != 'x') {
+        var dBoard = document.getElementById('admin-board');
+        if (dBoard){
+            dBoard.style.display = 'none';
+        }
+    }
 });
 
 let slideIndex = 0;
@@ -926,6 +926,7 @@ document.addEventListener('DOMContentLoaded', () => {
     function resetTimer() {
         idleTime = 0;
     }
+
 </script>
 </body>
 </html>
