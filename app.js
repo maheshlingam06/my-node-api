@@ -608,7 +608,7 @@ app.post('/register', trackActivity('UPDATED_REGISTRATION'), async (req, res) =>
                 sendSmtpEmail.htmlContent = emailHTML;
                 
                 // IMPORTANT: The sender email MUST be verified in your Brevo account
-                sendSmtpEmail.sender = { "name": "Reunion Team", "email": "d.mahesh.0510@gmail.com" };
+                sendSmtpEmail.sender = { "name": "Reunion Team", "email": "tcealumni2026@gmail.com" };
                 sendSmtpEmail.to = [{ "email": email, "name": participant_name }];
                 // sendSmtpEmail.cc = [{ "email": 'tce2001reunion@gmail.com', "name": "New User Registration" }];
                 sendSmtpEmail.cc = [{ "email": 'tce2001reunion@gmail.com', "name": "New User Registration" }];
@@ -1201,7 +1201,7 @@ app.post('/api/cron/nightly-updates', async (req, res) => {
         sendSmtpEmail.htmlContent = committeeHtml;
         
         // IMPORTANT: The sender email MUST be verified in your Brevo account
-        sendSmtpEmail.sender = { "name": "Reunion Team", "email": "d.mahesh.0510@gmail.com" };
+        sendSmtpEmail.sender = { "name": "Reunion Team", "email": "tcealumni2026@gmail.com" };
         sendSmtpEmail.to = [{ "email": "tce2001reunion@gmail.com", "name": "Reunion 2001 Admin" }];
         sendSmtpEmail.cc = [{ "email": "dmahesh2k@gmail.com", "name": "Sys Admin" }];
 
