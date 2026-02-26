@@ -610,7 +610,7 @@ app.post('/register', trackActivity('UPDATED_REGISTRATION'), async (req, res) =>
                 sendSmtpEmail.sender = { "name": "Reunion Team", "email": "d.mahesh.0510@gmail.com" };
                 sendSmtpEmail.to = [{ "email": email, "name": participant_name }];
                 // sendSmtpEmail.cc = [{ "email": 'tce2001reunion@gmail.com', "name": "New User Registration" }];
-                sendSmtpEmail.cc = [{ "email": 'tcealumni2026@gmail.com', "name": "New User Registration" }];
+                sendSmtpEmail.cc = [{ "email": 'tce2001reunion@gmail.com', "name": "New User Registration" }];
 
                 // 4. Trigger the send
                 await apiInstance.sendTransacEmail(sendSmtpEmail);
@@ -1037,7 +1037,7 @@ app.post('/api/cron/nightly-updates', async (req, res) => {
 
     try {
         // 2. Fetch all records that need an update email
-        const { data: updatedSubmissions, error } = await userSupabase
+        const { data: updatedSubmissions, error } = await adminSupabase
             .from('submissions')
             .select('*')
             .eq('needs_update_email', true);
@@ -1193,9 +1193,21 @@ app.post('/api/cron/nightly-updates', async (req, res) => {
         `;
         
         // Trigger Brevo API to send committeeHtml to reunion-committee@yourdomain.com here
+        const sendSmtpEmail = new Brevo.SendSmtpEmail();
+        // let mobile = req.body.mobile;
+
+        sendSmtpEmail.subject = "TCE Reunion 2026 : Registration Changes";
+        sendSmtpEmail.htmlContent = committeeHtml;
+        
+        // IMPORTANT: The sender email MUST be verified in your Brevo account
+        sendSmtpEmail.sender = { "name": "Reunion Team", "email": "d.mahesh.0510@gmail.com" };
+        sendSmtpEmail.to = [{ "email": "dmahesh2k@gmail.com", "name": "Reunion 2001 Admin" }];
+
+        // 4. Trigger the send
+        await apiInstance.sendTransacEmail(sendSmtpEmail);
 
         // 5. Un-flag all records
-        await userSupabase
+        await adminSupabase
             .from('submissions')
             .update({ needs_update_email: false })
             .in('user_id', processedUserIds);
