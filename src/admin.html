@@ -114,6 +114,18 @@
     </footer>
 
     <script>
+        // This runs every time the page is shown, including via the Back button
+        window.addEventListener('pageshow', (event) => {
+            // Check if the token is missing (meaning they logged out)
+            const token = localStorage.getItem('supabaseToken');
+            
+            if (!token) {
+                // If they have no token, instantly kick them back to the login page
+                // We use .replace() so they can't hit "Forward" to get back in either!
+                window.location.replace('/login'); 
+            }
+        });
+        
         // 1. UPDATED COST CALCULATION (Matches Backend perfectly)
         function calculateRowCost(row) {
             const familyAdults = parseInt(row.adults_and_above_10) || parseInt(row.teens_adults) || 0;
