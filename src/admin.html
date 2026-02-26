@@ -85,7 +85,7 @@
         </table>
     </div>
     
-    <div class="card" style="margin-top: 40px; background: rgba(15, 23, 42, 0.65); backdrop-filter: blur(12px); border: 1px solid rgba(255, 255, 255, 0.1); padding: 30px; border-radius: 16px;">
+    <!-- <div class="card" style="margin-top: 40px; background: rgba(15, 23, 42, 0.65); backdrop-filter: blur(12px); border: 1px solid rgba(255, 255, 255, 0.1); padding: 30px; border-radius: 16px;">
         <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
             <h2 style="color: white; margin: 0; font-size: 1.5rem;">System Audit Logs</h2>
             <button onclick="fetchLogs()" style="background-color: transparent; border: 1px solid #3b82f6; color: #3b82f6; padding: 6px 12px; border-radius: 6px; cursor: pointer; transition: all 0.2s;">
@@ -107,7 +107,7 @@
                 </tbody>
             </table>
         </div>
-    </div>
+    </div> -->
     
     <footer class="copyright-panel">
         &copy; 2026 LEGENDS IT Consulting & Services. All rights reserved.
@@ -365,7 +365,10 @@
         }
 
         // Run on Page Load
-        window.onload = () => {fetchData(); fetchLogs();}
+        window.onload = () => {
+            fetchData();
+            //fetchLogs();
+        }
 
         // --- INACTIVITY AUTO-LOGOUT ---
         let idleTime = 0;

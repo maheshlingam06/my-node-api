@@ -42,7 +42,7 @@ const upload = multer({
 
 const globalLimiter = rateLimit({
     windowMs: 1 * 60 * 60 * 1000, // 24 Hours
-    max: 20, // Limit each IP to 10 requests per window
+    max: 200, // Limit each IP to 10 requests per window
     message: 'Too many requests from this IP, please try after some time',
     standardHeaders: true, // Return rate limit info in the `RateLimit-*` headers
     legacyHeaders: false, // Disable the `X-RateLimit-*` headers
@@ -60,6 +60,16 @@ const uploadLimiter = rateLimit({
         const xff = req.headers['x-forwarded-for'];
         return xff ? xff.split(',')[0].trim() : req.ip;
     },
+});
+
+// TIER 2: The Auth Limiter (Strict)
+// This strictly stops brute-force password guessing.
+const authLimiter = rateLimit({
+    windowMs: 60 * 60 * 1000, // 1 hour lock-out window
+    max: 5, // Only 5 attempts allowed per hour
+    message: { error: "Too many login attempts. Please try again after an hour to protect your account." },
+    standardHeaders: true, 
+    legacyHeaders: false,
 });
 
 app.use(globalLimiter);
@@ -632,7 +642,7 @@ app.post('/register', trackActivity('UPDATED_REGISTRATION'), async (req, res) =>
     }
 });
 
-app.post('/login', async (req, res) => {
+app.post('/login', authLimiter, async (req, res) => {
     try {
         const { email, password } = req.body;
         const { data, error } = await supabase.auth.signInWithPassword({
@@ -1238,7 +1248,7 @@ app.post('/admin/update-payment', async (req, res) => {
 });
 
 // --- FORGOT PASSWORD ENDPOINT ---
-app.post('/forgot-password', async (req, res) => {
+app.post('/forgot-password', authLimiter, async (req, res) => {
     const { email } = req.body;
 
     if (!email) {
