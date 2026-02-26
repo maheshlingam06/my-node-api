@@ -41,8 +41,8 @@ const upload = multer({
 });
 
 const globalLimiter = rateLimit({
-    windowMs: 24 * 60 * 60 * 1000, // 24 Hours
-    max: 10, // Limit each IP to 10 requests per window
+    windowMs: 1 * 60 * 60 * 1000, // 24 Hours
+    max: 20, // Limit each IP to 10 requests per window
     message: 'Too many requests from this IP, please try after some time',
     standardHeaders: true, // Return rate limit info in the `RateLimit-*` headers
     legacyHeaders: false, // Disable the `X-RateLimit-*` headers
