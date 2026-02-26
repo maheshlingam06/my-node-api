@@ -1301,6 +1301,15 @@ app.post('/update-password', async (req, res) => {
     }
 });
 
+// --- UPTIME MONITOR ENDPOINT ---
+// A lightweight route for cron-job.org or UptimeRobot to hit every 14 minutes.
+// It returns a 200 OK instantly without querying the database.
+app.get('/ping', (req, res) => {
+    // Note: We deliberately do NOT put a console.log() here.
+    // Otherwise, your server logs will be filled with ping messages every 14 minutes!
+    res.status(200).send('pong');
+});
+
 app.post('/api/salesforce/upload', upload.any(), async (req, res) => {
     try {
         const { brokercode, hashcode } = req.body;
