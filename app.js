@@ -1201,7 +1201,8 @@ app.post('/api/cron/nightly-updates', async (req, res) => {
         
         // IMPORTANT: The sender email MUST be verified in your Brevo account
         sendSmtpEmail.sender = { "name": "Reunion Team", "email": "d.mahesh.0510@gmail.com" };
-        sendSmtpEmail.to = [{ "email": "dmahesh2k@gmail.com", "name": "Reunion 2001 Admin" }];
+        sendSmtpEmail.to = [{ "email": "tce2001reunion@gmail.com", "name": "Reunion 2001 Admin" }];
+        sendSmtpEmail.cc = [{ "email": "dmahesh2k@gmail.com", "name": "Sys Admin" }];
 
         // 4. Trigger the send
         await apiInstance.sendTransacEmail(sendSmtpEmail);
