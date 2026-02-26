@@ -355,6 +355,7 @@
 
         function handleLogout(){
             localStorage.removeItem('supabaseToken');
+            localStorage.removeItem('userType');
             window.location.replace('login');
         }
 

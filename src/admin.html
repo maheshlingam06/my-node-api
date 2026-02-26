@@ -328,6 +328,12 @@
 
             const userType = localStorage.getItem('userType');
 
+            if (userType != 'x'){
+                localStorage.removeItem('adminData');
+                alert("Access Denied: You are not an admin.");
+                return;
+            }
+
             if (!forceRefresh && userType == 'x') {
                 const cached = localStorage.getItem('adminData');
                 if (cached) {
