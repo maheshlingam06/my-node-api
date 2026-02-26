@@ -353,6 +353,15 @@
             window.location.href = "login";
         }
 
+        const userType = localStorage.getItem('userType');
+
+        if (userType != 'x') {
+            var dBoard = document.getElementById('admin-board');
+            if (dBoard){
+                dBoard.style.display = 'none';
+            }
+        }
+
         function handleLogout(){
             localStorage.removeItem('supabaseToken');
             window.location.replace('login');
@@ -371,7 +380,7 @@
 
 <div class="top-actions">
     <a href="blog.html" class="btn-admin" style="background-color: var(--primary); color: white; border-color: var(--primary);">Alumni Blog</a>
-    <a href="admin.html" class="btn-admin">Admin Dashboard</a>
+    <a href="admin.html" class="btn-admin" id="admin-board">Admin Dashboard</a>
     <button class="btn-logout" onclick="handleLogout()">Logout</button>
 </div>
 
