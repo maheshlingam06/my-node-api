@@ -15,7 +15,8 @@ const Brevo = require('@getbrevo/brevo');
 const apiInstance = new Brevo.TransactionalEmailsApi();
 // --- ADMIN CONFIGURATION ---
 // Add the emails of anyone who should have access to the dashboard
-const ADMIN_EMAILS = ['d.mahesh.0510@gmail.com', 'another.admin@example.com'];
+const ADMIN_EMAILS = ['d.mahesh.0510@gmail.com', 'ideamani07@gmail.com', 'kavithajvijay@gmail.com',
+                            'rajvignesh@gmail.com', 'sspmech@gmail.com'];
 
 // 2. Set your API Key
 // let defaultClient = Brevo.ApiClient.instance;
