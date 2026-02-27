@@ -77,7 +77,7 @@
             grid-template-columns: 1fr 350px;
             gap: 30px;
             row-gap: 0px;
-            max-width: 1100px; /* Widened slightly to accommodate the grid */
+            max-width: 1000px; 
             width: 100%;
             margin-top: 25px;
         }
@@ -114,10 +114,10 @@
 
         /* --- NEW GRID TABLE STYLING --- */
         .grid-wrapper { overflow-x: auto; margin-bottom: 20px; border-radius: 6px; border: 1px solid var(--border); }
-        .grid-table { width: 100%; border-collapse: collapse; min-width: 650px; }
+        .grid-table { width: 100%; border-collapse: collapse; min-width: 550px; }
         .grid-table th, .grid-table td { border-bottom: 1px solid var(--border); border-right: 1px solid var(--border); padding: 12px 10px; text-align: center; font-size: 13px; vertical-align: middle;}
         .grid-table th { background-color: var(--bg); font-weight: 600; color: #475569; }
-        .grid-table td:first-child { text-align: left; font-weight: 600; background-color: #f8fafc; width: 25%; }
+        .grid-table td:first-child { text-align: left; font-weight: 600; background-color: #f8fafc; width: 30%; }
         .grid-table td:last-child { border-right: none; }
         .grid-table input[type="number"] { width: 60px; padding: 6px; text-align: center; margin: 0 auto; display: block; }
         .grid-table input[type="checkbox"] { width: 18px; height: 18px; cursor: pointer; accent-color: var(--primary); }
@@ -153,7 +153,7 @@
         .tariff-table { width: 100%; font-size: 11px; border-collapse: collapse; margin-top: 5px; }
         .tariff-table th, .tariff-table td { border: 1px solid var(--border); padding: 6px 4px; text-align: center; }
         .tariff-table th { background-color: var(--bg); font-weight: 700; color: var(--text); }
-        .tariff-table td:first-child { text-align: left; font-weight: 500; width: 40%; }
+        .tariff-table td:first-child { text-align: left; font-weight: 500; width: 45%; }
 
         /* Carousel Card Styling */
         .program-card { min-height: 180px; position: relative; padding-bottom: 40px !important; }
@@ -264,7 +264,6 @@
                             <th>Spouse</th>
                             <th>Kids &gt;10y</th>
                             <th>Kids 6-10y</th>
-                            <th>Kids &lt;6y</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -274,7 +273,6 @@
                             <td><input type="checkbox" name="thu_stay_spouse" value="1"></td>
                             <td><input type="number" name="thu_stay_kids_10" min="0" value="0"></td>
                             <td><input type="number" name="thu_stay_kids_6_10" min="0" value="0"></td>
-                            <td><input type="number" name="thu_stay_kids_u6" min="0" value="0"></td>
                         </tr>
                         <tr>
                             <td>Fri Reunion (Events + Dinner)</td>
@@ -282,7 +280,6 @@
                             <td><input type="checkbox" name="fri_reunion_spouse" value="1"></td>
                             <td><input type="number" name="fri_reunion_kids_10" min="0" value="0"></td>
                             <td><input type="number" name="fri_reunion_kids_6_10" min="0" value="0"></td>
-                            <td><input type="number" name="fri_reunion_kids_u6" min="0" value="0"></td>
                         </tr>
                         <tr>
                             <td>Fri Night Stay (Resort)</td>
@@ -290,7 +287,6 @@
                             <td><input type="checkbox" name="fri_stay_spouse" value="1"></td>
                             <td><input type="number" name="fri_stay_kids_10" min="0" value="0"></td>
                             <td><input type="number" name="fri_stay_kids_6_10" min="0" value="0"></td>
-                            <td><input type="number" name="fri_stay_kids_u6" min="0" value="0"></td>
                         </tr>
                         <tr>
                             <td>Sat Reunion (Lunch + Sports)</td>
@@ -298,7 +294,6 @@
                             <td><input type="checkbox" name="sat_reunion_spouse" value="1"></td>
                             <td><input type="number" name="sat_reunion_kids_10" min="0" value="0"></td>
                             <td><input type="number" name="sat_reunion_kids_6_10" min="0" value="0"></td>
-                            <td><input type="number" name="sat_reunion_kids_u6" min="0" value="0"></td>
                         </tr>
                         <tr>
                             <td>Sat Night Stay (Resort)</td>
@@ -306,7 +301,6 @@
                             <td><input type="checkbox" name="sat_stay_spouse" value="1"></td>
                             <td><input type="number" name="sat_stay_kids_10" min="0" value="0"></td>
                             <td><input type="number" name="sat_stay_kids_6_10" min="0" value="0"></td>
-                            <td><input type="number" name="sat_stay_kids_u6" min="0" value="0"></td>
                         </tr>
                     </tbody>
                 </table>
@@ -383,7 +377,6 @@
                         <th>Spouse</th>
                         <th>&gt;10y Kid</th>
                         <th>Kid (6-10y)</th>
-                        <th>Kid (&lt;6y)</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -393,7 +386,6 @@
                         <td>5500</td>
                         <td>2500</td>
                         <td>2000</td>
-                        <td>Free</td>
                     </tr>
                     <tr>
                         <td>Fri Reunion (College + Dinner)</td>
@@ -401,7 +393,6 @@
                         <td>2000</td>
                         <td>1500</td>
                         <td>1000</td>
-                        <td>Free</td>
                     </tr>
                     <tr>
                         <td>Sat Reunion (College Lunch)</td>
@@ -409,17 +400,15 @@
                         <td>1000</td>
                         <td>1000</td>
                         <td>500</td>
-                        <td>Free</td>
                     </tr>
                 </tbody>
                 <tfoot>
                     <tr style="background-color: #fef3c7; font-weight: bold;">
-                        <td colspan="5" style="text-align: right;">Total Estimated Cost:</td>
+                        <td colspan="4" style="text-align: right;">Total Estimated Cost:</td>
                         <td id="total-cost-display">0</td>
                     </tr>
                 </tfoot>
             </table>
-            <p style="font-size: 10px; color: #64748b; margin-top: 5px; text-align: center;">* Kids under 6 are free of charge.</p>
         </div>
         <div class="card program-card">
             <div class="tab-header">
@@ -514,14 +503,13 @@
                     form.querySelector('[name="t_shirt_size"]').value = existingData.t_shirt_size || 'M';
                     form.querySelector('[name="mobile"]').value = existingData.mobile;
                     
-                    // Note: Pre-filling the grid requires the backend to send the new variable names.
-                    // If the backend sends old data, the grid will remain empty/0 until manually mapped.
                     const checkboxes = ['thu_stay_alumni', 'thu_stay_spouse', 'fri_reunion_alumni', 'fri_reunion_spouse', 'fri_stay_alumni', 'fri_stay_spouse', 'sat_reunion_alumni', 'sat_reunion_spouse', 'sat_stay_alumni', 'sat_stay_spouse'];
                     checkboxes.forEach(name => {
                         if (existingData[name]) form.querySelector(`[name="${name}"]`).checked = true;
                     });
 
-                    const numberInputs = ['thu_stay_kids_10', 'thu_stay_kids_6_10', 'thu_stay_kids_u6', 'fri_reunion_kids_10', 'fri_reunion_kids_6_10', 'fri_reunion_kids_u6', 'fri_stay_kids_10', 'fri_stay_kids_6_10', 'fri_stay_kids_u6', 'sat_reunion_kids_10', 'sat_reunion_kids_6_10', 'sat_reunion_kids_u6', 'sat_stay_kids_10', 'sat_stay_kids_6_10', 'sat_stay_kids_u6'];
+                    // Updated to match 20 matrix fields instead of 25
+                    const numberInputs = ['thu_stay_kids_10', 'thu_stay_kids_6_10', 'fri_reunion_kids_10', 'fri_reunion_kids_6_10', 'fri_stay_kids_10', 'fri_stay_kids_6_10', 'sat_reunion_kids_10', 'sat_reunion_kids_6_10', 'sat_stay_kids_10', 'sat_stay_kids_6_10'];
                     numberInputs.forEach(name => {
                         if (existingData[name]) form.querySelector(`[name="${name}"]`).value = existingData[name];
                     });
@@ -552,8 +540,6 @@ document.querySelector('form').addEventListener('submit', async function(e) {
     const formData = new FormData(this);
     const data = Object.fromEntries(formData.entries());
 
-    // Fix for checkboxes: FormData doesn't include unchecked boxes. We must manually inject '0' for unchecked ones if needed, 
-    // or just let the backend handle undefined as false.
     const checkboxes = ['thu_stay_alumni', 'thu_stay_spouse', 'fri_reunion_alumni', 'fri_reunion_spouse', 'fri_stay_alumni', 'fri_stay_spouse', 'sat_reunion_alumni', 'sat_reunion_spouse', 'sat_stay_alumni', 'sat_stay_spouse'];
     checkboxes.forEach(name => {
         data[name] = this.querySelector(`[name="${name}"]`).checked ? true : false;
@@ -595,7 +581,6 @@ document.querySelector('form').addEventListener('submit', async function(e) {
 function calculateTotal() {
     let total = 0;
     
-    // Helper functions to grab values dynamically
     const getCheck = (name) => document.querySelector(`[name="${name}"]`).checked ? 1 : 0;
     const getNum = (name) => parseInt(document.querySelector(`[name="${name}"]`).value) || 0;
 
@@ -629,16 +614,13 @@ function calculateTotal() {
     total += getNum('sat_stay_kids_10') * 2500;
     total += getNum('sat_stay_kids_6_10') * 2000;
 
-    // Add Donation
     const donation = parseInt(document.querySelector('[name="donation_amount"]').value) || 0;
     total += donation;
 
     document.getElementById('total-cost-display').innerText = total.toLocaleString('en-IN');
 }
 
-// Attach listeners to trigger recalculation automatically when ANY grid input changes
 document.addEventListener('DOMContentLoaded', () => {
-    // Select all inputs inside the grid, plus the donation amount
     const dynamicInputs = document.querySelectorAll('.grid-table input, [name="donation_amount"]');
     
     dynamicInputs.forEach(el => {
@@ -699,7 +681,6 @@ function openTab(evt, tabName) {
     evt.currentTarget.className += " active";
 }
 
-// Modal Script
 document.addEventListener('DOMContentLoaded', () => {
     var modal = document.getElementById("sizeChartModal");
     var btn = document.getElementById("size-chart-btn");
