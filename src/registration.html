@@ -77,7 +77,7 @@
             grid-template-columns: 1fr 350px;
             gap: 30px;
             row-gap: 0px;
-            max-width: 1000px;
+            max-width: 1100px; /* Widened slightly to accommodate the grid */
             width: 100%;
             margin-top: 25px;
         }
@@ -112,15 +112,23 @@
 
         input:focus { outline: 2px solid #bfdbfe; border-color: var(--primary); }
 
-        /* Table Layout for Registration Questions */
+        /* --- NEW GRID TABLE STYLING --- */
+        .grid-wrapper { overflow-x: auto; margin-bottom: 20px; border-radius: 6px; border: 1px solid var(--border); }
+        .grid-table { width: 100%; border-collapse: collapse; min-width: 650px; }
+        .grid-table th, .grid-table td { border-bottom: 1px solid var(--border); border-right: 1px solid var(--border); padding: 12px 10px; text-align: center; font-size: 13px; vertical-align: middle;}
+        .grid-table th { background-color: var(--bg); font-weight: 600; color: #475569; }
+        .grid-table td:first-child { text-align: left; font-weight: 600; background-color: #f8fafc; width: 25%; }
+        .grid-table td:last-child { border-right: none; }
+        .grid-table input[type="number"] { width: 60px; padding: 6px; text-align: center; margin: 0 auto; display: block; }
+        .grid-table input[type="checkbox"] { width: 18px; height: 18px; cursor: pointer; accent-color: var(--primary); }
+
         .registration-table { width: 100%; border-collapse: collapse; }
         .registration-table td { padding: 12px 0; border-bottom: 1px solid var(--bg); vertical-align: middle; }
         .registration-table label { margin-bottom: 0; font-weight: 500; }
 
         /* Sidebar Styling */
         .summary-item { display: flex; justify-content: space-between; margin-bottom: 12px; font-size: 14px; }
-        .summary-total { display: flex; justify-content: space-between; margin-top: 15px; padding-top: 15px; border-top: 2px solid var(--bg); font-weight: bold; font-size: 16px; }
-
+        
         .btn-submit {
             width: 100%;
             background: var(--primary);
@@ -134,216 +142,47 @@
             transition: background 0.2s;
             box-shadow: 0 4px 10px rgba(37, 99, 235, 0.2);
         }
-
         .btn-submit:hover { background: #1d4ed8; }
 
         @media (max-width: 850px) {
-            .checkout-container { 
-                grid-template-columns: 1fr; 
-            }
-            .sidebar { 
-                order: 1; 
-                position: relative !important; 
-                top: 0 !important;
-            }
-        }
-        .tariff-card {
-            margin-top: 20px;
-            padding: 15px !important;
+            .checkout-container { grid-template-columns: 1fr; }
+            .sidebar { order: 1; position: relative !important; top: 0 !important; }
         }
 
-        .tariff-table {
-            width: 100%;
-            font-size: 11px;
-            border-collapse: collapse;
-            margin-top: 5px;
-        }
-
-        .tariff-table th, .tariff-table td {
-            border: 1px solid var(--border);
-            padding: 6px 4px;
-            text-align: center;
-        }
-
-        .tariff-table th {
-            background-color: var(--bg);
-            font-weight: 700;
-            color: var(--text);
-        }
-
-        .tariff-table td:first-child {
-            text-align: left;
-            font-weight: 500;
-            width: 40%;
-        }
+        .tariff-card { margin-top: 20px; padding: 15px !important; }
+        .tariff-table { width: 100%; font-size: 11px; border-collapse: collapse; margin-top: 5px; }
+        .tariff-table th, .tariff-table td { border: 1px solid var(--border); padding: 6px 4px; text-align: center; }
+        .tariff-table th { background-color: var(--bg); font-weight: 700; color: var(--text); }
+        .tariff-table td:first-child { text-align: left; font-weight: 500; width: 40%; }
 
         /* Carousel Card Styling */
-        .program-card {
-            min-height: 180px;
-            position: relative;
-            padding-bottom: 40px !important;
-        }
+        .program-card { min-height: 180px; position: relative; padding-bottom: 40px !important; }
+        .carousel-container { position: relative; width: 100%; }
+        .carousel-slide { display: none; font-size: 13px; line-height: 1.5; color: #334155; }
+        .date-badge { background-color: #e0f2fe; color: #0284c7; padding: 4px 8px; border-radius: 4px; font-weight: 700; font-size: 12px; display: inline-block; margin-bottom: 10px; }
+        .carousel-slide p { margin: 5px 0; }
+        .fade { animation-name: fade; animation-duration: 1.5s; }
+        @keyframes fade { from {opacity: .4} to {opacity: 1} }
+        .carousel-dots { text-align: center; position: absolute; bottom: -30px; width: 100%; }
+        .dot { cursor: pointer; height: 8px; width: 8px; margin: 0 4px; background-color: #cbd5e1; border-radius: 50%; display: inline-block; transition: background-color 0.3s ease; }
+        .active-dot, .dot:hover { background-color: #2563eb; }
 
-        .carousel-container {
-            position: relative;
-            width: 100%;
-        }
-
-        .carousel-slide {
-            display: none;
-            font-size: 13px;
-            line-height: 1.5;
-            color: #334155;
-        }
-
-        .date-badge {
-            background-color: #e0f2fe;
-            color: #0284c7;
-            padding: 4px 8px;
-            border-radius: 4px;
-            font-weight: 700;
-            font-size: 12px;
-            display: inline-block;
-            margin-bottom: 10px;
-        }
-
-        .carousel-slide p {
-            margin: 5px 0;
-        }
-
-        .fade {
-            animation-name: fade;
-            animation-duration: 1.5s;
-        }
-
-        @keyframes fade {
-            from {opacity: .4} 
-            to {opacity: 1}
-        }
-
-        .carousel-dots {
-            text-align: center;
-            position: absolute;
-            bottom: -30px;
-            width: 100%;
-        }
-
-        .dot {
-            cursor: pointer;
-            height: 8px;
-            width: 8px;
-            margin: 0 4px;
-            background-color: #cbd5e1;
-            border-radius: 50%;
-            display: inline-block;
-            transition: background-color 0.3s ease;
-        }
-
-        .active-dot, .dot:hover {
-            background-color: #2563eb;
-        }
-
-        .tab-header {
-            display: flex;
-            border-bottom: 1px solid #e2e8f0;
-            margin-bottom: 15px;
-        }
-
-        .tab-btn {
-            background: none;
-            border: none;
-            padding: 10px 15px;
-            cursor: pointer;
-            font-weight: 600;
-            color: #64748b;
-            border-bottom: 2px solid transparent;
-            transition: all 0.3s;
-            font-size: 14px;
-            flex: 1;
-        }
-
+        .tab-header { display: flex; border-bottom: 1px solid #e2e8f0; margin-bottom: 15px; }
+        .tab-btn { background: none; border: none; padding: 10px 15px; cursor: pointer; font-weight: 600; color: #64748b; border-bottom: 2px solid transparent; transition: all 0.3s; font-size: 14px; flex: 1; }
         .tab-btn:hover { color: #2563eb; background-color: #f1f5f9; }
+        .tab-btn.active { color: #2563eb; border-bottom: 2px solid #2563eb; }
 
-        .tab-btn.active {
-            color: #2563eb;
-            border-bottom: 2px solid #2563eb;
-        }
-
-        .notes-list {
-            list-style: none;
-            padding: 0;
-            margin: 0;
-            font-size: 13px;
-            line-height: 1.6;
-            color: var(--text);
-            text-align: left;
-        }
-
-        .notes-list li {
-            margin-bottom: 12px;
-            padding-left: 20px;
-            position: relative;
-        }
-
-        .notes-list li::before {
-            content: "•";
-            color: #93c5fd;
-            font-weight: bold;
-            font-size: 16px;
-            position: absolute;
-            left: 0;
-            top: -2px;
-        }
-        /* --- NEW MODAL STYLES --- */
-        .modal {
-            display: none; 
-            position: fixed; 
-            z-index: 1001; 
-            left: 0;
-            top: 0;
-            width: 100%; 
-            height: 100%; 
-            overflow: auto; 
-            background-color: rgb(0,0,0); 
-            background-color: rgba(0,0,0,0.4); 
-        }
-
-        .modal-content {
-            background-color: #fefefe;
-            margin: 10% auto; 
-            padding: 20px;
-            border: 1px solid #888;
-            width: 80%;
-            max-width: 800px; 
-            border-radius: 12px;
-            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
-        }
-
-        .close {
-            color: #aaa;
-            float: right;
-            font-size: 28px;
-            font-weight: bold;
-        }
-
-        .close:hover,
-        .close:focus {
-            color: black;
-            text-decoration: none;
-            cursor: pointer;
-        }
-        .size-chart-link {
-            color: var(--primary);
-            font-size: 13px;
-            margin-left: 8px;
-            cursor: pointer;
-            text-decoration: underline;
-            display: inline-flex;
-            align-items: center;
-        }
-        .size-chart-link:hover {
-            color: #1d4ed8;
-        }
+        .notes-list { list-style: none; padding: 0; margin: 0; font-size: 13px; line-height: 1.6; color: var(--text); text-align: left; }
+        .notes-list li { margin-bottom: 12px; padding-left: 20px; position: relative; }
+        .notes-list li::before { content: "•"; color: #93c5fd; font-weight: bold; font-size: 16px; position: absolute; left: 0; top: -2px; }
+        
+        /* Modal Styles */
+        .modal { display: none; position: fixed; z-index: 1001; left: 0; top: 0; width: 100%; height: 100%; overflow: auto; background-color: rgba(0,0,0,0.4); }
+        .modal-content { background-color: #fefefe; margin: 10% auto; padding: 20px; border: 1px solid #888; width: 80%; max-width: 800px; border-radius: 12px; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1); }
+        .close { color: #aaa; float: right; font-size: 28px; font-weight: bold; }
+        .close:hover, .close:focus { color: black; text-decoration: none; cursor: pointer; }
+        .size-chart-link { color: var(--primary); font-size: 13px; margin-left: 8px; cursor: pointer; text-decoration: underline; display: inline-flex; align-items: center; }
+        .size-chart-link:hover { color: #1d4ed8; }
     </style>
     <script src="https://www.google.com/recaptcha/api.js?render=__SITE_KEY__" defer></script>
     <script>
@@ -358,8 +197,6 @@
             localStorage.removeItem('userType');
             window.location.replace('login');
         }
-
-        if (!token) window.location.replace('login');
 
         window.addEventListener('pageshow', function(event) {
             if (event.persisted || !localStorage.getItem('supabaseToken')) {
@@ -408,86 +245,74 @@
                     <input type="email" name="email" id="email" placeholder="email@example.com" required>
                 </div>
                 <div class="input-group">
-                    <label>Mobile Number (with Country Code - preferrably WhatsApp)</label>
+                    <label>Mobile Number (WhatsApp preferred)</label>
                     <input type="tel" name="mobile" placeholder="+1 264 567 890" required>
                 </div>
             </div>
         </div>
 
         <div class="card">
-            <h2>Registration Details</h2>
+            <h2>Registration Matrix</h2>
+            <p style="font-size: 13px; color: #64748b; margin-bottom: 20px;">Please check the boxes for you and your spouse, and enter the number of children attending each event/stay.</p>
+            
+            <div class="grid-wrapper">
+                <table class="grid-table">
+                    <thead>
+                        <tr>
+                            <th>Activity / Stay</th>
+                            <th>You (Alumni)</th>
+                            <th>Spouse</th>
+                            <th>Kids &gt;10y</th>
+                            <th>Kids 6-10y</th>
+                            <th>Kids &lt;6y</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>Thu Night Stay (Resort)</td>
+                            <td><input type="checkbox" name="thu_stay_alumni" value="1"></td>
+                            <td><input type="checkbox" name="thu_stay_spouse" value="1"></td>
+                            <td><input type="number" name="thu_stay_kids_10" min="0" value="0"></td>
+                            <td><input type="number" name="thu_stay_kids_6_10" min="0" value="0"></td>
+                            <td><input type="number" name="thu_stay_kids_u6" min="0" value="0"></td>
+                        </tr>
+                        <tr>
+                            <td>Fri Reunion (Events + Dinner)</td>
+                            <td><input type="checkbox" name="fri_reunion_alumni" value="1"></td>
+                            <td><input type="checkbox" name="fri_reunion_spouse" value="1"></td>
+                            <td><input type="number" name="fri_reunion_kids_10" min="0" value="0"></td>
+                            <td><input type="number" name="fri_reunion_kids_6_10" min="0" value="0"></td>
+                            <td><input type="number" name="fri_reunion_kids_u6" min="0" value="0"></td>
+                        </tr>
+                        <tr>
+                            <td>Fri Night Stay (Resort)</td>
+                            <td><input type="checkbox" name="fri_stay_alumni" value="1"></td>
+                            <td><input type="checkbox" name="fri_stay_spouse" value="1"></td>
+                            <td><input type="number" name="fri_stay_kids_10" min="0" value="0"></td>
+                            <td><input type="number" name="fri_stay_kids_6_10" min="0" value="0"></td>
+                            <td><input type="number" name="fri_stay_kids_u6" min="0" value="0"></td>
+                        </tr>
+                        <tr>
+                            <td>Sat Reunion (Lunch + Sports)</td>
+                            <td><input type="checkbox" name="sat_reunion_alumni" value="1"></td>
+                            <td><input type="checkbox" name="sat_reunion_spouse" value="1"></td>
+                            <td><input type="number" name="sat_reunion_kids_10" min="0" value="0"></td>
+                            <td><input type="number" name="sat_reunion_kids_6_10" min="0" value="0"></td>
+                            <td><input type="number" name="sat_reunion_kids_u6" min="0" value="0"></td>
+                        </tr>
+                        <tr>
+                            <td>Sat Night Stay (Resort)</td>
+                            <td><input type="checkbox" name="sat_stay_alumni" value="1"></td>
+                            <td><input type="checkbox" name="sat_stay_spouse" value="1"></td>
+                            <td><input type="number" name="sat_stay_kids_10" min="0" value="0"></td>
+                            <td><input type="number" name="sat_stay_kids_6_10" min="0" value="0"></td>
+                            <td><input type="number" name="sat_stay_kids_u6" min="0" value="0"></td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
             <table class="registration-table">
-                <tr>
-                    <b>
-                        <div style="padding-bottom:20px;">Participants (Family Members Only)</div>
-                    </b>    
-                </tr>
-                <tr>
-                    <td>
-                        <label>Number of adults &amp; &gt;10 year old kids in your family</label>
-                        <small style="color: #64748b; font-size: 12px; display: block; margin-top: 6px; line-height: 1.3;">
-                            *Note: The 1st person is calculated at the Spouse rate. Additional persons are calculated at the &gt;10 yr old kid rate.
-                        </small>
-                    </td>
-                    <td style="width: 145px;"><input type="number" name="adults_and_above_10" value="0" min="0" required></td>
-                </tr>
-                <tr>
-                    <td><label>Number of 6-10 year old kids in your family</label></td>
-                    <td><input type="number" name="kids_6_10" value="0" min="0"></td>
-                </tr>
-                <tr>
-                    <td><label>Number of &lt;6 year old kids in your family</label></td>
-                    <td><input type="number" name="kids_under_6" value="0" min="0"></td>
-                </tr>
-                <tr>
-                    <td><label>Will your family join you for reunion on Friday, July 24?*</label></td>
-                    <td>
-                        <select name="fri_family_join">
-                            <option value="no">No</option>
-                            <option value="family">Yes, with family</option>
-                        </select>
-                    </td>
-                </tr>
-                <tr>
-                    <td><label>Are you going to stay at Heritage resort on Friday night?*</label></td>
-                    <td>
-                        <select name="fri_stay_type">
-                            <option value="no">No</option>
-                            <option value="self">Yes, without family</option>
-                            <option value="family">Yes, with family</option>
-                        </select>
-                    </td>
-                </tr>
-                <tr>
-                    <td><label>Are you going to attend reunion on Saturday, July 25?*</label></td>
-                    <td>
-                        <select name="sat_attend_type">
-                            <option value="no">No</option>
-                            <option value="self">Yes, without family</option>
-                            <option value="family">Yes, with family</option>
-                        </select>
-                    </td>
-                </tr>
-                <tr>
-                    <td><label>Are you going to stay at Heritage resort on Thu night?*</label></td>
-                    <td>
-                        <select name="thu_stay_type">
-                            <option value="no">No</option>
-                            <option value="self">Yes, without family</option>
-                            <option value="family">Yes, with family</option>
-                        </select>
-                    </td>
-                </tr>
-                <tr>
-                    <td><label>Are you going to stay at Heritage resort on Saturday night?*</label></td>
-                    <td>
-                        <select name="sat_stay_type">
-                            <option value="no">No</option>
-                            <option value="self">Yes, without family</option>
-                            <option value="family">Yes, with family</option>
-                        </select>
-                    </td>
-                </tr>
                 <tr>
                     <td><label>Would you like to contribute more for the reunion (other than Endowment fund)</label></td>
                     <td><input type="number" name="donation_amount" value="0" min="0" placeholder="₹ 0"></td>
@@ -689,22 +514,23 @@
                     form.querySelector('[name="t_shirt_size"]').value = existingData.t_shirt_size || 'M';
                     form.querySelector('[name="mobile"]').value = existingData.mobile;
                     
-                    form.querySelector('[name="adults_and_above_10"]').value = existingData.adults_and_above_10 || 0;
-                    form.querySelector('[name="kids_6_10"]').value = existingData.kids_6_10 || 0;
-                    form.querySelector('[name="kids_under_6"]').value = existingData.kids_under_6 || 0;
-                    
-                    form.querySelector('[name="fri_family_join"]').value = existingData.fri_family_join || 'no';
-                    form.querySelector('[name="fri_stay_type"]').value = existingData.fri_stay_type || 'no';
-                    form.querySelector('[name="sat_attend_type"]').value = existingData.sat_attend_type || 'no';
-                    form.querySelector('[name="thu_stay_type"]').value = existingData.thu_stay_type || 'no';
-                    form.querySelector('[name="sat_stay_type"]').value = existingData.sat_stay_type || 'no';
-                    
+                    // Note: Pre-filling the grid requires the backend to send the new variable names.
+                    // If the backend sends old data, the grid will remain empty/0 until manually mapped.
+                    const checkboxes = ['thu_stay_alumni', 'thu_stay_spouse', 'fri_reunion_alumni', 'fri_reunion_spouse', 'fri_stay_alumni', 'fri_stay_spouse', 'sat_reunion_alumni', 'sat_reunion_spouse', 'sat_stay_alumni', 'sat_stay_spouse'];
+                    checkboxes.forEach(name => {
+                        if (existingData[name]) form.querySelector(`[name="${name}"]`).checked = true;
+                    });
+
+                    const numberInputs = ['thu_stay_kids_10', 'thu_stay_kids_6_10', 'thu_stay_kids_u6', 'fri_reunion_kids_10', 'fri_reunion_kids_6_10', 'fri_reunion_kids_u6', 'fri_stay_kids_10', 'fri_stay_kids_6_10', 'fri_stay_kids_u6', 'sat_reunion_kids_10', 'sat_reunion_kids_6_10', 'sat_reunion_kids_u6', 'sat_stay_kids_10', 'sat_stay_kids_6_10', 'sat_stay_kids_u6'];
+                    numberInputs.forEach(name => {
+                        if (existingData[name]) form.querySelector(`[name="${name}"]`).value = existingData[name];
+                    });
+
                     form.querySelector('[name="donation_amount"]').value = existingData.donation_amount || 0;
                     form.querySelector('[name="performing_culturals"]').value = existingData.performing_culturals || 'No';
                     form.querySelector('[name="volunteering"]').value = existingData.volunteering || 'No';
                     
                     calculateTotal();
-
                     document.querySelector('.btn-submit').innerText = "Update Registration";
                 }
             } catch (err) {
@@ -725,6 +551,13 @@ document.querySelector('form').addEventListener('submit', async function(e) {
     const token = localStorage.getItem('supabaseToken');
     const formData = new FormData(this);
     const data = Object.fromEntries(formData.entries());
+
+    // Fix for checkboxes: FormData doesn't include unchecked boxes. We must manually inject '0' for unchecked ones if needed, 
+    // or just let the backend handle undefined as false.
+    const checkboxes = ['thu_stay_alumni', 'thu_stay_spouse', 'fri_reunion_alumni', 'fri_reunion_spouse', 'fri_stay_alumni', 'fri_stay_spouse', 'sat_reunion_alumni', 'sat_reunion_spouse', 'sat_stay_alumni', 'sat_stay_spouse'];
+    checkboxes.forEach(name => {
+        data[name] = this.querySelector(`[name="${name}"]`).checked ? true : false;
+    });
 
     try {
         const response = await fetch('../register', {
@@ -760,79 +593,65 @@ document.querySelector('form').addEventListener('submit', async function(e) {
 });
 
 function calculateTotal() {
-    const form = document.getElementById('checkout-container');
-    
-    const familyAdults = parseInt(form.querySelector('[name="adults_and_above_10"]').value) || 0;
-    const kids6to10 = parseInt(form.querySelector('[name="kids_6_10"]').value) || 0;
-    const donation = parseInt(form.querySelector('[name="donation_amount"]').value) || 0;
-
-    const thuStay = form.querySelector('[name="thu_stay_type"]').value;
-    const friFamilyJoin = form.querySelector('[name="fri_family_join"]').value;
-    const friStay = form.querySelector('[name="fri_stay_type"]').value;
-    const satAttend = form.querySelector('[name="sat_attend_type"]').value;
-    const satStay = form.querySelector('[name="sat_stay_type"]').value;
-
     let total = 0;
+    
+    // Helper functions to grab values dynamically
+    const getCheck = (name) => document.querySelector(`[name="${name}"]`).checked ? 1 : 0;
+    const getNum = (name) => parseInt(document.querySelector(`[name="${name}"]`).value) || 0;
 
-    // --- FRIDAY EVENT ---
-    total += 7000; // Alumni base
-    if (friFamilyJoin === 'family') {
-        if (familyAdults > 0) total += 2000 + ((familyAdults - 1) * 1500);
-        total += (kids6to10 * 1000);
-    }
+    // --- THU STAY ---
+    total += getCheck('thu_stay_alumni') * 5500;
+    total += getCheck('thu_stay_spouse') * 5500;
+    total += getNum('thu_stay_kids_10') * 2500;
+    total += getNum('thu_stay_kids_6_10') * 2000;
 
-    // --- SATURDAY EVENT ---
-    if (satAttend !== 'no') {
-        total += 1500; // Alumni base
-        if (satAttend === 'family') {
-            if (familyAdults > 0) total += 1000 + ((familyAdults - 1) * 1000);
-            total += (kids6to10 * 500);
-        }
-    }
+    // --- FRI REUNION ---
+    total += getCheck('fri_reunion_alumni') * 7000;
+    total += getCheck('fri_reunion_spouse') * 2000;
+    total += getNum('fri_reunion_kids_10') * 1500;
+    total += getNum('fri_reunion_kids_6_10') * 1000;
 
-    // --- STAY HELPER ---
-    function getStayCost(type) {
-        if (type === 'no') return 0;
-        let cost = 5500; // Alumni base
-        if (type === 'family') {
-            if (familyAdults > 0) cost += 5500 + ((familyAdults - 1) * 2500);
-            cost += (kids6to10 * 2000);
-        }
-        return cost;
-    }
+    // --- FRI STAY ---
+    total += getCheck('fri_stay_alumni') * 5500;
+    total += getCheck('fri_stay_spouse') * 5500;
+    total += getNum('fri_stay_kids_10') * 2500;
+    total += getNum('fri_stay_kids_6_10') * 2000;
 
-    total += getStayCost(thuStay);
-    total += getStayCost(friStay);
-    total += getStayCost(satStay);
+    // --- SAT REUNION ---
+    total += getCheck('sat_reunion_alumni') * 1500;
+    total += getCheck('sat_reunion_spouse') * 1000;
+    total += getNum('sat_reunion_kids_10') * 1000;
+    total += getNum('sat_reunion_kids_6_10') * 500;
 
+    // --- SAT STAY ---
+    total += getCheck('sat_stay_alumni') * 5500;
+    total += getCheck('sat_stay_spouse') * 5500;
+    total += getNum('sat_stay_kids_10') * 2500;
+    total += getNum('sat_stay_kids_6_10') * 2000;
+
+    // Add Donation
+    const donation = parseInt(document.querySelector('[name="donation_amount"]').value) || 0;
     total += donation;
 
     document.getElementById('total-cost-display').innerText = total.toLocaleString('en-IN');
 }
 
-// Attach listeners to trigger recalculation automatically
+// Attach listeners to trigger recalculation automatically when ANY grid input changes
 document.addEventListener('DOMContentLoaded', () => {
-    const inputs = [
-        'adults_and_above_10', 'kids_6_10', 'kids_under_6', 
-        'thu_stay_type', 'fri_family_join', 'fri_stay_type', 'sat_attend_type', 'sat_stay_type',
-        'donation_amount'
-    ];
+    // Select all inputs inside the grid, plus the donation amount
+    const dynamicInputs = document.querySelectorAll('.grid-table input, [name="donation_amount"]');
     
-    inputs.forEach(name => {
-        const el = document.querySelector(`[name="${name}"]`);
-        if (el) el.addEventListener('change', calculateTotal);
-        if (el && el.tagName === 'INPUT') el.addEventListener('input', calculateTotal);
+    dynamicInputs.forEach(el => {
+        el.addEventListener('change', calculateTotal);
+        if (el.tagName === 'INPUT' && el.type === 'number') el.addEventListener('input', calculateTotal);
     });
 
     calculateTotal(); 
 
     const userType = localStorage.getItem('userType');
-
     if (userType != 'x') {
         var dBoard = document.getElementById('admin-board');
-        if (dBoard){
-            dBoard.style.display = 'none';
-        }
+        if (dBoard) dBoard.style.display = 'none';
     }
 });
 
@@ -880,34 +699,22 @@ function openTab(evt, tabName) {
     evt.currentTarget.className += " active";
 }
 
-// NEW: Script for the Size Chart Modal
+// Modal Script
 document.addEventListener('DOMContentLoaded', () => {
     var modal = document.getElementById("sizeChartModal");
     var btn = document.getElementById("size-chart-btn");
     var span = document.getElementsByClassName("close")[0];
 
-    // When the user clicks on the button, open the modal
-    btn.onclick = function() {
-      modal.style.display = "block";
-    }
-
-    // When the user clicks on <span> (x), close the modal
-    span.onclick = function() {
-      modal.style.display = "none";
-    }
-
-    // When the user clicks anywhere outside of the modal, close it
+    btn.onclick = function() { modal.style.display = "block"; }
+    span.onclick = function() { modal.style.display = "none"; }
     window.onclick = function(event) {
-      if (event.target == modal) {
-        modal.style.display = "none";
-      }
+      if (event.target == modal) { modal.style.display = "none"; }
     }
 });
 </script>
 <script>
     let idleTime = 0;
     const timeoutLimit = 5; 
-
     const idleInterval = setInterval(timerIncrement, 60000); 
 
     document.addEventListener('mousemove', resetTimer);
@@ -923,11 +730,7 @@ document.addEventListener('DOMContentLoaded', () => {
             handleLogout();
         }
     }
-
-    function resetTimer() {
-        idleTime = 0;
-    }
-
+    function resetTimer() { idleTime = 0; }
 </script>
 </body>
 </html>
