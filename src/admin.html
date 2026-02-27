@@ -28,7 +28,8 @@
 
         /* Table Styling */
         .table-container { background: white; border-radius: 8px; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1); overflow-x: auto; }
-        table { width: 100%; border-collapse: collapse; min-width: 1400px; }
+        /* Increased min-width to accommodate new columns */
+        table { width: 100%; border-collapse: collapse; min-width: 1800px; }
         
         th, td { padding: 12px 10px; text-align: left; border-bottom: 1px solid #e2e8f0; font-size: 13px; }
         th { background-color: #f8fafc; font-weight: 600; color: #475569; position: sticky; top: 0; }
@@ -38,6 +39,8 @@
         .badge { padding: 4px 8px; border-radius: 12px; font-size: 11px; font-weight: 600; display: inline-block;}
         .badge-green { background-color: #dcfce7; color: #166534; }
         .badge-blue { background-color: #dbeafe; color: #1e40af; }
+        .badge-purple { background-color: #f3e8ff; color: #6b21a8; }
+        .badge-orange { background-color: #ffedd5; color: #c2410c; }
 
         .btn-logout {
             background-color: var(--white);
@@ -62,7 +65,7 @@
     <div class="header">
         <h2>Registration Dashboard</h2>
         <div class="controls">
-            <input type="text" id="searchInput" placeholder="Search Name, Email, Dept...">
+            <input type="text" id="searchInput" placeholder="Search Name, Email, Dept, Reg No...">
             <div style="display: flex; justify-content: flex-end; margin-bottom: 15px;">
                 <button onclick="exportTableToCSV('Reunion_Registrations_2026.csv')" style="background-color: #10b981; color: white; border: none; padding: 10px 20px; border-radius: 6px; font-weight: 600; cursor: pointer; display: flex; align-items: center; gap: 8px; font-size: 14px; transition: all 0.2s;">
                     <svg width="18" height="18" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path></svg>
@@ -80,10 +83,12 @@
             <thead>
                 <tr>
                     <th>Name</th>
+                    <th>Reg No</th>
                     <th>Mobile</th>
                     <th>Email</th>
                     <th>Dept</th>
-                    <th>Adults(&gt;10y)</th>
+                    <th>Spouse</th>
+                    <th>Kids(&gt;10y)</th>
                     <th>Kids(6-10y)</th>
                     <th>Kids(&lt;6y)</th>
                     <th>Thu Stay</th>
@@ -91,6 +96,9 @@
                     <th>Fri Stay</th>
                     <th>Sat Event</th>
                     <th>Sat Stay</th>
+                    <th>Culturals</th>
+                    <th>Volunteer</th>
+                    <th>T-Shirt</th>
                     <th>Donation</th>
                     <th>Total Cost</th>
                     <th>Payment Status</th>
@@ -103,49 +111,21 @@
         </table>
     </div>
     
-    <!-- <div class="card" style="margin-top: 40px; background: rgba(15, 23, 42, 0.65); backdrop-filter: blur(12px); border: 1px solid rgba(255, 255, 255, 0.1); padding: 30px; border-radius: 16px;">
-        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
-            <h2 style="color: white; margin: 0; font-size: 1.5rem;">System Audit Logs</h2>
-            <button onclick="fetchLogs()" style="background-color: transparent; border: 1px solid #3b82f6; color: #3b82f6; padding: 6px 12px; border-radius: 6px; cursor: pointer; transition: all 0.2s;">
-                ↻ Refresh Logs
-            </button>
-        </div>
-
-        <div style="overflow-x: auto;">
-            <table style="width: 100%; text-align: left; border-collapse: collapse; color: #f1f5f9; font-size: 14px;">
-                <thead>
-                    <tr style="border-bottom: 1px solid rgba(255,255,255,0.2); color: #94a3b8;">
-                        <th style="padding: 12px;">Timestamp</th>
-                        <th style="padding: 12px;">Email</th>
-                        <th style="padding: 12px;">Action</th>
-                    </tr>
-                </thead>
-                <tbody id="logsTableBody">
-                    <tr><td colspan="3" style="text-align: center; padding: 20px;">Loading logs...</td></tr>
-                </tbody>
-            </table>
-        </div>
-    </div> -->
-    
     <footer class="copyright-panel">
         &copy; 2026 LEGENDS IT Consulting & Services. All rights reserved.
     </footer>
 
     <script>
-        // This runs every time the page is shown, including via the Back button
         window.addEventListener('pageshow', (event) => {
-            // Check if the token is missing (meaning they logged out)
             const token = localStorage.getItem('supabaseToken');
-            
             if (!token) {
-                // If they have no token, instantly kick them back to the login page
-                // We use .replace() so they can't hit "Forward" to get back in either!
                 window.location.replace('/login'); 
             }
         });
 
-        // 1. UPDATED COST CALCULATION (Matches Backend perfectly)
+        // 1. UPDATED COST CALCULATION (Matches the new Frontend Spouse logic)
         function calculateRowCost(row) {
+            const spouseAttending = row.spouse_attending === 'Yes';
             const familyAdults = parseInt(row.adults_and_above_10) || parseInt(row.teens_adults) || 0;
             const kids6to10 = parseInt(row.kids_6_10) || parseInt(row.kids) || 0;
             const donation = parseInt(row.donation_amount) || 0;
@@ -155,7 +135,8 @@
             // Friday Event
             total += 7000; 
             if (row.fri_family_join === 'family' || row.fri_reunion === 'yes') {
-                if (familyAdults > 0) total += 2000 + ((familyAdults - 1) * 1500);
+                if (spouseAttending) total += 2000;
+                total += (familyAdults * 1500);
                 total += (kids6to10 * 1000);
             }
 
@@ -163,7 +144,8 @@
             if (row.sat_attend_type && row.sat_attend_type !== 'no') {
                 total += 1500;
                 if (row.sat_attend_type === 'family') {
-                    if (familyAdults > 0) total += 1000 + ((familyAdults - 1) * 1000);
+                    if (spouseAttending) total += 1000;
+                    total += (familyAdults * 1000);
                     total += (kids6to10 * 500);
                 }
             }
@@ -173,7 +155,8 @@
                 if (!type || type === 'no') return 0;
                 let cost = 5500;
                 if (type === 'family' || type === 'yes_family') {
-                    if (familyAdults > 0) cost += 5500 + ((familyAdults - 1) * 2500);
+                    if (spouseAttending) cost += 5500;
+                    cost += (familyAdults * 2500);
                     cost += (kids6to10 * 2000);
                 }
                 return cost;
@@ -188,7 +171,6 @@
             return total;
         }
 
-        // Helper to format selections beautifully in the table
         const formatSel = (v) => {
             if(v === 'family' || v === 'yes_family') return '<span class="badge badge-green">Family</span>';
             if(v === 'self' || v === 'yes_single' || v === 'yes') return '<span class="badge badge-blue">Self/Yes</span>';
@@ -201,7 +183,7 @@
             tbody.innerHTML = ''; 
 
             if (data.length === 0) {
-                tbody.innerHTML = '<tr><td colspan="17" style="text-align:center; padding: 20px;">No records found.</td></tr>';
+                tbody.innerHTML = '<tr><td colspan="22" style="text-align:center; padding: 20px;">No records found.</td></tr>';
                 return;
             }
 
@@ -214,11 +196,19 @@
                 const displayBabies = row.kids_under_6 !== undefined ? row.kids_under_6 : 0;
                 const displayDept = row.department || row.location || '-';
 
+                // Format the Yes/No tags for the new fields
+                const spouseBadge = row.spouse_attending === 'Yes' ? '<span class="badge badge-green">Yes</span>' : 'No';
+                const culturalBadge = row.performing_culturals === 'Yes' ? '<span class="badge badge-purple">Yes</span>' : 'No';
+                const volunteerBadge = row.volunteering === 'Yes' ? '<span class="badge badge-orange">Yes</span>' : 'No';
+
                 tr.innerHTML = `
                     <td style="font-weight:500">${row.participant_name || '-'}</td>
+                    <td>${row.class_reg_no || '-'}</td>
                     <td>${row.mobile || '-'}</td>
                     <td>${row.email || '-'}</td>
                     <td>${displayDept}</td>
+                    
+                    <td>${spouseBadge}</td>
                     <td>${displayAdults}</td>
                     <td>${displayKids}</td>
                     <td>${displayBabies}</td>
@@ -229,6 +219,10 @@
                     <td>${formatSel(row.sat_attend_type || row.sat_reunion)}</td>
                     <td>${formatSel(row.sat_stay_type || row.sat_night)}</td>
                     
+                    <td>${culturalBadge}</td>
+                    <td>${volunteerBadge}</td>
+                    <td style="font-weight:600">${row.t_shirt_size || '-'}</td>
+
                     <td>₹${(row.donation_amount || 0).toLocaleString('en-IN')}</td>
                     <td style="font-weight:bold; color: #1e3a8a;">₹${cost.toLocaleString('en-IN')}</td>
                     
@@ -250,7 +244,7 @@
             });
         }
 
-        // --- NEW: SAVE PAYMENT ACTION ---
+        // SAVE PAYMENT ACTION
         async function savePayment(userId) {
             const status = document.getElementById(`status-${userId}`).value;
             const amount = document.getElementById(`amount-${userId}`).value;
@@ -274,7 +268,6 @@
 
                 if (response.ok) {
                     alert("Payment updated successfully!");
-                    // Silently clear cache so the next refresh pulls fresh DB values
                     localStorage.removeItem('adminData'); 
                 } else {
                     alert("Error: " + (result.error || "Failed to save"));
@@ -298,6 +291,7 @@
                         ${row.email} 
                         ${row.mobile} 
                         ${row.department} 
+                        ${row.class_reg_no}
                         ${row.payment_status}
                     `.toLowerCase();
                     return searchableStr.includes(term);
@@ -306,8 +300,7 @@
             }
         });
 
-
-        // --- EXPORT TO EXCEL (CSV) LOGIC ---
+        // EXPORT TO EXCEL LOGIC
         function exportTableToCSV(filename) {
             const table = document.getElementById("regTable"); 
             let csv = [];
@@ -316,11 +309,9 @@
                 let row = [];
                 let cols = table.rows[i].querySelectorAll("td, th");
                 
-                // Skip the last 'Actions' column in the export
+                // Skip the last 'Actions' column
                 for (let j = 0; j < cols.length - 1; j++) {
                     let data = "";
-                    
-                    // NEW: If the column has an input or select, grab its value instead of innerText
                     const inputElement = cols[j].querySelector('input, select');
                     if (inputElement) {
                         data = inputElement.value;
@@ -347,7 +338,7 @@
             document.body.removeChild(downloadLink);
         }
 
-        // 4. Fetch Logic (Cache First Strategy)
+        // 4. Fetch Logic
         async function fetchData(forceRefresh = false) {
             const token = localStorage.getItem('supabaseToken');
             if (!token) {
@@ -357,7 +348,6 @@
             }
 
             const userType = localStorage.getItem('userType');
-
             if (userType != 'x'){
                 localStorage.removeItem('adminData');
                 alert("Access Denied: You are not an admin.");
@@ -400,13 +390,11 @@
             }
         }
 
-        // Run on Page Load
         window.onload = () => {
             fetchData();
-            //fetchLogs();
         }
 
-        // --- INACTIVITY AUTO-LOGOUT ---
+        // INACTIVITY AUTO-LOGOUT
         let idleTime = 0;
         const timeoutLimit = 10; 
         const idleInterval = setInterval(timerIncrement, 60000); 
@@ -431,59 +419,6 @@
         }
 
         function resetTimer() { idleTime = 0; }
-
-        // --- AUDIT LOGS LOGIC ---
-        async function fetchLogs() {
-            const token = localStorage.getItem('supabaseToken');
-            if (!token) return;
-
-            try {
-                const response = await fetch('/api/logs', {
-                    headers: { 'Authorization': `Bearer ${token}` }
-                });
-                const data = await response.json();
-                renderLogsTable(data);
-            } catch (error) {
-                document.getElementById('logsTableBody').innerHTML = '<tr><td colspan="3" style="text-align:center; color:#ef4444;">Failed to load logs.</td></tr>';
-            }
-        }
-
-        function renderLogsTable(logs) {
-            const tbody = document.getElementById('logsTableBody');
-            tbody.innerHTML = '';
-
-            if (!logs || logs.length === 0) {
-                tbody.innerHTML = '<tr><td colspan="3" style="text-align:center; padding: 20px;">No recent activity found.</td></tr>';
-                return;
-            }
-
-            logs.forEach(log => {
-                const tr = document.createElement('tr');
-                tr.style.borderBottom = "1px solid rgba(255,255,255,0.05)";
-                
-                const dateObj = new Date(log.created_at);
-                const formattedDate = dateObj.toLocaleString('en-US', { 
-                    month: 'short', day: 'numeric', year: 'numeric', 
-                    hour: '2-digit', minute: '2-digit' 
-                });
-
-                let actionBadge = `<span style="background: rgba(255,255,255,0.1); padding: 4px 8px; border-radius: 4px;">${log.action}</span>`;
-                if (log.action === 'LOGIN') {
-                    actionBadge = `<span style="background: rgba(16, 185, 129, 0.2); color: #34d399; padding: 4px 8px; border-radius: 4px;">${log.action}</span>`;
-                } else if (log.action === 'LOGOUT') {
-                    actionBadge = `<span style="background: rgba(239, 68, 68, 0.2); color: #f87171; padding: 4px 8px; border-radius: 4px;">${log.action}</span>`;
-                } else if (log.action === 'UPDATED_REGISTRATION') {
-                    actionBadge = `<span style="background: rgba(59, 130, 246, 0.2); color: #60a5fa; padding: 4px 8px; border-radius: 4px;">${log.action}</span>`;
-                }
-
-                tr.innerHTML = `
-                    <td style="padding: 12px; color: #cbd5e1;">${formattedDate}</td>
-                    <td style="padding: 12px; font-weight: 500;">${log.email || 'Unknown User'}</td>
-                    <td style="padding: 12px;">${actionBadge}</td>
-                `;
-                tbody.appendChild(tr);
-            });
-        }
     </script>
 </body>
 </html>
