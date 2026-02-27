@@ -113,18 +113,23 @@
         input:focus { outline: 2px solid #bfdbfe; border-color: var(--primary); }
 
         /* --- NEW GRID TABLE STYLING --- */
+        /* --- NEW GRID TABLE STYLING --- */
         .grid-wrapper { overflow-x: auto; margin-bottom: 20px; border-radius: 6px; border: 1px solid var(--border); }
-        .grid-table { width: 100%; border-collapse: collapse; min-width: 550px; }
-        .grid-table th, .grid-table td { border-bottom: 1px solid var(--border); border-right: 1px solid var(--border); padding: 12px 10px; text-align: center; font-size: 13px; vertical-align: middle;}
+        .grid-table { width: 100%; border-collapse: collapse; min-width: 600px; }
+        /* BUMPED FONT SIZE TO 15px */
+        .grid-table th, .grid-table td { border-bottom: 1px solid var(--border); border-right: 1px solid var(--border); padding: 14px 12px; text-align: center; font-size: 15px; vertical-align: middle;}
         .grid-table th { background-color: var(--bg); font-weight: 600; color: #475569; }
         .grid-table td:first-child { text-align: left; font-weight: 600; background-color: #f8fafc; width: 30%; }
         .grid-table td:last-child { border-right: none; }
-        .grid-table input[type="number"] { width: 60px; padding: 6px; text-align: center; margin: 0 auto; display: block; }
-        .grid-table input[type="checkbox"] { width: 18px; height: 18px; cursor: pointer; accent-color: var(--primary); }
+        /* LARGER NUMBER BOXES */
+        .grid-table input[type="number"] { width: 70px; padding: 8px; text-align: center; margin: 0 auto; display: block; font-size: 15px; }
+        /* LARGER CHECKBOXES */
+        .grid-table input[type="checkbox"] { width: 22px; height: 22px; cursor: pointer; accent-color: var(--primary); }
 
         .registration-table { width: 100%; border-collapse: collapse; }
         .registration-table td { padding: 12px 0; border-bottom: 1px solid var(--bg); vertical-align: middle; }
-        .registration-table label { margin-bottom: 0; font-weight: 500; }
+        /* BUMPED QUESTION TEXT TO 15px */
+        .registration-table label { margin-bottom: 0; font-weight: 500; font-size: 15px; }
 
         /* Sidebar Styling */
         .summary-item { display: flex; justify-content: space-between; margin-bottom: 12px; font-size: 14px; }
@@ -150,8 +155,9 @@
         }
 
         .tariff-card { margin-top: 20px; padding: 15px !important; }
-        .tariff-table { width: 100%; font-size: 11px; border-collapse: collapse; margin-top: 5px; }
-        .tariff-table th, .tariff-table td { border: 1px solid var(--border); padding: 6px 4px; text-align: center; }
+        /* BUMPED TARIFF FONT SIZE TO 13px */
+        .tariff-table { width: 100%; font-size: 13px; border-collapse: collapse; margin-top: 5px; }
+        .tariff-table th, .tariff-table td { border: 1px solid var(--border); padding: 8px 6px; text-align: center; }
         .tariff-table th { background-color: var(--bg); font-weight: 700; color: var(--text); }
         .tariff-table td:first-child { text-align: left; font-weight: 500; width: 45%; }
 
