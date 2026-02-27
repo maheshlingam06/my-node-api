@@ -52,7 +52,6 @@
             background: rgba(15, 23, 42, 0.65); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px);
             border: 1px solid rgba(255, 255, 255, 0.1); padding: 40px; border-radius: 16px;
             color: white; width: 35%; max-width: 800px; min-height: 250px;
-           /* margin-top: 30px; */
         }
 
         /* Tabs */
@@ -90,6 +89,10 @@
         .notes-list { list-style: none; padding: 0; margin: 0; font-size: 15px; line-height: 1.8; color: #f1f5f9; }
         .notes-list li { margin-bottom: 20px; padding-left: 25px; position: relative; }
         .notes-list li::before { content: "•"; color: #93c5fd; font-weight: bold; font-size: 20px; position: absolute; left: 0; top: -2px; }
+
+        /* Nested Notes tweak to prevent double spacing */
+        .notes-list .notes-list { margin-top: 10px; }
+        .notes-list .notes-list li { margin-bottom: 10px; }
 
         .copyright-panel { text-align: center; padding: 20px; font-size: 12px; color: rgba(255,255,255,0.4); margin-top: auto; }
 
@@ -155,8 +158,16 @@
 
                     <div id="notes-tab" class="tab-content">
                         <ul class="notes-list">
+                            <li><strong>Participation:</strong> Your spouse and kids are invited for the reunion. If you would like to bring anyone else, please contact your class's coordinator(s).</li>
                             <li><strong>Fri Night Stay:</strong> If not staying, you can still join Sat morning (breakfast not covered).</li>
-                            <li><strong>Dinner:</strong> Not covered on Thursday and Saturday nights.</li>
+                            <li><strong>Food:</strong> 
+                                <ul class="notes-list">
+                                    <li>a. For stays at Heritage resort, only complementary breakfast is covered.</li>
+                                    <li>b. As part of the Friday reunion, Lunch & Dinner are covered.</li>
+                                    <li>c. As part of the Saturday reunion, Lunch is covered.</li>
+                                </ul>
+                            </li>
+                            <li><strong>Drinks at resort:</strong> Not covered.</li>
                             <li><strong>Transport (Fri AM):</strong> Bus provided from Resort to College if staying Thu night.</li>
                             <li><strong>Transport (Fri PM):</strong> Bus provided from College to Resort for evening culturals.</li>
                         </ul>
