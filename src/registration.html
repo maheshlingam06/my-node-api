@@ -423,11 +423,17 @@
                     </b>    
                 </tr>
                 <tr>
+                    <td><label>Is your spouse attending the reunion?</label></td>
                     <td>
-                        <label>Number of adults &amp; &gt;10 year old kids in your family</label>
-                        <small style="color: #64748b; font-size: 12px; display: block; margin-top: 6px; line-height: 1.3;">
-                            *Note: The 1st person is calculated at the Spouse rate. Additional persons are calculated at the &gt;10 yr old kid rate.
-                        </small>
+                        <select name="spouse_attending">
+                            <option value="No">No</option>
+                            <option value="Yes">Yes</option>
+                        </select>
+                    </td>
+                </tr>
+                <tr>
+                    <td>
+                        <label>Number of &gt;10 year old kids in your family</label>
                     </td>
                     <td style="width: 145px;"><input type="number" name="adults_and_above_10" value="0" min="0" required></td>
                 </tr>
@@ -689,6 +695,7 @@
                     form.querySelector('[name="t_shirt_size"]').value = existingData.t_shirt_size || 'M';
                     form.querySelector('[name="mobile"]').value = existingData.mobile;
                     
+                    form.querySelector('[name="spouse_attending"]').value = existingData.spouse_attending || 'No';
                     form.querySelector('[name="adults_and_above_10"]').value = existingData.adults_and_above_10 || 0;
                     form.querySelector('[name="kids_6_10"]').value = existingData.kids_6_10 || 0;
                     form.querySelector('[name="kids_under_6"]').value = existingData.kids_under_6 || 0;
@@ -762,7 +769,8 @@ document.querySelector('form').addEventListener('submit', async function(e) {
 function calculateTotal() {
     const form = document.getElementById('checkout-container');
     
-    const familyAdults = parseInt(form.querySelector('[name="adults_and_above_10"]').value) || 0;
+    const spouseAttending = form.querySelector('[name="spouse_attending"]').value === 'Yes';
+    const kidsAbove10 = parseInt(form.querySelector('[name="adults_and_above_10"]').value) || 0;
     const kids6to10 = parseInt(form.querySelector('[name="kids_6_10"]').value) || 0;
     const donation = parseInt(form.querySelector('[name="donation_amount"]').value) || 0;
 
@@ -777,7 +785,8 @@ function calculateTotal() {
     // --- FRIDAY EVENT ---
     total += 7000; // Alumni base
     if (friFamilyJoin === 'family') {
-        if (familyAdults > 0) total += 2000 + ((familyAdults - 1) * 1500);
+        if (spouseAttending) total += 2000;
+        total += (kidsAbove10 * 1500);
         total += (kids6to10 * 1000);
     }
 
@@ -785,7 +794,8 @@ function calculateTotal() {
     if (satAttend !== 'no') {
         total += 1500; // Alumni base
         if (satAttend === 'family') {
-            if (familyAdults > 0) total += 1000 + ((familyAdults - 1) * 1000);
+            if (spouseAttending) total += 1000;
+            total += (kidsAbove10 * 1000);
             total += (kids6to10 * 500);
         }
     }
@@ -795,7 +805,8 @@ function calculateTotal() {
         if (type === 'no') return 0;
         let cost = 5500; // Alumni base
         if (type === 'family') {
-            if (familyAdults > 0) cost += 5500 + ((familyAdults - 1) * 2500);
+            if (spouseAttending) cost += 5500;
+            cost += (kidsAbove10 * 2500);
             cost += (kids6to10 * 2000);
         }
         return cost;
@@ -813,7 +824,7 @@ function calculateTotal() {
 // Attach listeners to trigger recalculation automatically
 document.addEventListener('DOMContentLoaded', () => {
     const inputs = [
-        'adults_and_above_10', 'kids_6_10', 'kids_under_6', 
+        'spouse_attending', 'adults_and_above_10', 'kids_6_10', 'kids_under_6', 
         'thu_stay_type', 'fri_family_join', 'fri_stay_type', 'sat_attend_type', 'sat_stay_type',
         'donation_amount'
     ];
