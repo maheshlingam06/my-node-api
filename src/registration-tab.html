@@ -1,0 +1,723 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Family Reunion Registration</title>
+    <style>
+        :root {
+            --primary: #2563eb;
+            --bg: #f8fafc;
+            --text: #1e293b;
+            --border: #e2e8f0;
+            --white: #ffffff;
+            --danger: #ef4444;
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, sans-serif;
+            background-color: var(--bg);
+            color: var(--text);
+            display: flex;
+            flex-direction: column; 
+            align-items: center;    
+            padding: 40px 20px;
+            margin: 0;
+        }
+
+        /* --- TOP RIGHT ACTIONS --- */
+        .top-actions {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            display: flex;
+            gap: 12px;
+            z-index: 100;
+        }
+
+        .btn-admin {
+            background-color: var(--white);
+            color: var(--primary);
+            border: 1px solid var(--primary);
+            padding: 8px 16px;
+            border-radius: 6px;
+            font-weight: 600;
+            font-size: 14px;
+            text-decoration: none;
+            cursor: pointer;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+        }
+
+        .btn-admin:hover {
+            background-color: var(--primary);
+            color: var(--white);
+        }
+
+        .btn-logout {
+            background-color: var(--white);
+            color: var(--danger);
+            border: 1px solid var(--danger);
+            padding: 8px 16px;
+            border-radius: 6px;
+            font-weight: 600;
+            font-size: 14px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .btn-logout:hover {
+            background-color: var(--danger);
+            color: var(--white);
+        }
+
+        .checkout-container {
+            display: grid;
+            grid-template-columns: 1fr 350px;
+            gap: 30px;
+            row-gap: 0px;
+            max-width: 1000px; 
+            width: 100%;
+            margin-top: 25px;
+        }
+
+        .card {
+            background: var(--white);
+            padding: 30px;
+            border-radius: 12px;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+            border: 1px solid var(--border);
+            margin-bottom: 20px;
+        }
+
+        h2 { margin-top: 0; font-size: 1.3rem; color: var(--primary); border-bottom: 1px solid var(--border); padding-bottom: 10px; margin-bottom: 20px; }
+        h3 { margin-top: 0; font-size: 1.1rem; }
+
+        .copyright-panel { text-align: center; padding: 20px; font-size: 12px; color: rgba(0,0,0,0.6); margin-top: auto; position: fixed; bottom: -10px; z-index: -10}
+
+        .input-group { margin-bottom: 15px; }
+        label { display: block; font-weight: 600; font-size: 14px; margin-bottom: 6px; }
+
+        /* General Inputs */
+        input[type="text"], input[type="tel"], input[type="number"], input[type="email"], select {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            font-size: 14px;
+            box-sizing: border-box;
+            background: #fff;
+        }
+
+        input:focus { outline: 2px solid #bfdbfe; border-color: var(--primary); }
+
+        /* --- NEW GRID TABLE STYLING --- */
+        /* --- NEW GRID TABLE STYLING --- */
+        .grid-wrapper { overflow-x: auto; margin-bottom: 20px; border-radius: 6px; border: 1px solid var(--border); }
+        .grid-table { width: 100%; border-collapse: collapse; min-width: 600px; }
+        /* BUMPED FONT SIZE TO 15px */
+        .grid-table th, .grid-table td { border-bottom: 1px solid var(--border); border-right: 1px solid var(--border); padding: 14px 12px; text-align: center; font-size: 15px; vertical-align: middle;}
+        .grid-table th { background-color: var(--bg); font-weight: 600; color: #475569; }
+        .grid-table td:first-child { text-align: left; font-weight: 600; background-color: #f8fafc; width: 30%; }
+        .grid-table td:last-child { border-right: none; }
+        /* LARGER NUMBER BOXES */
+        .grid-table input[type="number"] { width: 70px; padding: 8px; text-align: center; margin: 0 auto; display: block; font-size: 15px; }
+        /* LARGER CHECKBOXES */
+        .grid-table input[type="checkbox"] { width: 22px; height: 22px; cursor: pointer; accent-color: var(--primary); }
+
+        .registration-table { width: 100%; border-collapse: collapse; }
+        .registration-table td { padding: 12px 0; border-bottom: 1px solid var(--bg); vertical-align: middle; }
+        /* BUMPED QUESTION TEXT TO 15px */
+        .registration-table label { margin-bottom: 0; font-weight: 500; font-size: 15px; }
+
+        /* Sidebar Styling */
+        .summary-item { display: flex; justify-content: space-between; margin-bottom: 12px; font-size: 14px; }
+        
+        .btn-submit {
+            width: 100%;
+            background: var(--primary);
+            color: white;
+            border: none;
+            padding: 16px;
+            border-radius: 8px;
+            font-weight: 600;
+            font-size: 16px;
+            cursor: pointer;
+            transition: background 0.2s;
+            box-shadow: 0 4px 10px rgba(37, 99, 235, 0.2);
+        }
+        .btn-submit:hover { background: #1d4ed8; }
+
+        @media (max-width: 850px) {
+            .checkout-container { grid-template-columns: 1fr; }
+            .sidebar { order: 1; position: relative !important; top: 0 !important; }
+        }
+
+        .tariff-card { margin-top: 20px; padding: 15px !important; }
+        /* BUMPED TARIFF FONT SIZE TO 13px */
+        .tariff-table { width: 100%; font-size: 13px; border-collapse: collapse; margin-top: 5px; }
+        .tariff-table th, .tariff-table td { border: 1px solid var(--border); padding: 8px 6px; text-align: center; }
+        .tariff-table th { background-color: var(--bg); font-weight: 700; color: var(--text); }
+        .tariff-table td:first-child { text-align: left; font-weight: 500; width: 45%; }
+
+        /* Carousel Card Styling */
+        .program-card { min-height: 180px; position: relative; padding-bottom: 40px !important; }
+        .carousel-container { position: relative; width: 100%; }
+        .carousel-slide { display: none; font-size: 13px; line-height: 1.5; color: #334155; }
+        .date-badge { background-color: #e0f2fe; color: #0284c7; padding: 4px 8px; border-radius: 4px; font-weight: 700; font-size: 12px; display: inline-block; margin-bottom: 10px; }
+        .carousel-slide p { margin: 5px 0; }
+        .fade { animation-name: fade; animation-duration: 1.5s; }
+        @keyframes fade { from {opacity: .4} to {opacity: 1} }
+        .carousel-dots { text-align: center; position: absolute; bottom: -30px; width: 100%; }
+        .dot { cursor: pointer; height: 8px; width: 8px; margin: 0 4px; background-color: #cbd5e1; border-radius: 50%; display: inline-block; transition: background-color 0.3s ease; }
+        .active-dot, .dot:hover { background-color: #2563eb; }
+
+        .tab-header { display: flex; border-bottom: 1px solid #e2e8f0; margin-bottom: 15px; }
+        .tab-btn { background: none; border: none; padding: 10px 15px; cursor: pointer; font-weight: 600; color: #64748b; border-bottom: 2px solid transparent; transition: all 0.3s; font-size: 14px; flex: 1; }
+        .tab-btn:hover { color: #2563eb; background-color: #f1f5f9; }
+        .tab-btn.active { color: #2563eb; border-bottom: 2px solid #2563eb; }
+
+        .notes-list { list-style: none; padding: 0; margin: 0; font-size: 13px; line-height: 1.6; color: var(--text); text-align: left; }
+        .notes-list li { margin-bottom: 12px; padding-left: 20px; position: relative; }
+        .notes-list li::before { content: "•"; color: #93c5fd; font-weight: bold; font-size: 16px; position: absolute; left: 0; top: -2px; }
+        
+        /* Modal Styles */
+        .modal { display: none; position: fixed; z-index: 1001; left: 0; top: 0; width: 100%; height: 100%; overflow: auto; background-color: rgba(0,0,0,0.4); }
+        .modal-content { background-color: #fefefe; margin: 10% auto; padding: 20px; border: 1px solid #888; width: 80%; max-width: 800px; border-radius: 12px; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1); }
+        .close { color: #aaa; float: right; font-size: 28px; font-weight: bold; }
+        .close:hover, .close:focus { color: black; text-decoration: none; cursor: pointer; }
+        .size-chart-link { color: var(--primary); font-size: 13px; margin-left: 8px; cursor: pointer; text-decoration: underline; display: inline-flex; align-items: center; }
+        .size-chart-link:hover { color: #1d4ed8; }
+    </style>
+    <script src="https://www.google.com/recaptcha/api.js?render=__SITE_KEY__" defer></script>
+    <script>
+        const token = localStorage.getItem('supabaseToken');
+        if (!token) {
+            alert("Please login first to access the registration form.");
+            window.location.href = "login";
+        }
+
+        function handleLogout(){
+            localStorage.removeItem('supabaseToken');
+            localStorage.removeItem('userType');
+            window.location.replace('login');
+        }
+
+        window.addEventListener('pageshow', function(event) {
+            if (event.persisted || !localStorage.getItem('supabaseToken')) {
+                window.location.reload();
+            }
+        });
+    </script>
+</head>
+<body>
+
+<div class="top-actions">
+    <a href="blog.html" class="btn-admin" style="background-color: var(--primary); color: white; border-color: var(--primary);">Alumni Blog</a>
+    <a href="admin.html" class="btn-admin" id="admin-board">Admin Dashboard</a>
+    <button class="btn-logout" onclick="handleLogout()">Logout</button>
+</div>
+
+<form class="checkout-container" id="checkout-container">
+    <div class="main-content">
+        
+        <div class="card">
+            <h2>Contact Information</h2>
+            <div class="input-group">
+                <label>Your Name</label>
+                <input type="text" name="participant_name" placeholder="Enter your full name" required>
+            </div>
+            <div class="input-group">
+                <label>Department</label>
+                <select name="department" required>
+                    <option value="" disabled selected>Select your Department</option>
+                    <option value="Arch">Arch</option>
+                    <option value="Civil">Civil</option>
+                    <option value="CSE">CSE</option>
+                    <option value="ECE">ECE</option>
+                    <option value="EEE">EEE</option>
+                    <option value="Mech">Mech</option>
+                </select>
+            </div>
+            <div class="input-group">
+                <label>Your Class Registration Number</label>
+                <input type="text" name="class_reg_no" placeholder="Something like 97A55">
+            </div>
+
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
+                <div class="input-group">
+                    <label>Email Address</label>
+                    <input type="email" name="email" id="email" placeholder="email@example.com" required>
+                </div>
+                <div class="input-group">
+                    <label>Mobile Number (WhatsApp preferred)</label>
+                    <input type="tel" name="mobile" placeholder="+1 264 567 890" required>
+                </div>
+            </div>
+        </div>
+
+        <div class="card">
+            <h2>Registration Matrix</h2>
+            <p style="font-size: 13px; color: #64748b; margin-bottom: 20px;">Please check the boxes for you and your spouse, and enter the number of children attending each event/stay.</p>
+            
+            <div class="grid-wrapper">
+                <table class="grid-table">
+                    <thead>
+                        <tr>
+                            <th>Activity / Stay</th>
+                            <th>You (Alumni)</th>
+                            <th>Spouse</th>
+                            <th>Kids &gt;10y</th>
+                            <th>Kids 6-10y</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>Thu Night Stay (Resort)</td>
+                            <td><input type="checkbox" name="thu_stay_alumni" value="1"></td>
+                            <td><input type="checkbox" name="thu_stay_spouse" value="1"></td>
+                            <td><input type="number" name="thu_stay_kids_10" min="0" value="0"></td>
+                            <td><input type="number" name="thu_stay_kids_6_10" min="0" value="0"></td>
+                        </tr>
+                        <tr>
+                            <td>Fri Reunion (Events + Dinner)</td>
+                            <td><input type="checkbox" name="fri_reunion_alumni" value="1"></td>
+                            <td><input type="checkbox" name="fri_reunion_spouse" value="1"></td>
+                            <td><input type="number" name="fri_reunion_kids_10" min="0" value="0"></td>
+                            <td><input type="number" name="fri_reunion_kids_6_10" min="0" value="0"></td>
+                        </tr>
+                        <tr>
+                            <td>Fri Night Stay (Resort)</td>
+                            <td><input type="checkbox" name="fri_stay_alumni" value="1"></td>
+                            <td><input type="checkbox" name="fri_stay_spouse" value="1"></td>
+                            <td><input type="number" name="fri_stay_kids_10" min="0" value="0"></td>
+                            <td><input type="number" name="fri_stay_kids_6_10" min="0" value="0"></td>
+                        </tr>
+                        <tr>
+                            <td>Sat Reunion (Lunch + Sports)</td>
+                            <td><input type="checkbox" name="sat_reunion_alumni" value="1"></td>
+                            <td><input type="checkbox" name="sat_reunion_spouse" value="1"></td>
+                            <td><input type="number" name="sat_reunion_kids_10" min="0" value="0"></td>
+                            <td><input type="number" name="sat_reunion_kids_6_10" min="0" value="0"></td>
+                        </tr>
+                        <tr>
+                            <td>Sat Night Stay (Resort)</td>
+                            <td><input type="checkbox" name="sat_stay_alumni" value="1"></td>
+                            <td><input type="checkbox" name="sat_stay_spouse" value="1"></td>
+                            <td><input type="number" name="sat_stay_kids_10" min="0" value="0"></td>
+                            <td><input type="number" name="sat_stay_kids_6_10" min="0" value="0"></td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <table class="registration-table">
+                <tr>
+                    <td><label>Would you like to contribute more for the reunion (other than Endowment fund)</label></td>
+                    <td><input type="number" name="donation_amount" value="0" min="0" placeholder="₹ 0"></td>
+                </tr>
+                <tr>
+                    <td><label>Are you or your family interested in performing in Culturals at reunion?</label></td>
+                    <td>
+                        <select name="performing_culturals">
+                            <option value="No">No</option>
+                            <option value="Yes">Yes</option>
+                        </select>
+                    </td>
+                </tr>
+                <tr>
+                    <td><label>Are you interested in volunteering for the reunion?</label></td>
+                    <td>
+                        <select name="volunteering">
+                            <option value="No">No</option>
+                            <option value="Yes">Yes</option>
+                        </select>
+                    </td>
+                </tr>
+                <tr>
+                    <td><label>Your T-Shirt Size* <span id="size-chart-btn" class="size-chart-link">Is this the right size? 📏 Size Chart</span></label></td>
+                    <td>
+                        <select name="t_shirt_size">
+                            <option value="S">Small</option>
+                            <option value="M" selected>Medium</option>
+                            <option value="L">Large</option>
+                            <option value="XL">X-Large</option>
+                            <option value="XXL">XX-Large</option>
+                            <option value="XXXL">XXX-Large</option>
+                        </select>
+                    </td>
+                </tr>
+            </table>
+        </div>
+    </div>
+
+    <div class="sidebar" style="position: sticky; top: 20px;">
+        <div class="card">
+            <h3>Registration Summary</h3>
+            <div class="summary-item">
+                <span>Location</span>
+                <strong>Heritage Resort</strong>
+            </div>
+            <div class="summary-item">
+                <span>Event Dates</span>
+                <strong>July 23 - 25</strong>
+            </div>
+            <div class="summary-item">
+                <span>Status</span>
+                <span style="color: #059669; font-weight: 600;">Open</span>
+            </div>
+            
+            <button type="submit" class="btn-submit">Complete Registration</button>
+            <p style="font-size: 11px; color: #64748b; text-align: center; margin-top: 15px;">
+                By clicking, you agree to the college reunion event guidelines.
+            </p>
+        </div>
+        <div class="card tariff-card">
+            <h3>Tariff Details (INR)</h3>
+            <table class="tariff-table">
+                <thead>
+                    <tr>
+                        <th>Tariff</th>
+                        <th>Alumni</th>
+                        <th>Spouse</th>
+                        <th>&gt;10y Kid</th>
+                        <th>Kid (6-10y)</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>1 Night Stay (Heritage Resort)</td>
+                        <td>5500</td>
+                        <td>5500</td>
+                        <td>2500</td>
+                        <td>2000</td>
+                    </tr>
+                    <tr>
+                        <td>Fri Reunion (College + Dinner)</td>
+                        <td>7000</td>
+                        <td>2000</td>
+                        <td>1500</td>
+                        <td>1000</td>
+                    </tr>
+                    <tr>
+                        <td>Sat Reunion (College Lunch)</td>
+                        <td>1500</td>
+                        <td>1000</td>
+                        <td>1000</td>
+                        <td>500</td>
+                    </tr>
+                </tbody>
+                <tfoot>
+                    <tr style="background-color: #fef3c7; font-weight: bold;">
+                        <td colspan="4" style="text-align: right;">Total Estimated Cost:</td>
+                        <td id="total-cost-display">0</td>
+                    </tr>
+                </tfoot>
+            </table>
+        </div>
+        <div class="card program-card">
+            <div class="tab-header">
+                <button type="button" class="tab-btn active" onclick="openTab(event, 'schedule-tab')">📅 Schedule</button>
+                <button type="button" class="tab-btn" onclick="openTab(event, 'notes-tab')">ℹ️ FAQs </button>
+            </div>
+
+            <div id="schedule-tab" class="tab-content" style="display: block;">
+                <div class="carousel-container">
+                    <div class="carousel-slide fade" style="display: block;">
+                        <div class="date-badge">Thu, July 23</div>
+                        <p>Arrive early and stay at Heritage resort (optional).</p>
+                    </div>
+                    <div class="carousel-slide fade">
+                        <div class="date-badge">Fri, July 24</div>
+                        <p><strong>9:00 AM:</strong> Arrive at College. Events until 5pm.</p>
+                        <p><strong>Evening:</strong> Leave for Resort. Culturals & Dinner.</p>
+                    </div>
+                    <div class="carousel-slide fade">
+                        <div class="date-badge">Sat, July 25</div>
+                        <p><strong>Morning:</strong> Relax at Resort.</p>
+                        <p><strong>11:30 AM:</strong> Leave for College, Lunch, small get-togethers & sports.</p>
+                    </div>
+                    
+                    <div class="carousel-dots">
+                        <span class="dot" onclick="currentSlide(1)"></span> 
+                        <span class="dot" onclick="currentSlide(2)"></span> 
+                        <span class="dot" onclick="currentSlide(3)"></span> 
+                    </div>
+                </div>
+            </div>
+
+            <div id="notes-tab" class="tab-content" style="display: none;">
+                <ul class="notes-list">
+                    <li><strong>Participation:</strong> Your spouse and kids are invited for the reunion. If you would like to bring anyone else, please contact your class's coordinator(s)</li>
+                    <li><strong>Fri Night Stay:</strong> If not staying, you can still join Sat morning (breakfast not covered).</li>
+                    <li><strong>Food:</strong> 
+                        <ul class="notes-list">
+                            <li>a. For stays at Heritage resort, only complementary breakfast is covered</li>
+                            <li>b. As part of the Friday reunion, Lunch & Dinner are covered</li>
+                            <li>c. As part of the Saturday reunion, Lunch is covered</li>
+                        </ul>
+                    </li>
+                    <li><strong>Drinks at resort:</strong> Not covered.</li>
+                    <li><strong>Transport (Fri AM):</strong> Bus provided from Resort to College if staying Thu night.</li>
+                    <li><strong>Transport (Fri PM):</strong> Bus provided from College to Resort for evening culturals.</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+    <div style="width: 100%; margin-bottom: 20px; padding: 15px 20px; box-sizing: border-box;">
+        <p style="margin: 0; color: #1e3a8a; font-size: 15px;">
+            🌟 <strong>Donate to Endowment fund!</strong> Check details at <a href="#" target="_blank" style="color: #2563eb; font-weight: 600; text-decoration: underline;">this link</a>
+        </p>
+    </div>
+</form>
+
+<div id="sizeChartModal" class="modal">
+  <div class="modal-content">
+    <span class="close">&times;</span>
+    <img src="https://pqpdxdwrgwcxvjsgdoiy.supabase.co/storage/v1/object/public/assets/T-Shirt%20Size%20Chart-C.jpg" alt="T-Shirt Size Chart" style="width: 100%; height: auto; display: block;">
+  </div>
+</div>
+
+<footer class="copyright-panel">
+    &copy; 2026 LEGENDS IT Consulting & Services. All rights reserved.
+</footer>
+
+<script>
+    window.onload = async function() {
+        const token = localStorage.getItem('supabaseToken');
+        const urlParams = new URLSearchParams(window.location.search);
+        const emailFromUrl = urlParams.get('email');
+
+        if (emailFromUrl) {
+            document.getElementById('email').value = emailFromUrl;
+        }
+
+        if (token) {
+            try {
+                const response = await fetch('/get-registration', {
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+                const existingData = await response.json();
+
+                if (existingData && existingData.participant_name) {
+                    const form = document.getElementById('checkout-container');
+                    
+                    form.querySelector('[name="participant_name"]').value = existingData.participant_name;
+                    form.querySelector('[name="department"]').value = existingData.department || '';
+                    form.querySelector('[name="class_reg_no"]').value = existingData.class_reg_no || '';
+                    form.querySelector('[name="t_shirt_size"]').value = existingData.t_shirt_size || 'M';
+                    form.querySelector('[name="mobile"]').value = existingData.mobile;
+                    
+                    const checkboxes = ['thu_stay_alumni', 'thu_stay_spouse', 'fri_reunion_alumni', 'fri_reunion_spouse', 'fri_stay_alumni', 'fri_stay_spouse', 'sat_reunion_alumni', 'sat_reunion_spouse', 'sat_stay_alumni', 'sat_stay_spouse'];
+                    checkboxes.forEach(name => {
+                        if (existingData[name]) form.querySelector(`[name="${name}"]`).checked = true;
+                    });
+
+                    // Updated to match 20 matrix fields instead of 25
+                    const numberInputs = ['thu_stay_kids_10', 'thu_stay_kids_6_10', 'fri_reunion_kids_10', 'fri_reunion_kids_6_10', 'fri_stay_kids_10', 'fri_stay_kids_6_10', 'sat_reunion_kids_10', 'sat_reunion_kids_6_10', 'sat_stay_kids_10', 'sat_stay_kids_6_10'];
+                    numberInputs.forEach(name => {
+                        if (existingData[name]) form.querySelector(`[name="${name}"]`).value = existingData[name];
+                    });
+
+                    form.querySelector('[name="donation_amount"]').value = existingData.donation_amount || 0;
+                    form.querySelector('[name="performing_culturals"]').value = existingData.performing_culturals || 'No';
+                    form.querySelector('[name="volunteering"]').value = existingData.volunteering || 'No';
+                    
+                    calculateTotal();
+                    document.querySelector('.btn-submit').innerText = "Update Registration";
+                }
+            } catch (err) {
+                console.error("Error fetching saved data:", err);
+            }
+        }
+    };
+</script>
+
+<script>
+document.querySelector('form').addEventListener('submit', async function(e) {
+    e.preventDefault(); 
+
+    const submitBtn = document.querySelector('.btn-submit');
+    submitBtn.innerText = "Processing...";
+    submitBtn.disabled = true;
+
+    const token = localStorage.getItem('supabaseToken');
+    const formData = new FormData(this);
+    const data = Object.fromEntries(formData.entries());
+
+    const checkboxes = ['thu_stay_alumni', 'thu_stay_spouse', 'fri_reunion_alumni', 'fri_reunion_spouse', 'fri_stay_alumni', 'fri_stay_spouse', 'sat_reunion_alumni', 'sat_reunion_spouse', 'sat_stay_alumni', 'sat_stay_spouse'];
+    checkboxes.forEach(name => {
+        data[name] = this.querySelector(`[name="${name}"]`).checked ? true : false;
+    });
+
+    try {
+        const response = await fetch('../register', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${token}` 
+            },
+            body: JSON.stringify(data)
+        });
+
+        const result = await response.json();
+
+        if (response.ok) {
+            alert("Success! " + result.message);
+            if (result.message == 'Registration updated successfully!'){
+                window.location.href = "./updateComplete.html"; 
+            }
+            else{
+                window.location.href = "./signupcomplete.html"; 
+            }
+        } else {
+            alert("Registration failed: " + (result.error || "Unknown error"));
+            submitBtn.innerText = "Complete Registration";
+            submitBtn.disabled = false;
+        }
+    } catch (err) {
+        console.error("Fetch Error:", err);
+        alert("Server error. Please try again.");
+        submitBtn.innerText = "Complete Registration";
+        submitBtn.disabled = false;
+    }
+});
+
+function calculateTotal() {
+    let total = 0;
+    
+    const getCheck = (name) => document.querySelector(`[name="${name}"]`).checked ? 1 : 0;
+    const getNum = (name) => parseInt(document.querySelector(`[name="${name}"]`).value) || 0;
+
+    // --- THU STAY ---
+    total += getCheck('thu_stay_alumni') * 5500;
+    total += getCheck('thu_stay_spouse') * 5500;
+    total += getNum('thu_stay_kids_10') * 2500;
+    total += getNum('thu_stay_kids_6_10') * 2000;
+
+    // --- FRI REUNION ---
+    total += getCheck('fri_reunion_alumni') * 7000;
+    total += getCheck('fri_reunion_spouse') * 2000;
+    total += getNum('fri_reunion_kids_10') * 1500;
+    total += getNum('fri_reunion_kids_6_10') * 1000;
+
+    // --- FRI STAY ---
+    total += getCheck('fri_stay_alumni') * 5500;
+    total += getCheck('fri_stay_spouse') * 5500;
+    total += getNum('fri_stay_kids_10') * 2500;
+    total += getNum('fri_stay_kids_6_10') * 2000;
+
+    // --- SAT REUNION ---
+    total += getCheck('sat_reunion_alumni') * 1500;
+    total += getCheck('sat_reunion_spouse') * 1000;
+    total += getNum('sat_reunion_kids_10') * 1000;
+    total += getNum('sat_reunion_kids_6_10') * 500;
+
+    // --- SAT STAY ---
+    total += getCheck('sat_stay_alumni') * 5500;
+    total += getCheck('sat_stay_spouse') * 5500;
+    total += getNum('sat_stay_kids_10') * 2500;
+    total += getNum('sat_stay_kids_6_10') * 2000;
+
+    const donation = parseInt(document.querySelector('[name="donation_amount"]').value) || 0;
+    total += donation;
+
+    document.getElementById('total-cost-display').innerText = total.toLocaleString('en-IN');
+}
+
+document.addEventListener('DOMContentLoaded', () => {
+    const dynamicInputs = document.querySelectorAll('.grid-table input, [name="donation_amount"]');
+    
+    dynamicInputs.forEach(el => {
+        el.addEventListener('change', calculateTotal);
+        if (el.tagName === 'INPUT' && el.type === 'number') el.addEventListener('input', calculateTotal);
+    });
+
+    calculateTotal(); 
+
+    const userType = localStorage.getItem('userType');
+    if (userType != 'x') {
+        var dBoard = document.getElementById('admin-board');
+        if (dBoard) dBoard.style.display = 'none';
+    }
+});
+
+let slideIndex = 0;
+showSlides(); 
+
+function showSlides() {
+    let i;
+    let slides = document.getElementsByClassName("carousel-slide");
+    let dots = document.getElementsByClassName("dot");
+    
+    for (i = 0; i < slides.length; i++) {
+        slides[i].style.display = "none";  
+    }
+    
+    slideIndex++;
+    if (slideIndex > slides.length) {slideIndex = 1}    
+    
+    for (i = 0; i < dots.length; i++) {
+        dots[i].className = dots[i].className.replace(" active-dot", "");
+    }
+    
+    slides[slideIndex-1].style.display = "block";  
+    dots[slideIndex-1].className += " active-dot";
+    
+    setTimeout(showSlides, 4000); 
+}
+
+function openTab(evt, tabName) {
+    evt.preventDefault();
+    evt.stopPropagation();
+    
+    var i, tabcontent, tablinks;
+    tabcontent = document.getElementsByClassName("tab-content");
+    for (i = 0; i < tabcontent.length; i++) {
+        tabcontent[i].style.display = "none";
+    }
+
+    tablinks = document.getElementsByClassName("tab-btn");
+    for (i = 0; i < tablinks.length; i++) {
+        tablinks[i].className = tablinks[i].className.replace(" active", "");
+    }
+
+    document.getElementById(tabName).style.display = "block";
+    evt.currentTarget.className += " active";
+}
+
+document.addEventListener('DOMContentLoaded', () => {
+    var modal = document.getElementById("sizeChartModal");
+    var btn = document.getElementById("size-chart-btn");
+    var span = document.getElementsByClassName("close")[0];
+
+    btn.onclick = function() { modal.style.display = "block"; }
+    span.onclick = function() { modal.style.display = "none"; }
+    window.onclick = function(event) {
+      if (event.target == modal) { modal.style.display = "none"; }
+    }
+});
+</script>
+<script>
+    let idleTime = 0;
+    const timeoutLimit = 5; 
+    const idleInterval = setInterval(timerIncrement, 60000); 
+
+    document.addEventListener('mousemove', resetTimer);
+    document.addEventListener('keypress', resetTimer);
+    document.addEventListener('click', resetTimer);
+    document.addEventListener('scroll', resetTimer);
+
+    function timerIncrement() {
+        idleTime++;
+        if (idleTime >= timeoutLimit) {
+            clearInterval(idleInterval);
+            alert("Your session has expired due to inactivity. Please log in again.");
+            handleLogout();
+        }
+    }
+    function resetTimer() { idleTime = 0; }
+</script>
+</body>
+</html>
