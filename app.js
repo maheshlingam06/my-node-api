@@ -345,11 +345,25 @@ app.post('/signup', trackActivity('USER_SIGNUP'), uploadLimiter, async (req, res
 //     }
 // });
 
-// --- MAINTENANCE MODE TOGGLE ---
-// This intercepts ALL incoming traffic if the environment variable is set.
+// --- MAINTENANCE MODE WITH ADMIN BYPASS ---
 app.use((req, res, next) => {
-    if (process.env.MAINTENANCE_MODE === 'true') {
-        // Return a friendly 503 Service Unavailable page
+    const isMaintenance = process.env.MAINTENANCE_MODE === 'true';
+    const bypassKey = process.env.BYPASS_KEY; // The secret word you set in Render
+
+    // 1. If they provide the correct query param, let them in AND drop a session cookie
+    if (bypassKey && req.query.bypass === bypassKey) {
+        res.setHeader('Set-Cookie', `bypass_token=${bypassKey}; Path=/; HttpOnly`);
+        return next();
+    }
+
+    // 2. Check if they already have the cookie from a previous visit
+    const cookies = req.headers.cookie || '';
+    if (bypassKey && cookies.includes(`bypass_token=${bypassKey}`)) {
+        return next(); // Let them through!
+    }
+
+    // 3. If maintenance is ON and they have no bypass key/cookie, block them
+    if (isMaintenance) {
         return res.status(503).send(`
             <!DOCTYPE html>
             <html lang="en">
@@ -373,7 +387,9 @@ app.use((req, res, next) => {
             </html>
         `);
     }
-    next(); // If maintenance mode is off, continue loading the site normally
+
+    // 4. Maintenance is off, proceed normally
+    next(); 
 });
 
 app.post('/register', trackActivity('UPDATED_REGISTRATION'), async (req, res) => {
