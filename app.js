@@ -345,6 +345,37 @@ app.post('/signup', trackActivity('USER_SIGNUP'), uploadLimiter, async (req, res
 //     }
 // });
 
+// --- MAINTENANCE MODE TOGGLE ---
+// This intercepts ALL incoming traffic if the environment variable is set.
+app.use((req, res, next) => {
+    if (process.env.MAINTENANCE_MODE === 'true') {
+        // Return a friendly 503 Service Unavailable page
+        return res.status(503).send(`
+            <!DOCTYPE html>
+            <html lang="en">
+            <head>
+                <meta charset="UTF-8">
+                <meta name="viewport" content="width=device-width, initial-scale=1.0">
+                <title>Site Maintenance</title>
+                <style>
+                    body { font-family: 'Inter', sans-serif; background: #f8fafc; color: #1e293b; display: flex; justify-content: center; align-items: center; height: 100vh; margin: 0; text-align: center; }
+                    .card { background: white; padding: 40px; border-radius: 12px; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1); border: 1px solid #e2e8f0; max-width: 500px; }
+                    h1 { color: #2563eb; margin-top: 0; }
+                </style>
+            </head>
+            <body>
+                <div class="card">
+                    <h1>We're Upgrading! 🚀</h1>
+                    <p>The Reunion 2026 registration portal is currently offline for a few minutes while we push an exciting new update to the form.</p>
+                    <p><strong>Please check back shortly!</strong></p>
+                </div>
+            </body>
+            </html>
+        `);
+    }
+    next(); // If maintenance mode is off, continue loading the site normally
+});
+
 app.post('/register', trackActivity('UPDATED_REGISTRATION'), async (req, res) => {
     try {
         const token = req.headers.authorization?.split(' ')[1];
