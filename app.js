@@ -584,7 +584,7 @@ app.post('/register', trackActivity('UPDATED_REGISTRATION'), async (req, res) =>
                     
                     <h2 style="color: #2563eb; text-align: center;">Registration Confirmed!</h2>
                     <p>Hi ${participant_name},</p>
-                    <p>Thank you for registering for the Class of 2000 Reunion. Your digital pass and registration summary are below.</p>
+                    <p>Thank you for registering for the Class of 2001 Reunion. Your digital pass and registration summary are below.</p>
                     
                     <div style="text-align: center; margin: 30px 0; padding: 20px; background-color: #f8fafc; border-radius: 12px; border: 2px dashed #cbd5e1;">
                         <h3 style="color: #0f172a; margin-top: 0; margin-bottom: 5px;">Your Digital Pass</h3>
@@ -1156,7 +1156,7 @@ app.post('/api/cron/nightly-updates', async (req, res) => {
                 <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; color: #1e293b; border: 1px solid #e2e8f0; border-radius: 12px; padding: 20px;">
                     <h2 style="color: #2563eb; text-align: center;">Registration Update Confirmed</h2>
                     <p>Hi ${sub.participant_name},</p>
-                    <p>We successfully recorded the recent changes to your Class of 2000 Reunion registration. Here is your updated summary:</p>
+                    <p>We successfully recorded the recent changes to your Class of 2001 Reunion registration. Here is your updated summary:</p>
                     
                     <table style="width: 100%; border-collapse: collapse; margin-bottom: 20px; font-size: 14px;">
                         <tr style="border-bottom: 1px solid #f1f5f9;">
