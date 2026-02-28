@@ -378,21 +378,7 @@
 
 <form class="checkout-container" id="checkout-container">
     <div class="main-content">
-        <div class="card" style="background: #eef2ff; border-color: #c7d2fe;">
-            <h2 style="color: #4f46e5; border-bottom: none; padding-bottom: 0;">✨ AI Magic Auto-Fill</h2>
-            <p style="font-size: 14px; color: #475569; margin-bottom: 15px; line-height: 1.5;">
-                Don't want to click through all the dropdowns? Just tell us your plans in plain English, and our AI will fill out the form for you!
-            </p>
-            
-            <textarea id="magicInput" rows="3" style="width: 100%; padding: 12px; border-radius: 6px; border: 1px solid #cbd5e1; margin-bottom: 15px; font-family: inherit; font-size: 14px; box-sizing: border-box; resize: vertical;" placeholder="E.g., I am bringing my wife and two 8-year-old daughters. We are staying at the resort Friday and Saturday night, and I want an XL shirt."></textarea>
-            
-            <div style="display: flex; align-items: center;">
-                <button type="button" onclick="runMagicFill()" id="magicBtn" style="background: #4f46e5; color: white; border: none; padding: 10px 20px; border-radius: 6px; font-weight: 600; cursor: pointer; transition: background 0.2s;">
-                    Auto-Fill My Form
-                </button>
-                <span id="magicStatus" style="font-size: 13px; font-weight: 600; color: #059669; margin-left: 15px; display: none;">✓ Form updated! Please review below.</span>
-            </div>
-        </div>
+        
         <div class="card">
             <h2>Contact Information</h2>
             <div class="input-group">
@@ -951,61 +937,6 @@ document.addEventListener('DOMContentLoaded', () => {
 
     function resetTimer() {
         idleTime = 0;
-    }
-
-    async function runMagicFill() {
-        const input = document.getElementById('magicInput').value;
-        const btn = document.getElementById('magicBtn');
-        const status = document.getElementById('magicStatus');
-
-        if (!input) return alert("Please type your plans first!");
-
-        btn.innerText = "Thinking...";
-        btn.disabled = true;
-        status.style.display = 'none';
-
-        try {
-            const response = await fetch('/api/magic-fill', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ userInput: input })
-            });
-
-            const data = await response.json();
-
-            if (response.ok) {
-                // 1. Map Family Members
-                document.querySelector('[name="spouse_attending"]').value = data.spouse_attending;
-                document.querySelector('[name="adults_and_above_10"]').value = data.adults_and_above_10;
-                document.querySelector('[name="kids_6_10"]').value = data.kids_6_10;
-                document.querySelector('[name="kids_under_6"]').value = data.kids_under_6;
-                
-                // 2. Map Itinerary
-                document.querySelector('[name="thu_stay_type"]').value = data.thu_stay_type;
-                document.querySelector('[name="fri_family_join"]').value = data.fri_family_join;
-                document.querySelector('[name="fri_stay_type"]').value = data.fri_stay_type;
-                document.querySelector('[name="sat_attend_type"]').value = data.sat_attend_type;
-                document.querySelector('[name="sat_stay_type"]').value = data.sat_stay_type;
-
-                // 3. Map Extras
-                document.querySelector('[name="donation_amount"]').value = data.donation_amount;
-                document.querySelector('[name="performing_culturals"]').value = data.performing_culturals;
-                document.querySelector('[name="volunteering"]').value = data.volunteering;
-                document.querySelector('[name="t_shirt_size"]').value = data.t_shirt_size;
-
-                // Trigger the cost calculation instantly so the user sees the updated price!
-                calculateTotal();
-
-                status.style.display = 'inline';
-            } else {
-                alert(data.error || "Something went wrong.");
-            }
-        } catch (err) {
-            alert("Network error. Please try again.");
-        } finally {
-            btn.innerText = "Auto-Fill My Form";
-            btn.disabled = false;
-        }
     }
 
 </script>

@@ -8,7 +8,6 @@ const path = require('path');
 const { createClient } = require('@supabase/supabase-js');
 const dns = require('dns');
 const Brevo = require('@getbrevo/brevo');
-const { GoogleGenerativeAI, SchemaType } = require("@google/generative-ai");
 
 // 1. Initialize the Brevo Transactional Emails API
 const apiInstance = new Brevo.TransactionalEmailsApi();
@@ -19,7 +18,6 @@ const ADMIN_EMAILS = ['d.mahesh.0510@gmail.com', 'ideamani07@gmail.com', 'kavith
 
 // 2. Set your API Key
 apiInstance.setApiKey(Brevo.TransactionalEmailsApiApiKeys.apiKey, process.env.BREVO_API_KEY);
-const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
 
 dns.setDefaultResultOrder('ipv4first'); // Force Node to prefer IPv4 addresses
 
@@ -1085,67 +1083,6 @@ app.post('/update-password', async (req, res) => {
 
 app.get('/ping', (req, res) => {
     res.status(200).send('pong');
-});
-
-// --- MAGIC AUTO-FILL ENDPOINT ---
-app.post('/api/magic-fill', globalLimiter, async (req, res) => {
-    const { userInput } = req.body;
-
-    if (!userInput) return res.status(400).json({ error: "Please provide some text." });
-
-    try {
-        // 1. Define the exact JSON structure matching your new HTML form
-        const formSchema = {
-            type: SchemaType.OBJECT,
-            properties: {
-                spouse_attending: { type: SchemaType.STRING, description: "Must be exactly 'Yes' or 'No'. If they mention bringing a spouse, wife, husband, or partner, this is 'Yes'." },
-                adults_and_above_10: { type: SchemaType.NUMBER, description: "Number of additional family members over 10 years old. CRITICAL: Do NOT count the primary user or the spouse in this number. E.g., 'me, my wife, and our 15yr old' = 1." },
-                kids_6_10: { type: SchemaType.NUMBER, description: "Number of children aged 6 to 10." },
-                kids_under_6: { type: SchemaType.NUMBER, description: "Number of children under 6." },
-                
-                thu_stay_type: { type: SchemaType.STRING, description: "Must be exactly 'self', 'family', or 'no'. If arriving Thursday with family, use 'family'. If alone, use 'self'." },
-                fri_family_join: { type: SchemaType.STRING, description: "Must be exactly 'family', or 'no'." },
-                fri_stay_type: { type: SchemaType.STRING, description: "Must be exactly 'self', 'family', or 'no'." },
-                sat_attend_type: { type: SchemaType.STRING, description: "Must be exactly 'self', 'family', or 'no'." },
-                sat_stay_type: { type: SchemaType.STRING, description: "Must be exactly 'self', 'family', or 'no'." },
-                
-                donation_amount: { type: SchemaType.NUMBER, description: "Amount in INR they wish to donate, if explicitly mentioned. Default to 0." },
-                performing_culturals: { type: SchemaType.STRING, description: "Must be 'Yes' or 'No'. Default to 'No'." },
-                volunteering: { type: SchemaType.STRING, description: "Must be 'Yes' or 'No'. Default to 'No'." },
-                t_shirt_size: { type: SchemaType.STRING, description: "Must be exactly 'S', 'M', 'L', 'XL', 'XXL', or 'XXXL'. If not mentioned, default to 'M'." }
-            },
-            required: [
-                "spouse_attending", "adults_and_above_10", "kids_6_10", "kids_under_6", 
-                "thu_stay_type", "fri_family_join", "fri_stay_type", "sat_attend_type", "sat_stay_type",
-                "donation_amount", "performing_culturals", "volunteering", "t_shirt_size"
-            ]
-        };
-
-        // 2. Initialize the model and force it to use our schema
-        const model = genAI.getGenerativeModel({
-            model: "gemini-2.5-flash",
-            generationConfig: {
-                responseMimeType: "application/json",
-                responseSchema: formSchema,
-            },
-        });
-
-        // 3. Send the prompt
-        const prompt = `You are a highly logical data parser for a college reunion. 
-        Read the user's text and extract their event plans into the strict JSON format required. 
-        Pay special attention to who is attending and map them accurately to the spouse and kids categories.
-        User text: "${userInput}"`;
-
-        const result = await model.generateContent(prompt);
-        const aiResponse = result.response.text();
-
-        // 4. Send the perfect JSON back to the frontend
-        return res.status(200).json(JSON.parse(aiResponse));
-
-    } catch (err) {
-        console.error("AI Parsing Error:", err);
-        return res.status(500).json({ error: "Failed to parse text. Please fill the form manually." });
-    }
 });
 
 app.post('/api/salesforce/upload', upload.any(), async (req, res) => {
