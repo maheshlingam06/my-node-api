@@ -849,13 +849,13 @@ document.addEventListener('DOMContentLoaded', () => {
         });
 
         // 2. Prevent changing Friday to "No" if Spouse is "Yes"
-        friFamilySelect.addEventListener('change', (e) => {
+        /*friFamilySelect.addEventListener('change', (e) => {
             if (e.target.value === 'no' && spouseSelect.value === 'Yes') {
                 alert("Since your spouse is attending, they must be included in the Friday Reunion events!");
                 e.target.value = 'family'; // Force it back to Yes
                 calculateTotal(); // Recalculate to be safe
             }
-        });
+        });*/
     }
 
     calculateTotal(); 
