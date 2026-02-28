@@ -835,13 +835,25 @@ document.addEventListener('DOMContentLoaded', () => {
         if (el && el.tagName === 'INPUT') el.addEventListener('input', calculateTotal);
     });
 
-    // --- NEW: AUTO-SELECT FRIDAY FAMILY IF SPOUSE IS YES ---
+    // --- NEW: AUTO-SELECT AND LOCK FRIDAY FAMILY IF SPOUSE IS YES ---
     const spouseSelect = document.querySelector('[name="spouse_attending"]');
-    if (spouseSelect) {
+    const friFamilySelect = document.querySelector('[name="fri_family_join"]');
+
+    if (spouseSelect && friFamilySelect) {
+        // 1. Auto-select Friday when Spouse is changed to Yes
         spouseSelect.addEventListener('change', (e) => {
             if (e.target.value === 'Yes') {
-                document.querySelector('[name="fri_family_join"]').value = 'family';
-                calculateTotal(); // Instantly update the cost at the bottom!
+                friFamilySelect.value = 'family';
+                calculateTotal(); 
+            }
+        });
+
+        // 2. Prevent changing Friday to "No" if Spouse is "Yes"
+        friFamilySelect.addEventListener('change', (e) => {
+            if (e.target.value === 'no' && spouseSelect.value === 'Yes') {
+                alert("Since your spouse is attending, they must be included in the Friday Reunion events!");
+                e.target.value = 'family'; // Force it back to Yes
+                calculateTotal(); // Recalculate to be safe
             }
         });
     }
