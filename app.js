@@ -839,12 +839,60 @@ app.post('/api/cron/nightly-updates', async (req, res) => {
         let committeeTableRows = '';
         const processedUserIds = [];
 
-        // --- 1. INITIALIZE THE BATCH EMAIL FOR PARTICIPANTS ---
+        // --- 1. DEFINE THE MASTER HTML TEMPLATE FOR PARTICIPANTS ---
+        const masterParticipantHtml = `
+            <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; color: #1e293b; border: 1px solid #e2e8f0; border-radius: 12px; padding: 20px;">
+                <h2 style="color: #2563eb; text-align: center;">Registration Update Confirmed</h2>
+                <p>Hi {{params.participant_name}},</p>
+                <p>We successfully recorded the recent changes to your Class of 2001 Reunion registration. Here is your updated summary:</p>
+                
+                <table style="width: 100%; border-collapse: collapse; margin-bottom: 20px; font-size: 14px;">
+                    <tr style="border-bottom: 1px solid #f1f5f9;">
+                        <td style="padding: 10px 0; font-weight: bold; width: 45%;">Family Members:</td>
+                        <td style="padding: 10px 0;">Spouse: {{params.spouse}}, {{params.adults}} Kids(>10y), {{params.kids6to10}} Kids(6-10y), {{params.kidsUnder6}} Kids(<6y)</td>
+                    </tr>
+                    <tr style="border-bottom: 1px solid #f1f5f9;">
+                        <td style="padding: 10px 0; font-weight: bold;">Thursday Stay:</td>
+                        <td style="padding: 10px 0;">{{params.thu_stay}}</td>
+                    </tr>
+                    <tr style="border-bottom: 1px solid #f1f5f9;">
+                        <td style="padding: 10px 0; font-weight: bold;">Friday Reunion:</td>
+                        <td style="padding: 10px 0;">{{params.fri_reunion}}</td>
+                    </tr>
+                    <tr style="border-bottom: 1px solid #f1f5f9;">
+                        <td style="padding: 10px 0; font-weight: bold;">Friday Stay:</td>
+                        <td style="padding: 10px 0;">{{params.fri_stay}}</td>
+                    </tr>
+                    <tr style="border-bottom: 1px solid #f1f5f9;">
+                        <td style="padding: 10px 0; font-weight: bold;">Saturday Reunion:</td>
+                        <td style="padding: 10px 0;">{{params.sat_reunion}}</td>
+                    </tr>
+                    <tr style="border-bottom: 1px solid #f1f5f9;">
+                        <td style="padding: 10px 0; font-weight: bold;">Saturday Stay:</td>
+                        <td style="padding: 10px 0;">{{params.sat_stay}}</td>
+                    </tr>
+                    <tr style="border-bottom: 1px solid #f1f5f9;">
+                        <td style="padding: 10px 0; font-weight: bold;">T-Shirt Size:</td>
+                        <td style="padding: 10px 0;">{{params.t_shirt}}</td>
+                    </tr>
+                    <tr style="border-bottom: 1px solid #f1f5f9;">
+                        <td style="padding: 10px 0; font-weight: bold;">Culturals / Volunteering:</td>
+                        <td style="padding: 10px 0;">{{params.culturals}} / {{params.volunteering}}</td>
+                    </tr>
+                </table>
+
+                <div style="background-color: #fef3c7; padding: 15px; border-radius: 8px; text-align: center;">
+                    <h3 style="margin: 0; color: #b45309;">Updated Estimated Cost: ₹{{params.totalCost}}</h3>
+                    <p style="margin: 5px 0 0 0; font-size: 13px; color: #b45309;">{{params.donationText}}</p>
+                </div>
+            </div>
+        `;
+
+        // INITIALIZE THE BATCH EMAIL OBJECT
         const batchParticipantEmail = new Brevo.SendSmtpEmail();
-        batchParticipantEmail.sender = { name: "Reunion Team", email: "tcealumni2026@gmail.com" };
+        batchParticipantEmail.sender = { "name": "Reunion Team", "email": "tcealumni2026@gmail.com" };
         batchParticipantEmail.subject = "Registration Update Confirmed";
-        // The triple braces {{{ }}} tell Brevo to render the raw HTML we pass in the params
-        batchParticipantEmail.htmlContent = "{{{params.customHtml}}}"; 
+        batchParticipantEmail.htmlContent = masterParticipantHtml; 
         batchParticipantEmail.messageVersions = [];
 
         // --- 2. LOOP THROUGH SUBMISSIONS ---
@@ -858,7 +906,6 @@ app.post('/api/cron/nightly-updates', async (req, res) => {
 
             let totalCost = 0;
 
-            // Friday Event
             totalCost += 7000; 
             if (sub.fri_family_join === 'family') {
                 if (isSpouseAttending) totalCost += 2000;
@@ -866,7 +913,6 @@ app.post('/api/cron/nightly-updates', async (req, res) => {
                 totalCost += (kids6to10 * 1000);
             }
 
-            // Saturday Event
             if (sub.sat_attend_type !== 'no') {
                 totalCost += 1500;
                 if (sub.sat_attend_type === 'family') {
@@ -876,7 +922,6 @@ app.post('/api/cron/nightly-updates', async (req, res) => {
                 }
             }
 
-            // Stay Helper
             function getStayCost(type) {
                 if (!type || type === 'no') return 0;
                 let cost = 5500;
@@ -893,61 +938,36 @@ app.post('/api/cron/nightly-updates', async (req, res) => {
             totalCost += getStayCost(sub.sat_stay_type);
             totalCost += donation;
 
-            const participantHtml = `
-                <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; color: #1e293b; border: 1px solid #e2e8f0; border-radius: 12px; padding: 20px;">
-                    <h2 style="color: #2563eb; text-align: center;">Registration Update Confirmed</h2>
-                    <p>Hi ${sub.participant_name},</p>
-                    <p>We successfully recorded the recent changes to your Class of 2001 Reunion registration. Here is your updated summary:</p>
-                    
-                    <table style="width: 100%; border-collapse: collapse; margin-bottom: 20px; font-size: 14px;">
-                        <tr style="border-bottom: 1px solid #f1f5f9;">
-                            <td style="padding: 10px 0; font-weight: bold; width: 45%;">Family Members:</td>
-                            <td style="padding: 10px 0;">Spouse: ${isSpouseAttending ? 'Yes' : 'No'}, ${familyAdults} Kids(>10y), ${kids6to10} Kids(6-10y), ${kidsUnder6} Kids(<6y)</td>
-                        </tr>
-                        <tr style="border-bottom: 1px solid #f1f5f9;">
-                            <td style="padding: 10px 0; font-weight: bold;">Thursday Stay:</td>
-                            <td style="padding: 10px 0;">${formatSelection(sub.thu_stay_type)}</td>
-                        </tr>
-                        <tr style="border-bottom: 1px solid #f1f5f9;">
-                            <td style="padding: 10px 0; font-weight: bold;">Friday Reunion:</td>
-                            <td style="padding: 10px 0;">${formatSelection(sub.fri_family_join)}</td>
-                        </tr>
-                        <tr style="border-bottom: 1px solid #f1f5f9;">
-                            <td style="padding: 10px 0; font-weight: bold;">Friday Stay:</td>
-                            <td style="padding: 10px 0;">${formatSelection(sub.fri_stay_type)}</td>
-                        </tr>
-                        <tr style="border-bottom: 1px solid #f1f5f9;">
-                            <td style="padding: 10px 0; font-weight: bold;">Saturday Reunion:</td>
-                            <td style="padding: 10px 0;">${formatSelection(sub.sat_attend_type)}</td>
-                        </tr>
-                        <tr style="border-bottom: 1px solid #f1f5f9;">
-                            <td style="padding: 10px 0; font-weight: bold;">Saturday Stay:</td>
-                            <td style="padding: 10px 0;">${formatSelection(sub.sat_stay_type)}</td>
-                        </tr>
-                        <tr style="border-bottom: 1px solid #f1f5f9;">
-                            <td style="padding: 10px 0; font-weight: bold;">T-Shirt Size:</td>
-                            <td style="padding: 10px 0;">${sub.t_shirt_size}</td>
-                        </tr>
-                        <tr style="border-bottom: 1px solid #f1f5f9;">
-                            <td style="padding: 10px 0; font-weight: bold;">Culturals / Volunteering:</td>
-                            <td style="padding: 10px 0;">${sub.performing_culturals} / ${sub.volunteering}</td>
-                        </tr>
-                    </table>
-
-                    <div style="background-color: #fef3c7; padding: 15px; border-radius: 8px; text-align: center;">
-                        <h3 style="margin: 0; color: #b45309;">Updated Estimated Cost: ₹${totalCost.toLocaleString('en-IN')}</h3>
-                        ${donation > 0 ? `<p style="margin: 5px 0 0 0; font-size: 13px; color: #b45309;">(Includes your ₹${donation} donation)</p>` : ''}
-                    </div>
-                </div>
-            `;
+            const donationString = donation > 0 ? `(Includes your ₹${donation.toLocaleString('en-IN')} donation)` : '';
             
-            // --- ADD TO THE BATCH INSTEAD OF SENDING ---
+            // --- PASS ONLY THE DATA VARIABLES TO BREVO ---
             if (sub.email) {
                 batchParticipantEmail.messageVersions.push({
-                    to: [{ email: sub.email, name: sub.participant_name }],
-                    params: { customHtml: participantHtml }
+                    to: [{ "email": sub.email, "name": sub.participant_name }],
+                    params: { 
+                        participant_name: sub.participant_name,
+                        spouse: isSpouseAttending ? 'Yes' : 'No',
+                        adults: familyAdults,
+                        kids6to10: kids6to10,
+                        kidsUnder6: kidsUnder6,
+                        thu_stay: formatSelection(sub.thu_stay_type),
+                        fri_reunion: formatSelection(sub.fri_family_join),
+                        fri_stay: formatSelection(sub.fri_stay_type),
+                        sat_reunion: formatSelection(sub.sat_attend_type),
+                        sat_stay: formatSelection(sub.sat_stay_type),
+                        t_shirt: sub.t_shirt_size || '-',
+                        culturals: sub.performing_culturals || '-',
+                        volunteering: sub.volunteering || '-',
+                        totalCost: totalCost.toLocaleString('en-IN'),
+                        donationText: donationString
+                    }
                 });
             }
+
+            // Build the donation string for the committee table
+            const donationStr = donation > 0 ? `<br><span style="color:#b45309; font-size:11px;">+₹${donation.toLocaleString('en-IN')} don.</span>` : '';
+            const culturals = sub.performing_culturals && sub.performing_culturals !== 'no' ? sub.performing_culturals : '-';
+            const volunteering = sub.volunteering && sub.volunteering !== 'no' ? sub.volunteering : '-';
 
             committeeTableRows += `
                 <tr style="border-bottom: 1px solid #e2e8f0; font-size: 13px;">
@@ -958,7 +978,9 @@ app.post('/api/cron/nightly-updates', async (req, res) => {
                     <td style="padding: 10px 8px;">${formatSelection(sub.fri_stay_type)}</td>
                     <td style="padding: 10px 8px;">${formatSelection(sub.sat_attend_type)}</td>
                     <td style="padding: 10px 8px;">${formatSelection(sub.sat_stay_type)}</td>
-                    <td style="padding: 10px 8px; font-weight: bold; color: #047857;">₹${totalCost.toLocaleString('en-IN')}</td>
+                    <td style="padding: 10px 8px; text-align: center;">${sub.t_shirt_size || '-'}</td>
+                    <td style="padding: 10px 8px; font-size: 11px; color: #475569;">C: ${culturals}<br>V: ${volunteering}</td>
+                    <td style="padding: 10px 8px; font-weight: bold; color: #047857;">₹${totalCost.toLocaleString('en-IN')}${donationStr}</td>
                 </tr>
             `;
 
@@ -977,7 +999,7 @@ app.post('/api/cron/nightly-updates', async (req, res) => {
 
         // --- 4. BUILD & SEND COMMITTEE EMAIL ---
         const committeeHtml = `
-            <div style="font-family: Arial, sans-serif; color: #1e293b; max-width: 1000px; margin: 0 auto;">
+            <div style="font-family: Arial, sans-serif; color: #1e293b; max-width: 1200px; margin: 0 auto;">
                 <h2 style="color: #0f172a;">Daily Registration Updates</h2>
                 <p>The following ${updatedSubmissions.length} alumni modified their registrations in the last 24 hours.</p>
                 <table style="width: 100%; border-collapse: collapse; text-align: left; background: #ffffff; border: 1px solid #cbd5e1;">
@@ -989,6 +1011,8 @@ app.post('/api/cron/nightly-updates', async (req, res) => {
                         <th style="padding: 12px 8px;">Fri Stay</th>
                         <th style="padding: 12px 8px;">Sat Event</th>
                         <th style="padding: 12px 8px;">Sat Stay</th>
+                        <th style="padding: 12px 8px; text-align: center;">T-Shirt</th>
+                        <th style="padding: 12px 8px;">Activities</th>
                         <th style="padding: 12px 8px;">New Total</th>
                     </tr>
                     ${committeeTableRows}
@@ -999,6 +1023,7 @@ app.post('/api/cron/nightly-updates', async (req, res) => {
         const sendCommitteeEmail = new Brevo.SendSmtpEmail();
         sendCommitteeEmail.subject = "TCE Reunion 2026 : Registration Changes";
         sendCommitteeEmail.htmlContent = committeeHtml;
+        
         sendCommitteeEmail.sender = { "name": "Reunion Team", "email": "tcealumni2026@gmail.com" };
         sendCommitteeEmail.to = [{ "email": "tce2001reunion@gmail.com", "name": "Reunion 2001 Admin" }];
         sendCommitteeEmail.cc = [{ "email": "dmahesh2k@gmail.com", "name": "Sys Admin" }];
@@ -1006,10 +1031,12 @@ app.post('/api/cron/nightly-updates', async (req, res) => {
         await apiInstance.sendTransacEmail(sendCommitteeEmail);
 
         // --- 5. CLEAR DATABASE FLAGS ---
-        await adminSupabase
-            .from('submissions')
-            .update({ needs_update_email: false })
-            .in('user_id', processedUserIds);
+        for (const uid of processedUserIds) {
+            await adminSupabase
+                .from('submissions')
+                .update({ needs_update_email: false })
+                .eq('user_id', uid);
+        }
 
         return res.status(200).json({ message: `Successfully processed and batched ${updatedSubmissions.length} updates.` });
 
