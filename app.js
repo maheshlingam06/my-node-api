@@ -839,9 +839,17 @@ app.post('/api/cron/nightly-updates', async (req, res) => {
         let committeeTableRows = '';
         const processedUserIds = [];
 
+        // --- 1. INITIALIZE THE BATCH EMAIL FOR PARTICIPANTS ---
+        const batchParticipantEmail = new Brevo.SendSmtpEmail();
+        batchParticipantEmail.sender = { name: "Reunion Team", email: "tcealumni2026@gmail.com" };
+        batchParticipantEmail.subject = "Registration Update Confirmed";
+        // The triple braces {{{ }}} tell Brevo to render the raw HTML we pass in the params
+        batchParticipantEmail.htmlContent = "{{{params.customHtml}}}"; 
+        batchParticipantEmail.messageVersions = [];
+
+        // --- 2. LOOP THROUGH SUBMISSIONS ---
         for (const sub of updatedSubmissions) {
             
-            // --- A. UPDATED RECALCULATE COST FOR THIS SPECIFIC RECORD ---
             const isSpouseAttending = sub.spouse_attending === 'Yes';
             const familyAdults = parseInt(sub.adults_and_above_10) || 0;
             const kids6to10 = parseInt(sub.kids_6_10) || 0;
@@ -933,7 +941,13 @@ app.post('/api/cron/nightly-updates', async (req, res) => {
                 </div>
             `;
             
-            // Trigger Brevo API to send participantHtml to sub.email here (omitted for brevity, keep your existing logic if implemented)
+            // --- ADD TO THE BATCH INSTEAD OF SENDING ---
+            if (sub.email) {
+                batchParticipantEmail.messageVersions.push({
+                    to: [{ email: sub.email, name: sub.participant_name }],
+                    params: { customHtml: participantHtml }
+                });
+            }
 
             committeeTableRows += `
                 <tr style="border-bottom: 1px solid #e2e8f0; font-size: 13px;">
@@ -951,6 +965,17 @@ app.post('/api/cron/nightly-updates', async (req, res) => {
             processedUserIds.push(sub.user_id);
         }
 
+        // --- 3. FIRE THE BATCH API CALL TO INDIVIDUALS ---
+        if (batchParticipantEmail.messageVersions.length > 0) {
+            try {
+                await apiInstance.sendTransacEmail(batchParticipantEmail);
+                console.log(`Successfully sent batch emails to ${batchParticipantEmail.messageVersions.length} users.`);
+            } catch (batchError) {
+                console.error("Batch send to participants failed:", batchError.response ? batchError.response.text : batchError.message);
+            }
+        }
+
+        // --- 4. BUILD & SEND COMMITTEE EMAIL ---
         const committeeHtml = `
             <div style="font-family: Arial, sans-serif; color: #1e293b; max-width: 1000px; margin: 0 auto;">
                 <h2 style="color: #0f172a;">Daily Registration Updates</h2>
@@ -971,23 +996,22 @@ app.post('/api/cron/nightly-updates', async (req, res) => {
             </div>
         `;
         
-        const sendSmtpEmail = new Brevo.SendSmtpEmail();
+        const sendCommitteeEmail = new Brevo.SendSmtpEmail();
+        sendCommitteeEmail.subject = "TCE Reunion 2026 : Registration Changes";
+        sendCommitteeEmail.htmlContent = committeeHtml;
+        sendCommitteeEmail.sender = { "name": "Reunion Team", "email": "tcealumni2026@gmail.com" };
+        sendCommitteeEmail.to = [{ "email": "tce2001reunion@gmail.com", "name": "Reunion 2001 Admin" }];
+        sendCommitteeEmail.cc = [{ "email": "dmahesh2k@gmail.com", "name": "Sys Admin" }];
 
-        sendSmtpEmail.subject = "TCE Reunion 2026 : Registration Changes";
-        sendSmtpEmail.htmlContent = committeeHtml;
-        
-        sendSmtpEmail.sender = { "name": "Reunion Team", "email": "tcealumni2026@gmail.com" };
-        sendSmtpEmail.to = [{ "email": "tce2001reunion@gmail.com", "name": "Reunion 2001 Admin" }];
-        sendSmtpEmail.cc = [{ "email": "dmahesh2k@gmail.com", "name": "Sys Admin" }];
+        await apiInstance.sendTransacEmail(sendCommitteeEmail);
 
-        await apiInstance.sendTransacEmail(sendSmtpEmail);
-
+        // --- 5. CLEAR DATABASE FLAGS ---
         await adminSupabase
             .from('submissions')
             .update({ needs_update_email: false })
             .in('user_id', processedUserIds);
 
-        return res.status(200).json({ message: `Successfully processed ${updatedSubmissions.length} updates.` });
+        return res.status(200).json({ message: `Successfully processed and batched ${updatedSubmissions.length} updates.` });
 
     } catch (err) {
         console.error("Nightly Batch Error:", err);
