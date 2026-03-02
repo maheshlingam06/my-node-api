@@ -16,7 +16,8 @@ const apiInstance = new Brevo.TransactionalEmailsApi();
 // Add the emails of anyone who should have access to the dashboard
 const ADMIN_EMAILS = ['d.mahesh.0510@gmail.com', 'ideamani07@gmail.com', 'kavithajvijay@gmail.com',
                             'rajvignesh@gmail.com', 'sspmech@gmail.com', 'prakashtv@gmail.com', 
-                        'mkvmuthu@gmail.com', 'a.k.sudhakar@gmail.com', 'rprasi@gmail.com'
+                        'mkvmuthu@gmail.com', 'a.k.sudhakar@gmail.com', 'rprasi@gmail.com', 
+                        'Subramanian.archana@gmail.com'
                         ];
 
 // 2. Set your API Key
