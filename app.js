@@ -429,7 +429,7 @@ app.post('/register', trackActivity('UPDATED_REGISTRATION'), async (req, res) =>
                             <td style="padding: 10px 0;">${formatSelection(thu_stay_type)}</td>
                         </tr>
                         <tr style="border-bottom: 1px solid #f1f5f9;">
-                            <td style="padding: 10px 0; font-weight: bold;">Friday Reunion:</td>
+                            <td style="padding: 10px 0; font-weight: bold;">Friday Family?:</td>
                             <td style="padding: 10px 0;">${formatSelection(fri_family_join)}</td>
                         </tr>
                         <tr style="border-bottom: 1px solid #f1f5f9;">
@@ -859,7 +859,7 @@ app.post('/api/cron/nightly-updates', async (req, res) => {
                         <td style="padding: 10px 0;">{{params.thu_stay}}</td>
                     </tr>
                     <tr style="border-bottom: 1px solid #f1f5f9;">
-                        <td style="padding: 10px 0; font-weight: bold;">Friday Reunion:</td>
+                        <td style="padding: 10px 0; font-weight: bold;">Friday Family?:</td>
                         <td style="padding: 10px 0;">{{params.fri_reunion}}</td>
                     </tr>
                     <tr style="border-bottom: 1px solid #f1f5f9;">
@@ -1010,7 +1010,7 @@ app.post('/api/cron/nightly-updates', async (req, res) => {
                         <th style="padding: 12px 8px;">Alumnus</th>
                         <th style="padding: 12px 8px;">Family</th>
                         <th style="padding: 12px 8px;">Thu Stay</th>
-                        <th style="padding: 12px 8px;">Fri Event</th>
+                        <th style="padding: 12px 8px;">Fri Family?</th>
                         <th style="padding: 12px 8px;">Fri Stay</th>
                         <th style="padding: 12px 8px;">Sat Event</th>
                         <th style="padding: 12px 8px;">Sat Stay</th>
