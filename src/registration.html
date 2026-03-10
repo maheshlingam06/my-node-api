@@ -35,6 +35,15 @@
             z-index: 100;
         }
 
+        .family-under-text{
+            color: grey;
+            font-size: 12px;
+            font-style: italic;
+            padding-left: 5px;
+            padding-top: 5px;
+            padding-right: 5px;
+        }
+
         .btn-admin {
             background-color: var(--white);
             color: var(--primary);
@@ -446,9 +455,9 @@
                     <td><input type="number" name="kids_under_6" value="0" min="0"></td>
                 </tr>
                 <tr>
-                    <td><label><p>Will your family join you for reunion on Friday, July 24?*<br>
-                                By default, if you are filing this form, you will be attending Friday reunion. 
-                                Selecting "No" means only "you" will be attending the reunion on Friday.
+                    <td><label>Will your family join you for reunion on Friday, July 24?*
+                                <div class="family-under-text">By default, if you are filing this form, you will be attending Friday reunion. 
+                                Selecting "No" means only "you" will be attending the reunion on Friday. </div>
                     </label></td>
                     <td>
                         <select name="fri_family_join">
