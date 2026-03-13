@@ -692,10 +692,39 @@
 </footer>
 
 <script>
+    // --- NEW: Helper to decode the Supabase JWT ---
+    function getJwtPayload(token) {
+        try {
+            const base64 = token.split('.')[1].replace(/-/g, '+').replace(/_/g, '/');
+            const jsonPayload = decodeURIComponent(atob(base64).split('').map(c => 
+                '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2)
+            ).join(''));
+            return JSON.parse(jsonPayload);
+        } catch (e) {
+            return null;
+        }
+    }
+
     window.onload = async function() {
         const token = localStorage.getItem('supabaseToken');
         const urlParams = new URLSearchParams(window.location.search);
         const emailFromUrl = urlParams.get('email');
+        const form = document.getElementById('checkout-container');
+
+        // --- NEW: PRE-FILL FROM GOOGLE / SUPABASE TOKEN ---
+        if (token) {
+            const userData = getJwtPayload(token);
+            if (userData) {
+                // Pre-fill Email
+                if (userData.email) {
+                    document.getElementById('email').value = userData.email;
+                }
+                // Pre-fill Name (Supabase stores Google names inside user_metadata)
+                if (userData.user_metadata && userData.user_metadata.full_name) {
+                    form.querySelector('[name="participant_name"]').value = userData.user_metadata.full_name;
+                }
+            }
+        }
 
         if (emailFromUrl) {
             document.getElementById('email').value = emailFromUrl;
