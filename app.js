@@ -1292,6 +1292,32 @@ app.get('/auth/callback', (req, res) => {
     `);
 });
 
+// --- SECURE GOOGLE ID TOKEN EXCHANGE ---
+app.post('/api/auth/google/verify', async (req, res) => {
+    const { token } = req.body;
+
+    if (!token) {
+        return res.status(400).json({ error: 'Missing Google token' });
+    }
+
+    try {
+        // Trade the Google ID Token for a Supabase Session
+        const { data, error } = await supabase.auth.signInWithIdToken({
+            provider: 'google',
+            token: token
+        });
+
+        if (error) throw error;
+
+        // Send the session data back to the frontend to be saved in localStorage
+        return res.status(200).json({ session: data.session });
+
+    } catch (err) {
+        console.error("Supabase Token Exchange Error:", err.message);
+        return res.status(500).json({ error: 'Failed to authenticate with database' });
+    }
+});
+
 app.listen(PORT, '0.0.0.0', () => {
     console.log(`Secure server running on port ${PORT}`);
 });
