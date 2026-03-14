@@ -1239,6 +1239,59 @@ app.post('/api/salesforce/upload', upload.any(), async (req, res) => {
     }
 });
 
+// --- 1. INITIATE GOOGLE LOGIN ---
+app.get('/auth/google', async (req, res) => {
+    // Generate the secure Google OAuth URL via Supabase
+    const { data, error } = await supabase.auth.signInWithOAuth({
+        provider: 'google',
+        options: {
+            // Tell Supabase to send the user to our backend callback after logging in
+            // Change localhost:3000 to your live domain when deploying!
+            redirectTo: process.env.PUBLIC_DOMAIN + '/auth/callback' 
+        }
+    });
+
+    if (error) {
+        console.error("OAuth Initiation Error:", error.message);
+        return res.redirect('/login.html?error=google_failed');
+    }
+
+    // Redirect the user to the Google sign-in page
+    res.redirect(data.url);
+});
+
+// --- 2. HANDLE THE CALLBACK & EXCHANGE TOKEN ---
+app.get('/auth/callback', async (req, res) => {
+    // Supabase appends a 'code' to the URL when redirecting back
+    const code = req.query.code;
+
+    if (!code) {
+        return res.redirect('/login.html?error=missing_code');
+    }
+
+    // Securely exchange the code for a full session token
+    const { data, error } = await supabase.auth.exchangeCodeForSession(code);
+
+    if (error || !data.session) {
+        console.error("Token Exchange Error:", error ? error.message : "No session");
+        return res.redirect('/login.html?error=auth_failed');
+    }
+
+    // Bridge the gap: Send a tiny HTML response that saves the token to 
+    // localStorage exactly as your frontend expects, then redirects to registration.
+    res.send(`
+        <html>
+            <body>
+                <script>
+                    localStorage.setItem('supabaseToken', '${data.session.access_token}');
+                    // Optionally save the userType if needed for admin logic
+                    window.location.replace('/registration.html');
+                </script>
+            </body>
+        </html>
+    `);
+});
+
 app.listen(PORT, '0.0.0.0', () => {
     console.log(`Secure server running on port ${PORT}`);
 });
