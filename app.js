@@ -1260,38 +1260,6 @@ app.get('/auth/google', async (req, res) => {
     res.redirect(data.url);
 });
 
-// --- 2. HANDLE THE CALLBACK & EXCHANGE TOKEN ---
-app.get('/auth/callback', async (req, res) => {
-    // Supabase appends a 'code' to the URL when redirecting back
-    const code = req.query.code;
-
-    if (!code) {
-        return res.redirect('/login?error=missing_code');
-    }
-
-    // Securely exchange the code for a full session token
-    const { data, error } = await supabase.auth.exchangeCodeForSession(code);
-
-    if (error || !data.session) {
-        console.error("Token Exchange Error:", error ? error.message : "No session");
-        return res.redirect('/login?error=auth_failed');
-    }
-
-    // Bridge the gap: Send a tiny HTML response that saves the token to 
-    // localStorage exactly as your frontend expects, then redirects to registration.
-    res.send(`
-        <html>
-            <body>
-                <script>
-                    localStorage.setItem('supabaseToken', '${data.session.access_token}');
-                    // Optionally save the userType if needed for admin logic
-                    window.location.replace('/registration.html');
-                </script>
-            </body>
-        </html>
-    `);
-});
-
 // --- 2. HANDLE THE CALLBACK & SAVE TOKEN ---
 app.get('/auth/callback', (req, res) => {
     // Node.js cannot see the #access_token fragment, but the browser can!
