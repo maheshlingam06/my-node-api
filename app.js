@@ -1253,7 +1253,7 @@ app.get('/auth/google', async (req, res) => {
 
     if (error) {
         console.error("OAuth Initiation Error:", error.message);
-        return res.redirect('/login.html?error=google_failed');
+        return res.redirect('/login?error=google_failed');
     }
 
     // Redirect the user to the Google sign-in page
@@ -1266,7 +1266,7 @@ app.get('/auth/callback', async (req, res) => {
     const code = req.query.code;
 
     if (!code) {
-        return res.redirect('/login.html?error=missing_code');
+        return res.redirect('/login?error=missing_code');
     }
 
     // Securely exchange the code for a full session token
@@ -1274,7 +1274,7 @@ app.get('/auth/callback', async (req, res) => {
 
     if (error || !data.session) {
         console.error("Token Exchange Error:", error ? error.message : "No session");
-        return res.redirect('/login.html?error=auth_failed');
+        return res.redirect('/login?error=auth_failed');
     }
 
     // Bridge the gap: Send a tiny HTML response that saves the token to 
