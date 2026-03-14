@@ -27,6 +27,9 @@
         .forgot-link { text-align: right; margin-top: -8px; margin-bottom: 0px; padding-top: 10px;}
         .forgot-link a { font-size: 12px; color: var(--primary); text-decoration: none; font-weight: 600; }
         .forgot-link a:hover { text-decoration: underline; }
+        .google-container {
+            margin-top: 10px;
+        }
         /* Google Login Button */
         .btn-google {
             /*width: 100%;*/
@@ -110,7 +113,9 @@
         data-context="signin"
         data-ux_mode="popup"
         data-callback="processGoogleToken"
-        data-auto_prompt="false">
+        data-auto_prompt="false"
+        class="google-container"
+        >
     </div>
 
     <div class="g_id_signin"
