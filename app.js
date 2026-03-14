@@ -1292,6 +1292,38 @@ app.get('/auth/callback', async (req, res) => {
     `);
 });
 
+// --- 2. HANDLE THE CALLBACK & SAVE TOKEN ---
+app.get('/auth/callback', (req, res) => {
+    // Node.js cannot see the #access_token fragment, but the browser can!
+    // We send a tiny, instant script to the browser to grab it and save it.
+    res.send(`
+        <html>
+            <body style="background-color: #f8fafc; display: flex; justify-content: center; align-items: center; height: 100vh; font-family: sans-serif;">
+                <h3 style="color: #2563eb;">Securely logging you in...</h3>
+                <script>
+                    // 1. Grab the hash from the URL
+                    const hash = window.location.hash;
+
+                    if (hash && hash.includes('access_token')) {
+                        // 2. Parse the hash into readable variables
+                        const params = new URLSearchParams(hash.substring(1));
+                        const accessToken = params.get('access_token');
+                        
+                        // 3. Save the token exactly where your frontend expects it
+                        localStorage.setItem('supabaseToken', accessToken);
+                        
+                        // 4. Redirect immediately to the dashboard
+                        window.location.replace('/registration.html');
+                    } else {
+                        // Fallback if they hit this page manually without logging in
+                        window.location.replace('/login.html?error=auth_failed');
+                    }
+                </script>
+            </body>
+        </html>
+    `);
+});
+
 app.listen(PORT, '0.0.0.0', () => {
     console.log(`Secure server running on port ${PORT}`);
 });
