@@ -1,0 +1,244 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Who's Coming - Reunion 2026</title>
+    
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
+
+        :root {
+            --primary: #2563eb;
+            --white: #ffffff;
+            --overlay: rgba(15, 23, 42, 0.85);
+        }
+
+        body, html { margin: 0; padding: 0; min-height: 100%; font-family: 'Inter', sans-serif; }
+
+        .bg-image {
+            background-image: url('https://pqpdxdwrgwcxvjsgdoiy.supabase.co/storage/v1/object/public/assets/JGems-TCE.jpg');
+            min-height: 100vh; 
+            background-position: center; 
+            background-attachment: fixed;
+            background-repeat: no-repeat;
+            background-size: cover; 
+            position: relative; 
+            background-color: #0f172a;
+        }
+
+        .overlay {
+            position: absolute; top: 0; left: 0; right: 0; bottom: 0;
+            background-color: var(--overlay); display: flex; flex-direction: column; overflow-y: auto;
+        }
+
+        /* Navbar */
+        .navbar { display: flex; justify-content: space-between; align-items: center; padding: 20px 60px; z-index: 10; }
+        .logo { color: var(--white); font-size: 24px; font-weight: 700; text-decoration: none; }
+        .nav-links { display: flex; gap: 30px; align-items: center; }
+        .nav-links a { color: var(--white); text-decoration: none; font-size: 15px; font-weight: 500; opacity: 0.9; transition: all 0.2s; }
+        .nav-links a:hover { opacity: 1; color: #bfdbfe; }
+
+        /* Main Container */
+        .page-container {
+            flex-grow: 1; display: flex; flex-direction: column;
+            align-items: center; padding: 40px 20px; width: 100%; box-sizing: border-box; z-index: 5;
+        }
+
+        .page-header { text-align: center; color: white; margin-bottom: 40px; }
+        .page-header h1 { font-size: 3rem; margin: 0 0 10px 0; font-weight: 800; letter-spacing: -1px; }
+        .page-header p { font-size: 1.1rem; color: #cbd5e1; margin: 0; }
+
+        /* Grid Layout for Departments */
+        .departments-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 25px;
+            width: 100%;
+            max-width: 1200px;
+        }
+
+        .dept-card {
+            background: rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 12px;
+            padding: 25px;
+            color: white;
+            transition: transform 0.2s ease;
+        }
+
+        .dept-card:hover {
+            transform: translateY(-5px);
+            background: rgba(255, 255, 255, 0.08);
+        }
+
+        .dept-header {
+            font-size: 1.2rem;
+            font-weight: 700;
+            color: #93c5fd;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            padding-bottom: 15px;
+            margin-bottom: 15px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .attendee-count {
+            background: rgba(37, 99, 235, 0.4);
+            color: #bfdbfe;
+            padding: 4px 10px;
+            border-radius: 20px;
+            font-size: 13px;
+            font-weight: 600;
+        }
+
+        .attendee-list {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+            max-height: 300px;
+            overflow-y: auto;
+        }
+
+        /* Custom Scrollbar for lists */
+        .attendee-list::-webkit-scrollbar { width: 6px; }
+        .attendee-list::-webkit-scrollbar-track { background: rgba(255, 255, 255, 0.02); }
+        .attendee-list::-webkit-scrollbar-thumb { background: rgba(255, 255, 255, 0.2); border-radius: 10px; }
+
+        .attendee-list li {
+            padding: 10px 0;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+            font-size: 15px;
+            color: #f8fafc;
+            display: flex;
+            align-items: center;
+        }
+
+        .attendee-list li:last-child { border-bottom: none; }
+
+        .avatar-circle {
+            width: 30px; height: 30px;
+            border-radius: 50%;
+            background-color: rgba(37, 99, 235, 0.2);
+            color: #93c5fd;
+            display: flex; justify-content: center; align-items: center;
+            font-weight: 700; font-size: 12px; margin-right: 12px;
+        }
+
+        .loading, .empty-state { text-align: center; color: #cbd5e1; padding: 40px; width: 100%; font-size: 1.1rem; }
+
+        @media (max-width: 900px) {
+            .navbar { flex-direction: column; padding: 20px; gap: 15px; }
+            .nav-links { flex-wrap: wrap; justify-content: center; gap: 15px; }
+            .page-header h1 { font-size: 2.2rem; }
+            .departments-grid { grid-template-columns: 1fr; }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="bg-image">
+        <div class="overlay">
+            
+            <nav class="navbar">
+                <a href="/" class="logo">TCE Reunion 2026</a>
+                <div class="nav-links">
+                    <a href="login.html">Sign-in</a>
+                    <a href="schedule.html">Program</a>
+                    <a href="attendees.html" style="color: #bfdbfe;">Who's Coming</a>
+                    <a href="blog.html">Blog</a>
+                </div>
+            </nav>
+
+            <div class="page-container">
+                <div class="page-header">
+                    <h1>Who's Coming?</h1>
+                    <p>See which of your classmates have already registered for the weekend.</p>
+                </div>
+
+                <div id="loading" class="loading">Loading the guest list...</div>
+                
+                <div id="departments-container" class="departments-grid" style="display: none;">
+                    </div>
+            </div>
+
+            <footer style="text-align: center; padding: 20px; font-size: 12px; color: rgba(255,255,255,0.4); margin-top: auto;">
+                &copy; 2026 LEGENDS IT Consulting & Services. All rights reserved.
+            </footer>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', async () => {
+            const loadingEl = document.getElementById('loading');
+            const containerEl = document.getElementById('departments-container');
+
+            try {
+                // Fetch the public list from our new secure backend route
+                const response = await fetch('/api/attendees');
+                if (!response.ok) throw new Error('Failed to fetch');
+                const attendees = await response.json();
+
+                loadingEl.style.display = 'none';
+
+                if (!attendees || attendees.length === 0) {
+                    containerEl.style.display = 'block';
+                    containerEl.innerHTML = `<div class="empty-state">No one has registered yet. Be the first!</div>`;
+                    return;
+                }
+
+                // Group attendees by Department
+                const groupedByDept = attendees.reduce((acc, user) => {
+                    const dept = user.department || 'Other';
+                    if (!acc[dept]) acc[dept] = [];
+                    acc[dept].push(user.participant_name);
+                    return acc;
+                }, {});
+
+                // Sort departments alphabetically
+                const sortedDepartments = Object.keys(groupedByDept).sort();
+
+                let htmlContent = '';
+
+                sortedDepartments.forEach(dept => {
+                    const names = groupedByDept[dept];
+                    // Sort names alphabetically within the department
+                    names.sort((a, b) => a.localeCompare(b));
+
+                    let listItems = names.map(name => {
+                        // Create a tiny avatar bubble with the first letter of their name
+                        const initial = name ? name.charAt(0).toUpperCase() : '?';
+                        return `
+                            <li>
+                                <div class="avatar-circle">${initial}</div>
+                                ${name}
+                            </li>
+                        `;
+                    }).join('');
+
+                    htmlContent += `
+                        <div class="dept-card">
+                            <div class="dept-header">
+                                ${dept}
+                                <span class="attendee-count">${names.length}</span>
+                            </div>
+                            <ul class="attendee-list">
+                                ${listItems}
+                            </ul>
+                        </div>
+                    `;
+                });
+
+                containerEl.innerHTML = htmlContent;
+                containerEl.style.display = 'grid';
+
+            } catch (error) {
+                console.error("Error loading attendees:", error);
+                loadingEl.innerHTML = "Sorry, we couldn't load the guest list right now. Please try again later.";
+            }
+        });
+    </script>
+</body>
+</html>
