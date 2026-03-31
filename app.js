@@ -1049,6 +1049,25 @@ app.post('/api/cron/nightly-updates', async (req, res) => {
     }
 });
 
+// --- PUBLIC ATTENDEES LIST ---
+app.get('/api/attendees', async (req, res) => {
+    try {
+        // ONLY select the name and department. Do NOT select emails or mobile numbers!
+        const { data, error } = await adminSupabase
+            .from('submissions')
+            .select('participant_name, department')
+            .order('department', { ascending: true })
+            .order('participant_name', { ascending: true });
+
+        if (error) throw error;
+        
+        return res.status(200).json(data);
+    } catch (err) {
+        console.error("Error fetching attendees:", err);
+        return res.status(500).json({ error: 'Failed to load attendees' });
+    }
+});
+
 app.post('/admin/update-payment', async (req, res) => {
     const { user_id, payment_status, amount_received } = req.body;
     const authHeader = req.headers['authorization'];
