@@ -1,0 +1,418 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Endowment Fund | Class of 2001 Reunion</title>
+    
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
+
+        :root {
+            --primary: #2563eb;
+            --primary-hover: #1d4ed8;
+            --white: #ffffff;
+            --overlay: rgba(0, 0, 0, 0.75);
+            
+            /* Widget Specific Colors */
+            --brand-blue: #005A9C; 
+            --action-cyan: #00AEEF; 
+            --cta-orange: #FF8200; 
+            --text-dark: #1e293b;
+            --text-gray: #64748b;
+            --border: #e2e8f0;
+        }
+
+        body, html { margin: 0; padding: 0; height: 100%; font-family: 'Inter', sans-serif; }
+
+        .bg-image {
+            background-image: url('https://pqpdxdwrgwcxvjsgdoiy.supabase.co/storage/v1/object/public/assets/JGems-TCE-Black.jpeg');
+            min-height: 100vh;
+            background-position: center;
+            background-repeat: no-repeat;
+            background-size: cover;
+            background-attachment: fixed;
+            position: relative;
+            background-color: #0f172a;
+        }
+
+        .overlay {
+            position: absolute; top: 0; left: 0; right: 0; bottom: 0;
+            background-color: var(--overlay);
+            display: flex; flex-direction: column; overflow-y: auto;
+        }
+
+        /* --- NAVIGATION BAR --- */
+        .navbar {
+            display: flex; justify-content: space-between; align-items: center;
+            padding: 20px 60px; z-index: 10;
+        }
+        .logo { color: var(--white); font-size: 22px; font-weight: 700; text-decoration: none; }
+        .nav-links { display: flex; gap: 30px; align-items: center; }
+        .nav-links a { color: var(--white); text-decoration: none; font-size: 14px; font-weight: 500; opacity: 0.9; transition: all 0.2s; }
+        .nav-links a:hover { opacity: 1; color: #bfdbfe; }
+
+        /* --- HERO LAYOUT (Endowment Adjustments) --- */
+        .hero-container {
+            display: flex; flex-direction: row; align-items: flex-start; justify-content: space-between; 
+            padding: 40px 60px; gap: 4rem; width: 100%; box-sizing: border-box; z-index: 5;
+            max-width: 1200px; margin: 0 auto;
+        }
+
+        .hero-text { flex: 1.2; color: var(--white); display: flex; flex-direction: column; align-items: flex-start; text-align: left; margin-top: 2rem;}
+        
+        h1 { font-size: 3.5rem; margin-bottom: 16px; font-weight: 800; line-height: 1.1; letter-spacing: -0.5px; } 
+        p.hero-p { font-size: 1.1rem; line-height: 1.6; color: #e2e8f0; margin-bottom: 20px; width: 100%; max-width: 600px; }
+        
+        .copyright-panel { text-align: center; padding: 20px; font-size: 12px; color: rgba(255,255,255,0.4); margin-top: auto; }
+
+        /* --- UNICEF-Style Multi-Select Widget --- */
+        .donation-widget {
+            flex: 1; background: white; border-radius: 12px; padding: 2.5rem;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.5); color: var(--text-dark);
+            width: 100%; max-width: 450px;
+        }
+
+        .widget-header { text-align: center; margin-bottom: 1.5rem; }
+        .widget-header h2 { font-size: 1.6rem; color: var(--brand-blue); margin: 0 0 0.5rem 0; font-weight: 800; }
+
+        .fund-item { border: 2px solid var(--border); border-radius: 8px; margin-bottom: 10px; overflow: hidden; transition: border-color 0.3s ease; }
+        .fund-item.active { border-color: var(--action-cyan); }
+
+        .fund-checkbox-label {
+            display: flex; align-items: center; padding: 14px;
+            background: #f8fafc; cursor: pointer; font-weight: bold; font-size: 1rem; color: var(--brand-blue);
+        }
+        .fund-checkbox-label input { width: 18px; height: 18px; margin-right: 12px; accent-color: var(--action-cyan); cursor: pointer; }
+        .badge { font-size: 0.75rem; padding: 2px 6px; border-radius: 4px; margin-left: auto; font-weight: normal;}
+        .badge.one-time { background: #e0f2fe; color: var(--brand-blue); }
+        .badge.annual { background: #dcfce3; color: #166534; }
+
+        .fund-amount-box { display: none; padding: 14px; border-top: 1px solid var(--border); background: white;}
+        .fund-item.active .fund-amount-box { display: block; animation: slideDown 0.2s ease; }
+        @keyframes slideDown { from { opacity: 0; transform: translateY(-5px); } to { opacity: 1; transform: translateY(0); } }
+
+        .amount-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin-bottom: 10px; }
+        .amount-btn { padding: 10px 5px; border: 2px solid var(--border); background: white; border-radius: 6px; font-weight: bold; font-size: 1rem; color: var(--text-gray); cursor: pointer; }
+        .amount-btn.active { border-color: var(--action-cyan); background: #f0faff; color: var(--action-cyan); }
+        
+        .custom-input { width: 100%; padding: 10px; border: 2px solid var(--border); border-radius: 6px; box-sizing: border-box; font-size: 1rem; }
+
+        .total-box {
+            background: #f0faff; padding: 15px; border-radius: 8px;
+            display: flex; justify-content: space-between; align-items: center;
+            margin: 1.5rem 0; border: 1px dashed var(--action-cyan);
+        }
+        .total-label { font-weight: bold; color: var(--brand-blue); }
+        .total-amount { font-size: 1.5rem; font-weight: 900; color: var(--brand-blue); }
+
+        .donate-btn {
+            width: 100%; padding: 18px; background: var(--cta-orange); color: white; border: none;
+            border-radius: 8px; font-size: 1.25rem; font-weight: 800; text-transform: uppercase;
+            letter-spacing: 1px; cursor: pointer; transition: background 0.2s; box-shadow: 0 4px 10px rgba(255, 130, 0, 0.3);
+        }
+        .donate-btn:hover { background: #e67500; }
+        .donate-btn:disabled { background: #cbd5e1; box-shadow: none; cursor: not-allowed; }
+
+        .trust-badges { display: flex; justify-content: center; gap: 15px; margin-top: 1.5rem; font-size: 0.8rem; color: var(--text-gray); font-weight: bold; }
+
+        /* --- Informational Sections Below Fold --- */
+        .details-container { max-width: 1200px; margin: 2rem auto 4rem auto; padding: 0 60px; display: grid; grid-template-columns: 2fr 1fr; gap: 3rem; }
+        .details-card { background: rgba(255, 255, 255, 0.95); padding: 2.5rem; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.2); margin-bottom: 2rem; color: var(--text-dark);}
+        .details-card h2 { color: var(--brand-blue); border-bottom: 2px solid var(--border); padding-bottom: 1rem; margin-top:0;}
+        .details-card h3 { color: var(--action-cyan); margin-top: 2rem; }
+        
+        .info-sidebar { background: rgba(224, 242, 254, 0.95); padding: 2rem; border-radius: 12px; height: fit-content; }
+        table { width: 100%; border-collapse: collapse; margin-top: 1rem; font-size: 0.9rem;}
+        th, td { padding: 10px; border-bottom: 1px solid var(--border); text-align: left; }
+        th { background: #f8fafc; color: var(--brand-blue); }
+
+        /* --- MOBILE RESPONSIVE --- */
+        @media (max-width: 900px) {
+            .navbar { flex-direction: column; padding: 20px; gap: 15px; }
+            .nav-links { flex-wrap: wrap; justify-content: center; gap: 15px; }
+            .hero-container { flex-direction: column; padding: 20px; align-items: center; }
+            .hero-text { text-align: center; align-items: center; margin-top: 0;}
+            h1 { font-size: 2.5rem; }
+            .donation-widget { padding: 1.5rem; }
+            .details-container { grid-template-columns: 1fr; padding: 0 20px; }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="bg-image">
+        <div class="overlay">
+            
+            <nav class="navbar">
+                <a href="/" class="logo">Silver Jubliee Reunion</a>
+                <div class="nav-links">
+                    <a href="login">Sign-in</a>
+                    <a href="schedule.html">Program</a>
+                    <a href="attendees.html">Who's Coming</a> 
+                    <a href="blog.html">Blog</a> 
+                    <a href="#">Endowment Fund</a>
+                    <a href="#">Contact Us</a>
+                    <a href="admin.html" style="color: #fca5a5;">Admin</a>
+                </div>
+            </nav>
+
+            <div class="hero-container">
+                <div class="hero-text">
+                    <h1>Leave a legacy for the next generation.</h1>
+                    <p class="hero-p">Every day, hundreds of deserving students rely on the generosity of our alumni network. Your promise of a donation helps TCE continue its vital work in providing scholarships, meals, and state-of-the-art facilities.</p>
+                    <p class="hero-p" style="font-size: 1rem; color: #bae6fd;"><em>Scroll down to see the impact of your contribution and past historical data.</em></p>
+                </div>
+
+                <div class="donation-widget">
+                    <div class="widget-header">
+                        <h2>Join the Donor Family</h2>
+                    </div>
+
+                    <div id="funds-list">
+                        <div class="fund-item active" id="item-endowment">
+                            <label class="fund-checkbox-label">
+                                <input type="checkbox" id="chk-endowment" checked>
+                                1. Endowment Fund
+                                <span class="badge one-time">One-Time</span>
+                            </label>
+                            <div class="fund-amount-box">
+                                <div class="amount-grid" data-fund="endowment">
+                                    <button class="amount-btn" data-val="10000">₹10K</button>
+                                    <button class="amount-btn active" data-val="25000">₹25K</button>
+                                    <button class="amount-btn" data-val="50000">₹50K</button>
+                                </div>
+                                <input type="number" id="custom-endowment" class="custom-input" placeholder="Other Amount (₹)">
+                            </div>
+                        </div>
+
+                        <div class="fund-item" id="item-idealab">
+                            <label class="fund-checkbox-label">
+                                <input type="checkbox" id="chk-idealab">
+                                2. Idea Lab
+                                <span class="badge one-time">One-Time</span>
+                            </label>
+                            <div class="fund-amount-box">
+                                <div class="amount-grid" data-fund="idealab">
+                                    <button class="amount-btn active" data-val="5000">₹5K</button>
+                                    <button class="amount-btn" data-val="10000">₹10K</button>
+                                    <button class="amount-btn" data-val="25000">₹25K</button>
+                                </div>
+                                <input type="number" id="custom-idealab" class="custom-input" placeholder="Other Amount (₹)">
+                            </div>
+                        </div>
+
+                        <div class="fund-item" id="item-food">
+                            <label class="fund-checkbox-label">
+                                <input type="checkbox" id="chk-food">
+                                3. Breakfast & Lunch
+                                <span class="badge annual">Annual</span>
+                            </label>
+                            <div class="fund-amount-box">
+                                <div class="amount-grid" data-fund="food">
+                                    <button class="amount-btn active" data-val="5000">₹5K / yr</button>
+                                    <button class="amount-btn" data-val="10000">₹10K / yr</button>
+                                    <button class="amount-btn" data-val="20000">₹20K / yr</button>
+                                </div>
+                                <input type="number" id="custom-food" class="custom-input" placeholder="Other Amount (₹)">
+                            </div>
+                        </div>
+
+                        <div class="fund-item" id="item-scholarship">
+                            <label class="fund-checkbox-label">
+                                <input type="checkbox" id="chk-scholarship">
+                                4. Full Scholarships
+                                <span class="badge annual">Annual</span>
+                            </label>
+                            <div class="fund-amount-box">
+                                <div class="amount-grid" data-fund="scholarship">
+                                    <button class="amount-btn active" data-val="18000">₹18K / yr</button>
+                                    <button class="amount-btn" data-val="36000">₹36K / yr</button>
+                                    <button class="amount-btn" data-val="90000">₹90K / yr</button>
+                                </div>
+                                <input type="number" id="custom-scholarship" class="custom-input" placeholder="Other Amount (₹)">
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="total-box">
+                        <span class="total-label">Due Today:</span>
+                        <span class="total-amount" id="display-total">₹25,000</span>
+                    </div>
+
+                    <button class="donate-btn" id="donate-btn">Donate Now</button>
+
+                    <div class="trust-badges">
+                        <div>🔒 100% Secure Checkout</div>
+                        <div>📄 80G Tax Exempt</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="details-container">
+                <div class="main-details">
+                    <div class="details-card" id="details">
+                        <h2>Details for different options</h2>
+                        <p>There are still several poor students studying at TCE who need our help. Last year, for example, more than 700 students applied for scholarships and out of them only 241 got partial scholarships.</p>
+                        
+                        <h3>1. Endowment fund corpus</h3>
+                        <p>The interest generated from this corpus is utilized to provide scholarships. <a href="https://tce.edu/alumni/scholarship" target="_blank" style="color: var(--action-cyan); font-weight: bold;">View selection process.</a></p>
+                        <table>
+                            <tr><th>Year</th><th>Beneficiaries</th><th>Amount</th></tr>
+                            <tr><td>2025-2026</td><td>241</td><td>₹ 96,61,118</td></tr>
+                            <tr><td>2024-2025</td><td>226</td><td>₹ 86,43,645</td></tr>
+                            <tr><td>2023-2024</td><td>215</td><td>₹ 61,85,890</td></tr>
+                            <tr><td>2022-2023</td><td>208</td><td>₹ 46,44,975</td></tr>
+                        </table>
+
+                        <h3>2. "Idea Lab" Project Fund</h3>
+                        <p>Contribution will be immediately used for the project. The IDEA Lab is an initiative of the AICTE to promote hands-on learning. It is being established with a total funding of ₹90 Lakhs, with equal contributions of ₹30 Lakhs each from AICTE, the Institution Management and support from Industry/Alumni.</p>
+
+                        <h3>3. Food Fund</h3>
+                        <p>Supporting Breakfast and Lunch for deserving students. Your annual recurring donation ensures students do not go hungry.</p>
+
+                        <h3>4. Fee Sponsorship</h3>
+                        <p>Sponsoring Tuition fees and Hostel fees for deserving students annually.</p>
+                        <table>
+                            <tr><th>Type of students</th><th>Annual Tuition Fee</th><th>Annual Hostel Fee</th></tr>
+                            <tr><td>Govt funded</td><td>₹ 18,000</td><td>₹ 100,000</td></tr>
+                            <tr><td>Self funded</td><td>₹ 90,000</td><td>-</td></tr>
+                            <tr><td>Management quota</td><td>₹ 175,000</td><td>-</td></tr>
+                        </table>
+                    </div>
+                </div>
+
+                <aside>
+                    <div class="info-sidebar">
+                        <h3 style="margin-top:0; color:var(--brand-blue);">Official Portal</h3>
+                        <p style="font-size: 0.9rem; color: var(--text-gray);">Alumni can also make direct donations through the official alumni donations portal.</p>
+                        <a href="https://alumnidonations.tce.edu/" target="_blank" style="color: var(--action-cyan); font-weight: bold; text-decoration: none;">alumnidonations.tce.edu ↗</a>
+                        
+                        <hr style="border: none; border-top: 1px solid #bae6fd; margin: 1.5rem 0;">
+                        
+                        <h3 style="color:var(--brand-blue);">Tax Benefits</h3>
+                        <p style="font-size: 0.9rem; color: var(--text-gray);">All donations made to the TCE Alumni Endowment are eligible for tax exemption under section 80G of the Income Tax Act.</p>
+                    </div>
+                </aside>
+            </div>
+
+            <footer class="copyright-panel">
+                &copy; 2026 LEGENDS IT Consulting & Services. All rights reserved.
+            </footer>
+
+        </div>
+    </div>
+
+    <script>
+        // --- DONATION WIDGET LOGIC ---
+        const state = {
+            endowment: { active: true, amount: 25000 },
+            idealab: { active: false, amount: 5000 },
+            food: { active: false, amount: 5000 },
+            scholarship: { active: false, amount: 18000 }
+        };
+
+        const funds = ['endowment', 'idealab', 'food', 'scholarship'];
+        const displayTotal = document.getElementById('display-total');
+        const donateBtn = document.getElementById('donate-btn');
+
+        function updateUI() {
+            let totalDue = 0;
+            let anythingChecked = false;
+
+            funds.forEach(fund => {
+                const itemDiv = document.getElementById(`item-${fund}`);
+                
+                if (state[fund].active) {
+                    itemDiv.classList.add('active');
+                    totalDue += state[fund].amount;
+                    anythingChecked = true;
+                } else {
+                    itemDiv.classList.remove('active');
+                }
+            });
+
+            displayTotal.innerText = `₹${totalDue.toLocaleString('en-IN')}`;
+            donateBtn.disabled = !anythingChecked;
+        }
+
+        funds.forEach(fund => {
+            const checkbox = document.getElementById(`chk-${fund}`);
+            checkbox.addEventListener('change', (e) => {
+                state[fund].active = e.target.checked;
+                updateUI();
+            });
+        });
+
+        document.querySelectorAll('.amount-btn').forEach(btn => {
+            btn.addEventListener('click', (e) => {
+                const fund = e.target.parentElement.getAttribute('data-fund');
+                const val = parseInt(e.target.getAttribute('data-val'));
+                
+                const checkbox = document.getElementById(`chk-${fund}`);
+                if (!checkbox.checked) {
+                    checkbox.checked = true;
+                    state[fund].active = true;
+                }
+
+                e.target.parentElement.querySelectorAll('.amount-btn').forEach(b => b.classList.remove('active'));
+                e.target.classList.add('active');
+                document.getElementById(`custom-${fund}`).value = '';
+
+                state[fund].amount = val;
+                updateUI();
+            });
+        });
+
+        funds.forEach(fund => {
+            document.getElementById(`custom-${fund}`).addEventListener('input', (e) => {
+                const val = parseInt(e.target.value) || 0;
+                
+                const checkbox = document.getElementById(`chk-${fund}`);
+                if (e.target.value !== '' && !checkbox.checked) {
+                    checkbox.checked = true;
+                    state[fund].active = true;
+                }
+
+                document.querySelector(`.amount-grid[data-fund="${fund}"]`).querySelectorAll('.amount-btn').forEach(b => b.classList.remove('active'));
+                
+                state[fund].amount = val;
+                updateUI();
+            });
+        });
+
+        donateBtn.addEventListener('click', () => {
+            alert(`Proceeding to Gateway! Total: ${displayTotal.innerText}`);
+        });
+
+        // --- INACTIVITY AUTO-LOGOUT ---
+        let idleTime = 0;
+        const timeoutLimit = 5;
+
+        const idleInterval = setInterval(timerIncrement, 60000);
+
+        document.addEventListener('mousemove', resetTimer);
+        document.addEventListener('keypress', resetTimer);
+        document.addEventListener('click', resetTimer);
+        document.addEventListener('scroll', resetTimer);
+
+        function handleLogout(){
+            localStorage.removeItem('supabaseToken');
+            window.location.replace('login');
+        }
+
+        function timerIncrement() {
+            idleTime++;
+            if (idleTime >= timeoutLimit) {
+                clearInterval(idleInterval);
+                if (localStorage.getItem('supabaseToken')){
+                    alert("Your session has expired due to inactivity. Please log in again.");
+                    handleLogout(); 
+                }
+            }
+        }
+
+        function resetTimer() { idleTime = 0; }
+    </script>
+</body>
+</html>
