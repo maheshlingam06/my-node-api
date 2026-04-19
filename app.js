@@ -1,3 +1,4 @@
+require('dotenv').config();
 const express = require('express');
 const rateLimit = require('express-rate-limit');
 const multer = require('multer');
@@ -1098,6 +1099,46 @@ app.post('/admin/update-payment', async (req, res) => {
     } catch (err) {
         console.error("Admin Payment Update Error:", err);
         return res.status(500).json({ error: 'Failed to update payment details.' });
+    }
+});
+
+// --- ENDOWMENT FUND PLEDGE ENDPOINT ---
+app.post('/api/donate', trackActivity('MADE_ENDOWMENT_PLEDGE'), async (req, res) => {
+    try {
+        const token = req.headers.authorization?.split(' ')[1];
+        if (!token) return res.status(401).json({ error: "Unauthorized" });
+
+        // 1. Verify user session securely via Supabase Auth
+        const { data: { user }, error: authError } = await supabase.auth.getUser(token);
+        if (authError || !user) return res.status(401).json({ error: "Invalid session" });
+
+        const { food_fund_annual, schol_annual, schol_onetime, idealab, total_amount } = req.body;
+
+        // 2. Create an authenticated client context for this specific user
+        const userSupabase = createClient(process.env.SUPABASE_URL, process.env.SUPABASE_ANON_KEY, {
+            global: { headers: { Authorization: `Bearer ${token}` } }
+        });
+
+        // 3. Insert into the donations table
+        const { error: dbError } = await userSupabase
+            .from('donations')
+            .insert({
+                user_id: user.id, // Links directly to auth.users, allowing ANY signed-up user to donate
+                food_fund_annual: parseInt(food_fund_annual) || 0,
+                schol_annual: parseInt(schol_annual) || 0,
+                schol_onetime: parseInt(schol_onetime) || 0,
+                idealab: parseInt(idealab) || 0,
+                total_amount: parseInt(total_amount) || 0,
+                payment_status: 'pledged'
+            });
+
+        if (dbError) throw dbError;
+
+        res.status(200).json({ message: "Pledge securely recorded!" });
+
+    } catch (err) {
+        console.error("Donation Error:", err.message);
+        res.status(500).json({ error: err.message });
     }
 });
 
