@@ -1143,6 +1143,76 @@ app.post('/api/donate', trackActivity('MADE_ENDOWMENT_PLEDGE'), async (req, res)
 });
 
 // --- ADMIN ROUTE: GET ALL DONATIONS ---
+// app.get('/api/admin/all-donations', trackActivity('ADMIN_GETALL_DONATIONS'), async (req, res) => {
+//     try {
+//         const token = req.headers.authorization?.split(' ')[1];
+//         if (!token) return res.status(401).json({ error: "Unauthorized" });
+
+//         const { data: { user }, error: authError } = await supabase.auth.getUser(token);
+//         if (authError || !user) {
+//             return res.status(401).json({ error: "Invalid session" });
+//         }
+
+//         if (!ADMIN_EMAILS.includes(user.email)) {
+//             return res.status(403).json({ error: "Access Denied: Admin rights required." });
+//         }
+
+//         // 1. Fetch all donations
+//         const { data: donations, error: dbError } = await adminSupabase 
+//             .from('donations')
+//             .select('*')
+//             .order('created_at', { ascending: false });
+
+//         if (dbError) throw dbError;
+
+//         // 2. Fetch users from auth system to get emails & Google names
+//         const { data: { users }, error: usersError } = await adminSupabase.auth.admin.listUsers();
+//         if (usersError) throw usersError;
+
+//         const userMap = {};
+//         users.forEach(u => {
+//             userMap[u.id] = {
+//                 email: u.email,
+//                 name: u.user_metadata?.full_name || 'N/A'
+//             };
+//         });
+
+//         // 3. Fetch submissions to get specific registration details
+//         // NEW: Added mobile and department to the select query
+//         const { data: submissions } = await adminSupabase
+//             .from('submissions')
+//             .select('user_id, participant_name, email, mobile, department');
+            
+//         const subMap = {};
+//         if (submissions) {
+//             submissions.forEach(s => {
+//                 subMap[s.user_id] = { 
+//                     name: s.participant_name, 
+//                     email: s.email,
+//                     mobile: s.mobile,
+//                     department: s.department 
+//                 };
+//             });
+//         }
+
+//         // 4. Merge the data securely on the backend
+//         const enrichedDonations = donations.map(d => ({
+//             ...d,
+//             email: subMap[d.user_id]?.email || userMap[d.user_id]?.email || 'Unknown',
+//             participant_name: subMap[d.user_id]?.name || userMap[d.user_id]?.name || 'Unknown',
+//             mobile: subMap[d.user_id]?.mobile || 'N/A', // NEW
+//             department: subMap[d.user_id]?.department || 'N/A' // NEW
+//         }));
+
+//         res.json(enrichedDonations);
+
+//     } catch (err) {
+//         console.error("Admin Donations Fetch Error:", err);
+//         res.status(500).json({ error: err.message });
+//     }
+// });
+
+// --- ADMIN ROUTE: GET ALL DONATIONS ---
 app.get('/api/admin/all-donations', trackActivity('ADMIN_GETALL_DONATIONS'), async (req, res) => {
     try {
         const token = req.headers.authorization?.split(' ')[1];
@@ -1164,24 +1234,20 @@ app.get('/api/admin/all-donations', trackActivity('ADMIN_GETALL_DONATIONS'), asy
             .order('created_at', { ascending: false });
 
         if (dbError) throw dbError;
+        
+        // If no donations exist, return early
+        if (!donations || donations.length === 0) {
+            return res.json([]);
+        }
 
-        // 2. Fetch users from auth system to get emails & Google names
-        const { data: { users }, error: usersError } = await adminSupabase.auth.admin.listUsers();
-        if (usersError) throw usersError;
+        // Extract unique user IDs from the donations table
+        const userIds = [...new Set(donations.map(d => d.user_id))];
 
-        const userMap = {};
-        users.forEach(u => {
-            userMap[u.id] = {
-                email: u.email,
-                name: u.user_metadata?.full_name || 'N/A'
-            };
-        });
-
-        // 3. Fetch submissions to get specific registration details
-        // NEW: Added mobile and department to the select query
+        // 2. Fetch submissions to get specific registration details (name, email, mobile, dept)
         const { data: submissions } = await adminSupabase
             .from('submissions')
-            .select('user_id, participant_name, email, mobile, department');
+            .select('user_id, participant_name, email, mobile, department')
+            .in('user_id', userIds); // Only fetch users who have donated
             
         const subMap = {};
         if (submissions) {
@@ -1195,14 +1261,32 @@ app.get('/api/admin/all-donations', trackActivity('ADMIN_GETALL_DONATIONS'), asy
             });
         }
 
+        // 3. Fallback: Fetch users from Auth system (for users who donated but haven't registered for the event yet)
+        const { data: authUsersData, error: usersError } = await adminSupabase.auth.admin.listUsers();
+        const userMap = {};
+        if (!usersError && authUsersData && authUsersData.users) {
+             authUsersData.users.forEach(u => {
+                userMap[u.id] = {
+                    email: u.email,
+                    name: u.user_metadata?.full_name || 'N/A'
+                };
+            });
+        }
+
         // 4. Merge the data securely on the backend
-        const enrichedDonations = donations.map(d => ({
-            ...d,
-            email: subMap[d.user_id]?.email || userMap[d.user_id]?.email || 'Unknown',
-            participant_name: subMap[d.user_id]?.name || userMap[d.user_id]?.name || 'Unknown',
-            mobile: subMap[d.user_id]?.mobile || 'N/A', // NEW
-            department: subMap[d.user_id]?.department || 'N/A' // NEW
-        }));
+        const enrichedDonations = donations.map(d => {
+            const subData = subMap[d.user_id];
+            const authData = userMap[d.user_id];
+
+            return {
+                ...d,
+                // Prioritize submission data, fallback to auth data, default to 'Unknown'
+                email: subData?.email || authData?.email || 'Unknown',
+                participant_name: subData?.name || authData?.name || 'Unknown User',
+                mobile: subData?.mobile || 'N/A', 
+                department: subData?.department || 'N/A' 
+            };
+        });
 
         res.json(enrichedDonations);
 
