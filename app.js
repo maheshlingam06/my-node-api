@@ -1119,18 +1119,18 @@ app.post('/api/donate', trackActivity('MADE_ENDOWMENT_PLEDGE'), async (req, res)
             global: { headers: { Authorization: `Bearer ${token}` } }
         });
 
-        // 3. Insert into the donations table
+        // 3. Save or Update the pledge in the database
         const { error: dbError } = await userSupabase
             .from('donations')
-            .insert({
-                user_id: user.id, // Links directly to auth.users, allowing ANY signed-up user to donate
+            .upsert({
+                user_id: user.id, 
                 food_fund_annual: parseInt(food_fund_annual) || 0,
                 schol_annual: parseInt(schol_annual) || 0,
                 schol_onetime: parseInt(schol_onetime) || 0,
                 idealab: parseInt(idealab) || 0,
                 total_amount: parseInt(total_amount) || 0,
                 payment_status: 'pledged'
-            });
+            }, { onConflict: 'user_id' }); // <--- This prevents duplicates!***
 
         if (dbError) throw dbError;
 
@@ -1141,6 +1141,37 @@ app.post('/api/donate', trackActivity('MADE_ENDOWMENT_PLEDGE'), async (req, res)
         res.status(500).json({ error: err.message });
     }
 });
+
+// --- FETCH EXISTING ENDOWMENT PLEDGE ---
+app.get('/api/donate', trackActivity('VIEWED_ENDOWMENT_PLEDGE'), async (req, res) => {
+    try {
+        const token = req.headers.authorization?.split(' ')[1];
+        if (!token) return res.status(401).json({ error: "Unauthorized" });
+
+        const { data: { user }, error: authError } = await supabase.auth.getUser(token);
+        if (authError || !user) return res.status(401).json({ error: "Invalid session" });
+
+        const userSupabase = createClient(process.env.SUPABASE_URL, process.env.SUPABASE_ANON_KEY, {
+            global: { headers: { Authorization: `Bearer ${token}` } }
+        });
+
+        const { data, error } = await userSupabase
+            .from('donations')
+            .select('*')
+            .eq('user_id', user.id)
+            .single();
+
+        // If no row exists yet, Supabase throws PGRST116. We just return an empty object.
+        if (error && error.code !== 'PGRST116') throw error;
+
+        res.status(200).json(data || {});
+    } catch (err) {
+        console.error("Fetch Donation Error:", err.message);
+        res.status(500).json({ error: "Failed to fetch pledge data." });
+    }
+});
+
+
 
 app.post('/forgot-password', authLimiter, async (req, res) => {
     const { email } = req.body;
