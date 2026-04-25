@@ -1265,7 +1265,11 @@ app.get('/api/admin/all-donations', trackActivity('ADMIN_GETALL_DONATIONS'), asy
         }
 
         // 3. Fallback: Fetch users from Auth system (for users who donated but haven't registered for the event yet)
-        const { data: authUsersData, error: usersError } = await adminSupabase.auth.admin.listUsers();
+        // const { data: authUsersData, error: usersError } = await adminSupabase.auth.admin.listUsers();
+        const { data: authUsersData, error: usersError } = await adminSupabase.auth.admin.listUsers({
+                page: 1,
+                perPage: 1000 // Max allowed per page
+            });
         const userMap = {};
         if (!usersError && authUsersData && authUsersData.users) {
              authUsersData.users.forEach(u => {
