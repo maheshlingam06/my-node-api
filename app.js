@@ -1112,7 +1112,7 @@ app.post('/api/donate', trackActivity('MADE_ENDOWMENT_PLEDGE'), async (req, res)
         const { data: { user }, error: authError } = await supabase.auth.getUser(token);
         if (authError || !user) return res.status(401).json({ error: "Invalid session" });
 
-        const { food_fund_annual, schol_annual, schol_onetime, idealab, total_amount } = req.body;
+        const { participant_name, mobile, department, food_fund_annual, schol_annual, schol_onetime, idealab, total_amount } = req.body;
 
         // 2. Create an authenticated client context for this specific user
         const userSupabase = createClient(process.env.SUPABASE_URL, process.env.SUPABASE_ANON_KEY, {
@@ -1124,13 +1124,16 @@ app.post('/api/donate', trackActivity('MADE_ENDOWMENT_PLEDGE'), async (req, res)
             .from('donations')
             .upsert({
                 user_id: user.id, 
+                participant_name: participant_name, // Added
+                mobile: mobile,                     // Added
+                department: department,             // Added
                 food_fund_annual: parseInt(food_fund_annual) || 0,
                 schol_annual: parseInt(schol_annual) || 0,
                 schol_onetime: parseInt(schol_onetime) || 0,
                 idealab: parseInt(idealab) || 0,
                 total_amount: parseInt(total_amount) || 0,
                 payment_status: 'pledged'
-            }, { onConflict: 'user_id' }); // <--- This prevents duplicates!***
+            }, { onConflict: 'user_id' });
 
         if (dbError) throw dbError;
 
