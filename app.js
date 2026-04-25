@@ -1269,15 +1269,13 @@ app.get('/api/admin/all-donations', trackActivity('ADMIN_GETALL_DONATIONS'), asy
         const userMap = {};
         if (!usersError && authUsersData && authUsersData.users) {
              authUsersData.users.forEach(u => {
+                console.log('u.id, u.email, name=', u.id, ',', u.email,',', u.user_metadata?.full_name);
                 userMap[u.id] = {
                     email: u.email,
                     name: u.user_metadata?.full_name || 'N/A'
                 };
             });
         }
-
-        console.log('userMap=' + userMap);
-
 
         // 4. Merge the data securely on the backend
         const enrichedDonations = donations.map(d => {
