@@ -1283,11 +1283,11 @@ app.get('/api/admin/all-donations', trackActivity('ADMIN_GETALL_DONATIONS'), asy
 
             return {
                 ...d,
-                // Prioritize submission data, fallback to auth data, default to 'Unknown'
+                // Prioritize Registration -> Donation Table -> Google Auth Profile
                 email: subData?.email || authData?.email || 'Unknown',
-                participant_name: subData?.name || authData?.name || 'Unknown User',
-                mobile: subData?.mobile || 'N/A', 
-                department: subData?.department || 'N/A' 
+                participant_name: subData?.name || d.participant_name || authData?.name || 'Unknown User',
+                mobile: subData?.mobile || d.mobile || 'N/A', 
+                department: subData?.department || d.department || 'N/A' 
             };
         });
 
