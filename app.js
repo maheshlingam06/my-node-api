@@ -1281,6 +1281,7 @@ app.get('/api/admin/all-donations', trackActivity('ADMIN_GETALL_DONATIONS'), asy
             const subData = subMap[d.user_id];
             const authData = userMap[d.user_id];
 
+            console.log('authData=' + authData);
             return {
                 ...d,
                 // Prioritize Registration -> Donation Table -> Google Auth Profile
