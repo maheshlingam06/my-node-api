@@ -1333,6 +1333,39 @@ app.get('/api/donate', trackActivity('VIEWED_ENDOWMENT_PLEDGE'), async (req, res
     }
 });
 
+// --- ENDOWMENT FUND OVERALL SUMMARY ---
+app.get('/api/donations-summary', async (req, res) => {
+    try {
+        // Use adminSupabase to bypass RLS so we can see all rows to calculate the sum
+        const { data, error } = await adminSupabase
+            .from('donations')
+            .select('food_fund_annual, schol_annual, schol_onetime, idealab');
+
+        if (error) throw error;
+
+        let totals = {
+            food: 0,
+            'schol-annual': 0,
+            'schol-onetime': 0,
+            idealab: 0
+        };
+
+        if (data) {
+            data.forEach(row => {
+                totals.food += (row.food_fund_annual || 0);
+                totals['schol-annual'] += (row.schol_annual || 0);
+                totals['schol-onetime'] += (row.schol_onetime || 0);
+                totals.idealab += (row.idealab || 0);
+            });
+        }
+
+        res.status(200).json(totals);
+
+    } catch (err) {
+        console.error("Donation Summary Error:", err);
+        res.status(500).json({ error: "Failed to fetch aggregates" });
+    }
+});
 
 
 app.post('/forgot-password', authLimiter, async (req, res) => {
