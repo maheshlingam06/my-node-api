@@ -1070,7 +1070,7 @@ app.get('/api/attendees', async (req, res) => {
 });
 
 app.post('/admin/update-payment', async (req, res) => {
-    const { user_id, payment_status, amount_received } = req.body;
+    const { user_id, payment_status, amount_received, remarks } = req.body;
     const authHeader = req.headers['authorization'];
     const token = authHeader && authHeader.split(' ')[1];
 
@@ -1088,17 +1088,18 @@ app.post('/admin/update-payment', async (req, res) => {
             .from('submissions')
             .update({
                 payment_status: payment_status,
-                amount_received: amount_received || 0
+                amount_received: amount_received || 0,
+                remarks: remarks || '' // Update the column entry field smoothly here
             })
             .eq('user_id', user_id);
 
         if (updateError) throw updateError;
 
-        return res.status(200).json({ message: 'Payment details updated successfully!' });
+        return res.status(200).json({ message: 'Admin update completed successfully!' });
 
     } catch (err) {
         console.error("Admin Payment Update Error:", err);
-        return res.status(500).json({ error: 'Failed to update payment details.' });
+        return res.status(500).json({ error: 'Admin record update failed.' });
     }
 });
 
