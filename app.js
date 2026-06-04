@@ -1334,9 +1334,57 @@ app.get('/api/donate', trackActivity('VIEWED_ENDOWMENT_PLEDGE'), async (req, res
     }
 });
 
+// --- ENDOWMENT DONATIONS: INLINE EDIT SAVE ---
+app.post('/admin/update-donation', checkAdminAuth, async (req, res) => {
+
+    const token = req.headers.authorization?.split(' ')[1];
+    if (!token) return res.status(401).json({ error: "Unauthorized" });
+
+    const { data: { user }, error: authError } = await supabase.auth.getUser(token);
+    if (authError || !user) return res.status(401).json({ error: "Invalid or expired session" });
+
+    if (!ADMIN_EMAILS.includes(user.email)) {
+        return res.status(403).json({ error: "Access Denied: Admin rights required." });
+    }
+
+    const { user_id, payment_status, amount_received, remarks } = req.body;
+
+    if (!user_id) {
+        return res.status(400).json({ error: "Missing required user_id parameter" });
+    }
+
+    try {
+        const { data, error } = await adminSupabase
+            .from('donations') // Points specifically to the Endowment table
+            .update({ 
+                payment_status: payment_status,
+                amount_received: amount_received,
+                remarks: remarks
+            })
+            .eq('user_id', user_id);
+
+        if (error) throw error;
+
+        return res.json({ success: true, message: "Donation record updated successfully" });
+    } catch (err) {
+        console.error("Donation dashboard update failure:", err.message);
+        return res.status(500).json({ error: "Internal database updates failed to commit" });
+    }
+});
+
 // --- ENDOWMENT FUND OVERALL SUMMARY ---
 app.get('/api/donations-summary', async (req, res) => {
     try {
+        const token = req.headers.authorization?.split(' ')[1];
+        if (!token) return res.status(401).json({ error: "Unauthorized" });
+
+        const { data: { user }, error: authError } = await supabase.auth.getUser(token);
+        if (authError || !user) return res.status(401).json({ error: "Invalid or expired session" });
+
+        if (!ADMIN_EMAILS.includes(user.email)) {
+            return res.status(403).json({ error: "Access Denied: Admin rights required." });
+        }
+        
         // Use adminSupabase to bypass RLS so we can see all rows to calculate the sum
         const { data, error } = await adminSupabase
             .from('donations')
