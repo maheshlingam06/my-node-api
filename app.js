@@ -1335,7 +1335,7 @@ app.get('/api/donate', trackActivity('VIEWED_ENDOWMENT_PLEDGE'), async (req, res
 });
 
 // --- ENDOWMENT DONATIONS: INLINE EDIT SAVE ---
-app.post('/admin/update-donation', checkAdminAuth, async (req, res) => {
+app.post('/admin/update-donation', async (req, res) => {
 
     const token = req.headers.authorization?.split(' ')[1];
     if (!token) return res.status(401).json({ error: "Unauthorized" });
