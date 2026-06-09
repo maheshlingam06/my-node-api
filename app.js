@@ -1355,7 +1355,7 @@ app.post('/admin/update-donation', async (req, res) => {
     }
 
     try {
-        const { data, error } = await supabase
+        const { data, error } = await adminSupabase
             .from('donations') // Points specifically to the Endowment table
             .update({ 
                 payment_status: payment_status,
