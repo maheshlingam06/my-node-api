@@ -69,6 +69,13 @@ const authLimiter = rateLimit({
     legacyHeaders: false,
 });
 
+const isAdminEmail = (email) => {
+    let listMatch = ADMIN_EMAILS.some(item => 
+        item.toLowerCase() === email.toLowerCase()
+    );
+    return listMatch;
+};
+
 app.use(globalLimiter);
 
 // Prevent caching for HTML pages so "Back" button forces a reload
@@ -510,7 +517,7 @@ app.post('/login', authLimiter, async (req, res) => {
         if (error) throw error;
 
         var isAdminUser = false;
-        if (ADMIN_EMAILS.includes(email)){
+        if (isAdminEmail(email)){
             isAdminUser = true;
         }
         
@@ -564,7 +571,7 @@ app.get('/api/admin/all-registrations', trackActivity('ADMIN_GETALL_REGISTRATION
             return res.status(401).json({ error: "Invalid session" });
         }
 
-        if (!ADMIN_EMAILS.includes(user.email)) {
+        if (!isAdminEmail(user.email)) {
             return res.status(403).json({ error: "Access Denied: Admin rights required." });
         }
 
@@ -597,7 +604,7 @@ app.get('/api/logs', trackActivity('ADMIN_GET_AUDITLOGS'), async (req, res) => {
             return res.status(401).json({ error: 'Unauthorized' });
         }
 
-        if (!ADMIN_EMAILS.includes(user.email)) {
+        if (!isAdminEmail(user.email)) {
             console.warn(`Unauthorized admin access attempt by: ${user.email}`);
             return res.status(403).json({ error: 'Forbidden: Admin privileges required.' });
         }
@@ -1227,7 +1234,7 @@ app.get('/api/admin/all-donations', trackActivity('ADMIN_GETALL_DONATIONS'), asy
             return res.status(401).json({ error: "Invalid session" });
         }
 
-        if (!ADMIN_EMAILS.includes(user.email)) {
+        if (!isAdminEmail(user.email)) {
             return res.status(403).json({ error: "Access Denied: Admin rights required." });
         }
 
@@ -1344,7 +1351,7 @@ app.post('/admin/update-donation', async (req, res) => {
         return res.status(401).json({ error: "Invalid session" });
     }
 
-    if (!ADMIN_EMAILS.includes(user.email)) {
+    if (!isAdminEmail(user.email)) {
         return res.status(403).json({ error: "Access Denied: Admin rights required." });
     }
     
@@ -1424,7 +1431,7 @@ app.get('/api/donations-summary', async (req, res) => {
             return res.status(401).json({ error: "Invalid session" });
         }
 
-        if (!ADMIN_EMAILS.includes(user.email)) {
+        if (!isAdminEmail(user.email)) {
             return res.status(403).json({ error: "Access Denied: Admin rights required." });
         }
         // Use adminSupabase to bypass RLS so we can see all rows to calculate the sum
