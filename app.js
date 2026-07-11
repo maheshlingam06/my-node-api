@@ -1431,9 +1431,9 @@ app.get('/api/donations-summary', async (req, res) => {
             return res.status(401).json({ error: "Invalid session" });
         }
 
-        if (!isAdminEmail(user.email)) {
-            return res.status(403).json({ error: "Access Denied: Admin rights required." });
-        }
+        // if (!isAdminEmail(user.email)) {
+        //     return res.status(403).json({ error: "Access Denied: Admin rights required." });
+        // }
         // Use adminSupabase to bypass RLS so we can see all rows to calculate the sum
         const { data, error } = await adminSupabase
             .from('donations')
