@@ -1702,6 +1702,71 @@ app.post('/api/auth/google/verify', async (req, res) => {
     }
 });
 
+// --- SECURE DONOR LIST (Only visible to logged-in users) ---
+app.get('/api/donations/department-metrics', async (req, res) => {
+    try {
+        const token = req.headers.authorization?.split(' ')[1];
+        if (!token) return res.status(401).json({ error: "Unauthorized" });
+
+        // Verify user is logged in
+        const { data: { user }, error: authError } = await supabase.auth.getUser(token);
+        if (authError || !user) {
+            return res.status(401).json({ error: "Invalid session" });
+        }
+
+        // 1. Fetch only the department column to keep the payload lightweight
+        const { data, error } = await adminSupabase
+            .from('donations')
+            .select('department');
+
+        if (error) throw error;
+
+        // 2. Parse and normalize the total strengths from the environment variable
+        let deptStrengths = {};
+        try {
+            if (process.env.DEPT_STRENGTHS) {
+                const parsedStrengths = JSON.parse(process.env.DEPT_STRENGTHS);
+                // Convert all keys to lowercase for case-insensitive matching
+                for (const [key, value] of Object.entries(parsedStrengths)) {
+                    deptStrengths[key.toLowerCase()] = value;
+                }
+            }
+        } catch (parseErr) {
+            console.error("Could not parse DEPT_STRENGTHS from .env", parseErr);
+        }
+
+        // 3. Group and count donors by department
+        const departmentCounts = data.reduce((acc, row) => {
+            const dept = row.department ? row.department.trim() : 'Unknown';
+            acc[dept] = (acc[dept] || 0) + 1;
+            return acc;
+        }, {});
+
+        // 4. Build the final array merging DB counts with Env Var strengths
+        const metricsArray = Object.keys(departmentCounts)
+            .map(dept => {
+                const donorsCount = departmentCounts[dept];
+                
+                // Lookup using lowercase to ensure "Computer Science" matches "computer science"
+                const lookupKey = dept.toLowerCase();
+                const totalStrength = deptStrengths[lookupKey] || Math.max(donorsCount, 100); 
+
+                return {
+                    department: dept,
+                    donors: donorsCount,
+                    total_strength: totalStrength
+                };
+            })
+            .sort((a, b) => b.donors - a.donors); // Sort by highest donors
+
+        return res.status(200).json(metricsArray);
+
+    } catch (err) {
+        console.error("Error fetching secure donations list:", err);
+        return res.status(500).json({ error: 'Failed to load donations list' });
+    }
+});
+
 app.listen(PORT, '0.0.0.0', () => {
     console.log(`Secure server running on port ${PORT}`);
 });
