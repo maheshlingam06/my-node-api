@@ -1705,14 +1705,14 @@ app.post('/api/auth/google/verify', async (req, res) => {
 // --- SECURE DONOR LIST (Only visible to logged-in users) ---
 app.get('/api/donations/department-metrics', async (req, res) => {
     try {
-        const token = req.headers.authorization?.split(' ')[1];
-        if (!token) return res.status(401).json({ error: "Unauthorized" });
+        // const token = req.headers.authorization?.split(' ')[1];
+        // if (!token) return res.status(401).json({ error: "Unauthorized" });
 
-        // Verify user is logged in
-        const { data: { user }, error: authError } = await supabase.auth.getUser(token);
-        if (authError || !user) {
-            return res.status(401).json({ error: "Invalid session" });
-        }
+        // // Verify user is logged in
+        // const { data: { user }, error: authError } = await supabase.auth.getUser(token);
+        // if (authError || !user) {
+        //     return res.status(401).json({ error: "Invalid session" });
+        // }
 
         // 1. Fetch only the department column to keep the payload lightweight
         const { data, error } = await adminSupabase
