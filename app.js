@@ -1832,8 +1832,8 @@ app.get('/api/donations/department-metrics', async (req, res) => {
                     donors: donorsCount,
                     total_strength: totalStrength
                 };
-            });
-            //.sort((a, b) => b.donors - a.donors); // Sort by highest donors
+            })
+            .sort((a, b) => b.department > a.department); // Sort by highest donors
 
         return res.status(200).json(metricsArray);
 
