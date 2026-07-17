@@ -1833,7 +1833,7 @@ app.get('/api/donations/department-metrics', async (req, res) => {
                     total_strength: totalStrength
                 };
             })
-            .sort((a, b) => b.department > a.department); // Sort by highest donors
+            .sort((a, b) => a.department.localeCompare(b.department)); // Sort by dept
 
         return res.status(200).json(metricsArray);
 
