@@ -1373,9 +1373,6 @@ app.get('/api/admin/all-donations-guest', async (req, res) => {
             return {
                 ...d,
                 // Prioritize Registration -> Donation Table -> Google Auth Profile
-                email: subData?.email || authData?.email || 'Unknown',
-                participant_name: subData?.name || d.participant_name || authData?.name || 'Unknown User',
-                mobile: subData?.mobile || d.mobile || 'N/A', 
                 department: subData?.department || d.department || 'N/A' 
             };
         });
