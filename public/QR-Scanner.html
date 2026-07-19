@@ -66,6 +66,40 @@
             // console.warn(`Code scan error = ${error}`);
         }
 
+        // Helper function to handle dropdown changes
+        window.handleDateChange = function() {
+            const rawDateSelected = document.getElementById('att_date').value;
+            const dateMapping = {
+                "Thu, 23rd Jul": "2026-07-23",
+                "Fri, 24th Jul": "2026-07-24",
+                "Sat, 25th Jul": "2026-07-25"
+            };
+            const dbDate = dateMapping[rawDateSelected];
+            
+            // Check if we have an existing database record for this date
+            const existingRecord = window.currentScanData.attendanceByDate[dbDate];
+            const defaults = window.currentScanData.defaults;
+            const statusMsg = document.getElementById('att_status_msg');
+
+            if (existingRecord) {
+                // Preload with existing DB record
+                document.getElementById('att_alumni').checked = existingRecord.alumni;
+                document.getElementById('att_spouse').checked = existingRecord.spouse;
+                document.getElementById('att_kids_gt_10').value = existingRecord.kids_gt_10;
+                document.getElementById('att_kids_6_10').value = existingRecord.kids_6_10;
+                document.getElementById('att_kids_lt_6').value = existingRecord.kids_lt_6;
+                statusMsg.innerHTML = '<span style="color: #0056b3; font-size: 14px;">(Updating Existing Record)</span>';
+            } else {
+                // Preload with default registration data
+                document.getElementById('att_alumni').checked = defaults.alumni;
+                document.getElementById('att_spouse').checked = defaults.spouse;
+                document.getElementById('att_kids_gt_10').value = defaults.kids_gt_10;
+                document.getElementById('att_kids_6_10').value = defaults.kids_6_10;
+                document.getElementById('att_kids_lt_6').value = defaults.kids_lt_6;
+                statusMsg.innerHTML = '<span style="color: #28a745; font-size: 14px;">(New Check-in)</span>';
+            }
+        };
+
         async function processScannedQR(mobileNumber) {
             const token = localStorage.getItem('supabaseToken');
             const resultContainer = document.getElementById('scan-result');
@@ -94,10 +128,29 @@
                 }
 
                 const jsonResponse = await response.json();
-                const data = jsonResponse.data;
+                const data = jsonResponse.data;           // The submission record
+                const attendance = jsonResponse.attendance; // Array of existing attendance records
+
+                // --- STORE STATE FOR DYNAMIC FORM CHANGES ---
+                window.currentScanData = {
+                    defaults: {
+                        alumni: true,
+                        spouse: data.spouse_attending === 'Yes',
+                        kids_gt_10: data.adults_and_above_10 || 0,
+                        kids_6_10: data.kids_6_10 || 0,
+                        kids_lt_6: data.kids_under_6 || 0
+                    },
+                    attendanceByDate: {}
+                };
+
+                // Map existing attendance by date for easy lookup
+                attendance.forEach(record => {
+                    if (record.day_of_event) {
+                        window.currentScanData.attendanceByDate[record.day_of_event] = record;
+                    }
+                });
 
                 // --- BUILD COLUMN 1: Specific Ordered Data ---
-                // Array of fields in the exact order requested
                 const displayFields = [
                     "id", "participant_name", "email", "mobile", "department", 
                     "class_reg_no", "spouse_attending", "adults_and_above_10", 
@@ -109,13 +162,11 @@
                 ];
 
                 let col1Html = '<table style="width: 100%; border-collapse: collapse; font-size: 14px; text-align: left;">';
-                
                 displayFields.forEach(key => {
                     const rawValue = data[key];
                     let displayValue = (rawValue === null || rawValue === '' || rawValue === undefined) ? '-' : rawValue;
                     const displayKey = key.replace(/_/g, ' ').toUpperCase();
 
-                    // Format timestamp nicely if it exists
                     if (key === 'last_modified_at' && displayValue !== '-') {
                         displayValue = new Date(displayValue).toLocaleString();
                     }
@@ -130,19 +181,17 @@
                 col1Html += '</table>';
 
                 // --- BUILD COLUMN 2: Attendance Form ---
-                const today = new Date().toISOString().split('T')[0];
-                const hasSpouse = data.spouse_attending === 'Yes';
-                const regKidsGt10 = data.adults_and_above_10 || 0; 
-                const regKids6to10 = data.kids_6_10 || 0;
-                const regKidsLt6 = data.kids_under_6 || 0;
-
+                // Note the `onchange="handleDateChange()"` added to the select dropdown
                 const col2Html = `
-                    <h3 style="margin-top: 0; color: #333; border-bottom: 2px solid #007bff; padding-bottom: 10px;">Log Attendance</h3>
+                    <div style="display: flex; align-items: baseline; justify-content: space-between; border-bottom: 2px solid #007bff; padding-bottom: 5px;">
+                        <h3 style="margin: 0; color: #333;">Log Attendance</h3>
+                        <span id="att_status_msg"></span>
+                    </div>
+                    
                     <div style="display: flex; flex-direction: column; gap: 15px; font-size: 15px; margin-top: 15px;">
-                        
                         <div>
                             <label style="font-weight: bold; display: block; margin-bottom: 5px;">Date of Event</label>
-                            <select id="att_date" style="width: 100%; padding: 8px; border: 1px solid #ccc; border-radius: 4px; background: white;">
+                            <select id="att_date" onchange="handleDateChange()" style="width: 100%; padding: 8px; border: 1px solid #ccc; border-radius: 4px; background: white;">
                                 <option value="Thu, 23rd Jul">Thu, 23rd Jul</option>
                                 <option value="Fri, 24th Jul">Fri, 24th Jul</option>
                                 <option value="Sat, 25th Jul">Sat, 25th Jul</option>
@@ -150,28 +199,28 @@
                         </div>
                         
                         <div style="display: flex; align-items: center; gap: 10px; background: #f8f9fa; padding: 10px; border-radius: 4px;">
-                            <input type="checkbox" id="att_alumni" style="width: 20px; height: 20px;" checked>
+                            <input type="checkbox" id="att_alumni" style="width: 20px; height: 20px;">
                             <label for="att_alumni" style="font-weight: bold; cursor: pointer;">Alumni Present</label>
                         </div>
                         
                         <div style="display: flex; align-items: center; gap: 10px; background: #f8f9fa; padding: 10px; border-radius: 4px;">
-                            <input type="checkbox" id="att_spouse" style="width: 20px; height: 20px;" ${hasSpouse ? 'checked' : ''}>
+                            <input type="checkbox" id="att_spouse" style="width: 20px; height: 20px;">
                             <label for="att_spouse" style="font-weight: bold; cursor: pointer;">Spouse Present</label>
                         </div>
 
                         <div>
                             <label style="font-weight: bold; display: block; margin-bottom: 5px;">Kids > 10 (Count)</label>
-                            <input type="number" id="att_kids_gt_10" value="${regKidsGt10}" min="0" style="width: 100%; padding: 8px; border: 1px solid #ccc; border-radius: 4px;">
+                            <input type="number" id="att_kids_gt_10" min="0" style="width: 100%; padding: 8px; border: 1px solid #ccc; border-radius: 4px;">
                         </div>
 
                         <div>
                             <label style="font-weight: bold; display: block; margin-bottom: 5px;">Kids 6-10 (Count)</label>
-                            <input type="number" id="att_kids_6_10" value="${regKids6to10}" min="0" style="width: 100%; padding: 8px; border: 1px solid #ccc; border-radius: 4px;">
+                            <input type="number" id="att_kids_6_10" min="0" style="width: 100%; padding: 8px; border: 1px solid #ccc; border-radius: 4px;">
                         </div>
 
                         <div>
                             <label style="font-weight: bold; display: block; margin-bottom: 5px;">Kids < 6 (Count)</label>
-                            <input type="number" id="att_kids_lt_6" value="${regKidsLt6}" min="0" style="width: 100%; padding: 8px; border: 1px solid #ccc; border-radius: 4px;">
+                            <input type="number" id="att_kids_lt_6" min="0" style="width: 100%; padding: 8px; border: 1px solid #ccc; border-radius: 4px;">
                         </div>
 
                         <div style="display: flex; gap: 10px; margin-top: 15px;">
@@ -181,23 +230,21 @@
                     </div>
                 `;
 
-                // --- RENDER BOTH COLUMNS ---
                 if (resultContainer) {
                     resultContainer.innerHTML = `
                         <div style="display: flex; flex-wrap: wrap; gap: 30px; background: white; padding: 20px; border-radius: 8px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); max-width: 1000px; margin: 20px auto;">
-                            
-                            <!-- Left Column: Data -->
                             <div style="flex: 1 1 350px; max-height: 600px; overflow-y: auto; padding-right: 15px; border-right: 2px solid #f0f0f0;">
                                 <h3 style="margin-top: 0; color: #333; position: sticky; top: 0; background: white; padding-bottom: 10px; border-bottom: 2px solid #007bff;">Registration Details</h3>
                                 ${col1Html}
                             </div>
-                            
-                            <!-- Right Column: Form -->
                             <div style="flex: 1 1 300px;">
                                 ${col2Html}
                             </div>
                         </div>
                     `;
+                    
+                    // Trigger the date change handler immediately to load the initial data for the first dropdown option
+                    window.handleDateChange();
                 }
 
             } catch (err) {
@@ -212,7 +259,7 @@
                 }
             }
         }
-       
+        
         async function submitAttendance(userId, participantName) {
             const token = localStorage.getItem('supabaseToken');
             

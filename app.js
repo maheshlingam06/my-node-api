@@ -648,7 +648,6 @@ app.post('/api/admin/mark-attendance', async (req, res) => {
 // --- ADMIN ROUTE: Get Single Registration by Mobile (POST) ---
 app.post('/api/admin/get-submission', async (req, res) => {
     try {
-        // 1. Authentication & Admin Authorization check
         const token = req.headers.authorization?.split(' ')[1];
         if (!token) return res.status(401).json({ error: "Unauthorized" });
 
@@ -661,30 +660,39 @@ app.post('/api/admin/get-submission', async (req, res) => {
             return res.status(403).json({ error: "Access Denied: Admin rights required." });
         }
 
-        // 2. Extract mobile number from the request body
         const { mobile } = req.body;
         if (!mobile) {
             return res.status(400).json({ error: "Mobile number is required in the payload." });
         }
 
-        // 3. Fetch the full record from the submissions table using the exact text
+        // 1. Fetch the submission record
         const { data: submission, error: dbError } = await adminSupabase
             .from('submissions')
             .select('*')
-            .eq('mobile', mobile) // Using the raw string as requested
+            .eq('mobile', mobile)
             .maybeSingle();
 
         if (dbError) throw dbError;
-
-        // 4. Handle case where mobile number doesn't exist
         if (!submission) {
             return res.status(404).json({ error: `No registration found for mobile: ${mobile}` });
         }
 
-        // 5. Return the full submission record
+        // 2. Fetch all existing attendance records for this user
+        const { data: attendanceRecords, error: attError } = await adminSupabase
+            .from('EventAttendance')
+            .select('*')
+            .eq('user_id', submission.user_id);
+
+        if (attError) {
+            console.error("Warning: Failed to fetch existing attendance records:", attError);
+            // We don't throw here; we still want to return the submission data even if attendance lookup fails
+        }
+
+        // 3. Return both sets of data
         res.json({
             success: true,
-            data: submission
+            data: submission,
+            attendance: attendanceRecords || [] // Always return an array, even if empty
         });
 
     } catch (err) {
