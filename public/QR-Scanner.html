@@ -44,6 +44,8 @@
                 const mobileNumber = decodedText.replace("Reunion-2026-", "");
                 
                 console.log("Extracted Mobile:", mobileNumber);
+
+                processScannedQR(mobileNumber);
                 
                 // Optional: Stop scanning after a successful read
                 // html5QrcodeScanner.clear();
@@ -61,6 +63,70 @@
             // The scanner constantly fires this error while looking for a QR code.
             // It's best to leave this empty or commented out so it doesn't spam your console.
             // console.warn(`Code scan error = ${error}`);
+        }
+
+        // 4. The async function matching your provided pattern
+        async function processScannedQR(mobileNumber) {
+            const token = localStorage.getItem('supabaseToken');
+            
+            // Assuming you have a div to display the results: <div id="scan-result"></div>
+            const resultContainer = document.getElementById('scan-result');
+            if (resultContainer) {
+                resultContainer.innerHTML = '<p style="text-align:center; padding: 30px;">Fetching registration data...</p>';
+            }
+
+            try {
+                const response = await fetch('/api/admin/get-submission', {
+                    method: 'POST',
+                    headers: { 
+                        'Authorization': `Bearer ${token}`,
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ mobile: mobileNumber })
+                });
+
+                if (!response.ok) {
+                    if (response.status === 401 || response.status === 403) {
+                        alert("Session expired or access denied.");
+                        window.location.replace('login');
+                        return;
+                    }
+                    if (response.status === 404) {
+                        throw new Error(`No registration found for mobile: ${mobileNumber}`);
+                    }
+                    throw new Error("Failed to fetch submission data");
+                }
+
+                const jsonResponse = await response.json();
+                const data = jsonResponse.data; // The actual submission record
+
+                // Update UI with success data
+                if (resultContainer) {
+                    resultContainer.innerHTML = `
+                        <div style="background-color: #d4edda; padding: 20px; border-radius: 5px; color: #155724;">
+                            <h3 style="margin-top: 0;">✅ Valid Registration Found</h3>
+                            <p><strong>Name:</strong> ${data.participant_name || 'N/A'}</p>
+                            <p><strong>Mobile:</strong> ${data.mobile}</p>
+                            <p><strong>Email:</strong> ${data.email || 'N/A'}</p>
+                            <button onclick="html5QrcodeScanner.resume()" style="margin-top: 10px;">Scan Next</button>
+                        </div>
+                    `;
+                }
+                
+                // Note: If you want to automatically MARK ATTENDANCE right after finding the record, 
+                // you could chain another fetch call to your '/api/admin/mark-attendance' endpoint here.
+
+            } catch (err) {
+                console.error("Scan Error:", err);
+                if (resultContainer) {
+                    resultContainer.innerHTML = `
+                        <div style="background-color: #f8d7da; padding: 20px; border-radius: 5px; color: #721c24;">
+                            <p>❌ <strong>Error:</strong> ${err.message}</p>
+                            <button onclick="html5QrcodeScanner.resume()" style="margin-top: 10px;">Try Again</button>
+                        </div>
+                    `;
+                }
+            }
         }
 
         // 5. Initialize the scanner

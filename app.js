@@ -573,6 +573,119 @@ app.get('/api/admin/all-registrations', trackActivity('ADMIN_GETALL_REGISTRATION
     }
 });
 
+// --- ADMIN ROUTE: Mark Event Attendance ---
+app.post('/api/admin/mark-attendance', async (req, res) => {
+    try {
+        // 1. Authentication & Admin Authorization check
+        const token = req.headers.authorization?.split(' ')[1];
+        if (!token) return res.status(401).json({ error: "Unauthorized" });
+
+        const { data: { user }, error: authError } = await supabase.auth.getUser(token);
+        if (authError || !user) {
+            return res.status(401).json({ error: "Invalid session" });
+        }
+
+        if (!isAdminEmail(user.email)) {
+            return res.status(403).json({ error: "Access Denied: Admin rights required." });
+        }
+
+        // 2. Extract payload
+        const { mobile } = req.body;
+        if (!mobile) {
+            return res.status(400).json({ error: "Mobile number is required in the payload." });
+        }
+
+        // 3. Locate the matching record in the submissions table
+        // Using .maybeSingle() so it returns null (instead of throwing an error) if no match is found
+        const { data: submission, error: subError } = await adminSupabase
+            .from('submissions')
+            .select('user_id, participant_name')
+            .eq('mobile', mobile)
+            .maybeSingle();
+
+        if (subError) throw subError;
+
+        if (!submission) {
+            return res.status(404).json({ error: `No registration found for mobile: ${mobile}` });
+        }
+
+        // 4. Create an entry in the EventAttendance table
+        // We capture the current date and also record which admin scanned the code
+        const todayDate = new Date().toISOString().split('T')[0]; // Format: YYYY-MM-DD
+
+        const { data: attendanceRecord, error: attError } = await adminSupabase
+            .from('EventAttendance')
+            .insert([{
+                user_id: submission.user_id,
+                day_of_event: todayDate,
+                admin: user.id // Log the admin's UUID who performed the scan
+            }])
+            .select()
+            .single();
+
+        if (attError) throw attError;
+
+        // 5. Return success
+        res.json({
+            success: true,
+            message: `Attendance successfully recorded for ${submission.participant_name || 'Participant'}`,
+            data: attendanceRecord
+        });
+
+    } catch (err) {
+        console.error("Attendance Scan Error:", err);
+        res.status(500).json({ error: err.message });
+    }
+});
+
+// --- ADMIN ROUTE: Get Single Registration by Mobile (POST) ---
+app.post('/api/admin/get-submission', async (req, res) => {
+    try {
+        // 1. Authentication & Admin Authorization check
+        const token = req.headers.authorization?.split(' ')[1];
+        if (!token) return res.status(401).json({ error: "Unauthorized" });
+
+        const { data: { user }, error: authError } = await supabase.auth.getUser(token);
+        if (authError || !user) {
+            return res.status(401).json({ error: "Invalid session" });
+        }
+
+        if (!isAdminEmail(user.email)) {
+            return res.status(403).json({ error: "Access Denied: Admin rights required." });
+        }
+
+        // 2. Extract mobile number from the request body
+        const { mobile } = req.body;
+        if (!mobile) {
+            return res.status(400).json({ error: "Mobile number is required in the payload." });
+        }
+
+        // 3. Fetch the full record from the submissions table using the exact text
+        const { data: submission, error: dbError } = await adminSupabase
+            .from('submissions')
+            .select('*')
+            .eq('mobile', mobile) // Using the raw string as requested
+            .maybeSingle();
+
+        if (dbError) throw dbError;
+
+        // 4. Handle case where mobile number doesn't exist
+        if (!submission) {
+            return res.status(404).json({ error: `No registration found for mobile: ${mobile}` });
+        }
+
+        // 5. Return the full submission record
+        res.json({
+            success: true,
+            data: submission
+        });
+
+    } catch (err) {
+        console.error("Admin Fetch Single Submission Error:", err);
+        res.status(500).json({ error: err.message });
+    }
+});
+
 // --- FETCH AUDIT LOGS ROUTE (SECURED) ---
 app.get('/api/logs', trackActivity('ADMIN_GET_AUDITLOGS'), async (req, res) => {
     const authHeader = req.headers.authorization;
