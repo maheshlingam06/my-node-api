@@ -338,15 +338,6 @@
             }
         }
 
-        // Clears the UI and turns the camera back on
-        function resetScanner() {
-            const resultContainer = document.getElementById('scan-result');
-            if (resultContainer) {
-                resultContainer.innerHTML = ''; 
-            }
-            html5QrcodeScanner.resume(); // Unpause the camera
-        }
-
         // 5. Initialize the scanner
         // fps: Frames per second to scan
         // qrbox: Defines the scanning area box size
@@ -358,6 +349,15 @@
         
         // 6. Start the scanner
         html5QrcodeScanner.render(onScanSuccess, onScanFailure);
+
+        // Clears the UI and turns the camera back on
+        function resetScanner() {
+            const resultContainer = document.getElementById('scan-result');
+            if (resultContainer) {
+                resultContainer.innerHTML = ''; 
+            }
+            html5QrcodeScanner.resume(); // Unpause the camera
+        }
     </script>
 
 </body>
