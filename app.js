@@ -576,10 +576,10 @@ app.get('/api/admin/all-registrations', trackActivity('ADMIN_GETALL_REGISTRATION
 // --- ADMIN ROUTE: Mark Event Attendance (Upsert) ---
 app.post('/api/admin/mark-attendance', async (req, res) => {
     try {
-        // 1. Authentication & Admin Authorization check
         const token = req.headers.authorization?.split(' ')[1];
         if (!token) return res.status(401).json({ error: "Unauthorized" });
 
+        // Get the logged-in admin user details
         const { data: { user }, error: authError } = await supabase.auth.getUser(token);
         if (authError || !user) {
             return res.status(401).json({ error: "Invalid session" });
@@ -589,7 +589,7 @@ app.post('/api/admin/mark-attendance', async (req, res) => {
             return res.status(403).json({ error: "Access Denied: Admin rights required." });
         }
 
-        // 2. Extract the payload from the frontend
+        // Extract alumni_name along with the rest of the payload
         const { 
             user_id, 
             day_of_event, 
@@ -597,14 +597,18 @@ app.post('/api/admin/mark-attendance', async (req, res) => {
             spouse, 
             kids_gt_10, 
             kids_6_10, 
-            kids_lt_6 
+            kids_lt_6,
+            alumni_name 
         } = req.body;
 
         if (!user_id || !day_of_event) {
             return res.status(400).json({ error: "Missing required fields: user_id and day_of_event." });
         }
 
-        // 3. Prepare the data payload
+        // Safely grab the admin's name from their metadata, falling back to their email if name isn't set
+        const adminName = user.user_metadata?.full_name || user.user_metadata?.name || user.email;
+
+        // Prepare the data payload including the two new name fields
         const attendanceData = {
             user_id: user_id,
             day_of_event: day_of_event,
@@ -613,22 +617,22 @@ app.post('/api/admin/mark-attendance', async (req, res) => {
             kids_gt_10: parseInt(kids_gt_10, 10) || 0,
             kids_6_10: parseInt(kids_6_10, 10) || 0,
             kids_lt_6: parseInt(kids_lt_6, 10) || 0,
-            admin: user.id 
+            admin: user.id,
+            alumni_name: alumni_name, // Populated from frontend
+            admin_name: adminName     // Populated from auth session
         };
 
-        // 4. Upsert the data (Insert if new, Update if conflict exists)
         const { data: finalRecord, error: upsertError } = await adminSupabase
             .from('EventAttendance')
             .upsert(
                 [attendanceData], 
-                { onConflict: 'user_id, day_of_event' } // Relies on your new SQL constraint
+                { onConflict: 'user_id, day_of_event' }
             )
             .select()
             .single();
 
         if (upsertError) throw upsertError;
 
-        // 5. Return success
         res.json({
             success: true,
             message: "Attendance successfully saved.",

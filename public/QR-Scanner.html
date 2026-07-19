@@ -175,7 +175,7 @@
                         </div>
 
                         <div style="display: flex; gap: 10px; margin-top: 15px;">
-                            <button onclick="submitAttendance('${data.user_id}')" style="background-color: #28a745; color: white; border: none; padding: 12px; border-radius: 4px; cursor: pointer; flex: 1; font-weight: bold;">Save Attendance</button>
+                            <button onclick="submitAttendance('${data.user_id}', '${data.participant_name || ''}')" style="background-color: #28a745; color: white; border: none; padding: 12px; border-radius: 4px; cursor: pointer; flex: 1; font-weight: bold;">Save Attendance</button>
                             <button onclick="resetScanner()" style="background-color: #6c757d; color: white; border: none; padding: 12px; border-radius: 4px; cursor: pointer; flex: 1; font-weight: bold;">Reset / Cancel</button>
                         </div>
                     </div>
@@ -213,7 +213,7 @@
             }
         }
        
-        async function submitAttendance(userId) {
+        async function submitAttendance(userId, participantName) {
             const token = localStorage.getItem('supabaseToken');
             
             // 1. Get the raw dropdown value
@@ -230,6 +230,7 @@
             // 3. Gather all data from the UI Form
             const payload = {
                 user_id: userId,
+                alumni_name: participantName,
                 day_of_event: mappedDbDate, // Using the mapped date here
                 alumni: document.getElementById('att_alumni').checked,
                 spouse: document.getElementById('att_spouse').checked,
