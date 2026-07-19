@@ -645,6 +645,67 @@ app.post('/api/admin/mark-attendance', async (req, res) => {
     }
 });
 
+// --- ADMIN ROUTE: Get Full Attendance Extract ---
+app.get('/api/admin/attendance-extract', async (req, res) => {
+    try {
+        // 1. Authentication & Admin Authorization
+        const token = req.headers.authorization?.split(' ')[1];
+        if (!token) return res.status(401).json({ error: "Unauthorized" });
+
+        const { data: { user }, error: authError } = await supabase.auth.getUser(token);
+        if (authError || !user) {
+            return res.status(401).json({ error: "Invalid session" });
+        }
+
+        if (!isAdminEmail(user.email)) {
+            return res.status(403).json({ error: "Access Denied: Admin rights required." });
+        }
+
+        // 2. Fetch all attendance records
+        const { data: attendanceRecords, error: attError } = await adminSupabase
+            .from('EventAttendance')
+            .select('*')
+            .order('day_of_event', { ascending: false });
+
+        if (attError) throw attError;
+
+        // 3. Fetch user details from submissions to enrich the data
+        const { data: submissions, error: subError } = await adminSupabase
+            .from('submissions')
+            .select('user_id, participant_name, mobile, email, department, class_reg_no');
+
+        if (subError) throw subError;
+
+        // 4. Merge the data
+        const enrichedExtract = attendanceRecords.map(record => {
+            const userSub = submissions.find(s => s.user_id === record.user_id) || {};
+            
+            return {
+                id: record.id,
+                date: record.day_of_event,
+                participant_name: record.alumni_name || userSub.participant_name || 'N/A',
+                mobile: userSub.mobile || 'N/A',
+                department: userSub.department || 'N/A',
+                class_reg_no: userSub.class_reg_no || 'N/A',
+                alumni_present: record.alumni ? 'Yes' : 'No',
+                spouse_present: record.spouse ? 'Yes' : 'No',
+                kids_gt_10: record.kids_gt_10 || 0,
+                kids_6_10: record.kids_6_10 || 0,
+                kids_lt_6: record.kids_lt_6 || 0,
+                scanned_by: record.admin_name || 'Unknown',
+                timestamp: record.created_at
+            };
+        });
+
+        res.json(enrichedExtract);
+
+    } catch (err) {
+        console.error("Attendance Extract Error:", err);
+        res.status(500).json({ error: err.message });
+    }
+});
+
+
 // --- ADMIN ROUTE: Get Single Registration by Mobile (POST) ---
 app.post('/api/admin/get-submission', async (req, res) => {
     try {
