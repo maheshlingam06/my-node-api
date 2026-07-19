@@ -1,0 +1,269 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Attendance Extract | Class of 2001 Reunion</title>
+    
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
+
+        :root {
+            --primary: #2563eb;
+            --primary-hover: #1d4ed8;
+            --white: #ffffff;
+            --overlay: rgba(0, 0, 0, 0.75);
+        }
+
+        body, html { margin: 0; padding: 0; height: 100%; font-family: 'Inter', sans-serif; }
+
+        .bg-image {
+            background-image: url('https://pqpdxdwrgwcxvjsgdoiy.supabase.co/storage/v1/object/public/assets/JGems-TCE-Black.jpeg');
+            height: 100%;
+            background-position: center;
+            background-repeat: no-repeat;
+            background-size: cover;
+            position: relative;
+            background-color: #0f172a;
+        }
+
+        .overlay {
+            position: absolute; top: 0; left: 0; right: 0; bottom: 0;
+            background-color: var(--overlay);
+            display: flex; flex-direction: column; overflow-y: auto;
+        }
+
+        /* --- NAVIGATION BAR --- */
+        .navbar {
+            display: flex; justify-content: space-between; align-items: center;
+            padding: 20px 60px; z-index: 10;
+        }
+        .logo { color: var(--white); font-size: 22px; font-weight: 700; text-decoration: none; }
+        .nav-links { display: flex; gap: 30px; align-items: center; }
+        .nav-links a { color: var(--white); text-decoration: none; font-size: 14px; font-weight: 500; opacity: 0.9; transition: all 0.2s; }
+        .nav-links a:hover { opacity: 1; color: #bfdbfe; }
+
+        /* --- DATA TABLE LAYOUT --- */
+        .content-container {
+            flex-grow: 1; display: flex; flex-direction: column;
+            padding: 40px 60px; width: 100%; box-sizing: border-box; z-index: 5;
+        }
+
+        .header-row {
+            display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;
+        }
+        
+        .header-row h1 { color: white; margin: 0; font-size: 2rem; font-weight: 700; }
+        
+        .btn-primary { 
+            background-color: var(--primary); color: white; box-shadow: 0 4px 15px rgba(37, 99, 235, 0.4); 
+            padding: 10px 20px; border-radius: 6px; text-decoration: none; font-weight: 600; border: none; cursor: pointer; transition: 0.2s;
+        }
+        .btn-primary:hover { background-color: var(--primary-hover); transform: translateY(-2px); }
+
+        .table-card {
+            background: white; border-radius: 8px; padding: 20px; box-shadow: 0 4px 20px rgba(0,0,0,0.2);
+            overflow-x: auto; /* Allows horizontal scrolling for wide tables */
+        }
+
+        table { width: 100%; border-collapse: collapse; font-size: 14px; text-align: left; white-space: nowrap; }
+        th { background-color: #f8f9fa; padding: 12px 15px; border-bottom: 2px solid #dee2e6; color: #495057; font-weight: 600; }
+        td { padding: 12px 15px; border-bottom: 1px solid #eee; color: #333; }
+        tr:hover { background-color: #f1f5f9; }
+
+        .copyright-panel { text-align: center; padding: 20px; font-size: 12px; color: rgba(255,255,255,0.4); margin-top: auto; }
+
+        @media (max-width: 900px) {
+            .navbar { flex-direction: column; padding: 20px; gap: 15px; }
+            .nav-links { flex-wrap: wrap; justify-content: center; gap: 15px; }
+            .content-container { padding: 20px; }
+            .header-row { flex-direction: column; gap: 15px; align-items: flex-start; }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="bg-image">
+        <div class="overlay">
+            
+            <nav class="navbar">
+                <a href="/" class="logo">Silver Jubilee Reunion</a>
+                <div class="nav-links">
+                    <a href="admin.html">Admin</a>
+                    <a href="qr-scanner.html">QR Scanner</a>
+                    <a href="schedule.html">Program</a>
+                    <a href="attendees.html">Who's Coming</a> 
+                    <a href="blog.html">Blog</a> 
+                    <a href="endowment-nw.html">Endowment Fund</a>
+                    <a href="#" onclick="handleLogout()" style="color: #fca5a5;">Sign Out</a>
+                </div>
+            </nav>
+
+            <div class="content-container">
+                <div class="header-row">
+                    <h1>Attendance Extract</h1>
+                    <button class="btn-primary" onclick="downloadCSV()">Download CSV</button>
+                </div>
+
+                <div class="table-card">
+                    <table id="attendance-table">
+                        <thead>
+                            <tr>
+                                <th>Date</th>
+                                <th>Participant Name</th>
+                                <th>Mobile</th>
+                                <th>Department</th>
+                                <th>Alumni</th>
+                                <th>Spouse</th>
+                                <th>Kids >10</th>
+                                <th>Kids 6-10</th>
+                                <th>Kids <6</th>
+                                <th>Scanned By</th>
+                            </tr>
+                        </thead>
+                        <tbody id="table-body">
+                            <tr>
+                                <td colspan="10" style="text-align: center; padding: 30px;">Loading data...</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <footer class="copyright-panel">
+                &copy; 2026 LEGENDS IT Consulting & Services. All rights reserved.
+            </footer>
+
+        </div>
+    </div>
+
+    <script>
+        // --- 1. PERSISTENT SESSION LOGIC ---
+        (function initializePersistentSession() {
+            const primaryToken = localStorage.getItem('supabaseToken');
+            if (primaryToken) {
+                sessionStorage.setItem('persistentAdminToken', primaryToken);
+            } else {
+                const backupToken = sessionStorage.getItem('persistentAdminToken');
+                if (!backupToken) window.location.replace('login');
+            }
+        })();
+
+        const getToken = () => sessionStorage.getItem('persistentAdminToken') || localStorage.getItem('supabaseToken');
+
+        // --- 2. FETCH AND RENDER DATA ---
+        let extractData = []; // Store globally for CSV export
+
+        async function fetchExtract() {
+            const tbody = document.getElementById('table-body');
+            
+            try {
+                const response = await fetch('/api/admin/attendance-extract', {
+                    headers: { 'Authorization': `Bearer ${getToken()}` }
+                });
+
+                if (!response.ok) {
+                    if (response.status === 401 || response.status === 403) {
+                        alert("Session expired or access denied.");
+                        handleLogout();
+                        return;
+                    }
+                    throw new Error("Failed to fetch data");
+                }
+
+                extractData = await response.json();
+
+                if (extractData.length === 0) {
+                    tbody.innerHTML = '<tr><td colspan="10" style="text-align: center; padding: 30px;">No attendance records found.</td></tr>';
+                    return;
+                }
+
+                tbody.innerHTML = extractData.map(row => `
+                    <tr>
+                        <td>${row.date}</td>
+                        <td style="font-weight: 500;">${row.participant_name}</td>
+                        <td>${row.mobile}</td>
+                        <td>${row.department}</td>
+                        <td>${row.alumni_present}</td>
+                        <td>${row.spouse_present}</td>
+                        <td>${row.kids_gt_10}</td>
+                        <td>${row.kids_6_10}</td>
+                        <td>${row.kids_lt_6}</td>
+                        <td style="color: #6c757d; font-size: 13px;">${row.scanned_by}</td>
+                    </tr>
+                `).join('');
+
+            } catch (error) {
+                console.error("Error loading extract:", error);
+                tbody.innerHTML = '<tr><td colspan="10" style="text-align: center; padding: 30px; color: red;">Error loading data. Check console.</td></tr>';
+            }
+        }
+
+        // --- 3. CSV EXPORT LOGIC ---
+        function downloadCSV() {
+            if (extractData.length === 0) {
+                alert("No data available to download.");
+                return;
+            }
+
+            // Define headers that match our object keys
+            const headers = ["Date", "Name", "Mobile", "Dept", "Alumni", "Spouse", "Kids>10", "Kids6-10", "Kids<6", "Scanned By"];
+            
+            // Map JSON data to CSV rows, wrapping text in quotes to escape commas
+            const csvRows = extractData.map(r => [
+                r.date, 
+                `"${r.participant_name}"`, 
+                `"${r.mobile}"`, 
+                `"${r.department}"`, 
+                r.alumni_present, 
+                r.spouse_present, 
+                r.kids_gt_10, 
+                r.kids_6_10, 
+                r.kids_lt_6, 
+                `"${r.scanned_by}"`
+            ].join(','));
+
+            // Combine headers and rows
+            const csvContent = headers.join(',') + '\n' + csvRows.join('\n');
+            
+            // Trigger browser download
+            const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+            const link = document.createElement("a");
+            const url = URL.createObjectURL(blob);
+            link.setAttribute("href", url);
+            link.setAttribute("download", `attendance_extract_${new Date().toISOString().split('T')[0]}.csv`);
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+        }
+
+        // --- 4. INACTIVITY TIMEOUT LOGIC ---
+        let idleTime = 0;
+        const timeoutLimit = 15; // Set to 15 minutes for admin pages
+
+        const idleInterval = setInterval(() => {
+            idleTime++;
+            if (idleTime >= timeoutLimit) {
+                clearInterval(idleInterval);
+                alert("Your session has expired due to inactivity. Please log in again.");
+                handleLogout();
+            }
+        }, 60000);
+
+        function resetTimer() { idleTime = 0; }
+        
+        ['mousemove', 'keypress', 'click', 'scroll'].forEach(evt => 
+            document.addEventListener(evt, resetTimer)
+        );
+
+        function handleLogout() {
+            localStorage.removeItem('supabaseToken');
+            sessionStorage.removeItem('persistentAdminToken');
+            window.location.replace('login');
+        }
+
+        // Initialize table on load
+        window.addEventListener('DOMContentLoaded', fetchExtract);
+    </script>
+</body>
+</html>
