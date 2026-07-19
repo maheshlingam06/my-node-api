@@ -312,24 +312,7 @@ app.post('/register', trackActivity('UPDATED_REGISTRATION'), async (req, res) =>
                     user_id: user.id,
                     participant_name: participant_name,
                     email: email,
-                    mobile: mobile,
-                    location: location,
-                    department,       
-                    class_reg_no,     
-                    t_shirt_size: t_shirt_size,
-                    spouse_attending: spouse_attending || 'No', // NEW
-                    adults_and_above_10: parseInt(adults_and_above_10) || 0,
-                    kids_6_10: parseInt(kids_6_10) || 0,
-                    kids_under_6: parseInt(kids_under_6) || 0,
-                    fri_family_join: fri_family_join,
-                    fri_stay_type: fri_stay_type,
-                    sat_attend_type: sat_attend_type,
-                    thu_stay_type: thu_stay_type,
-                    sat_stay_type: sat_stay_type,
-                    donation_amount: parseInt(donation_amount) || 0,
-                    performing_culturals: performing_culturals,
-                    volunteering: volunteering,
-                    qr_code_url: qrCodeUrl 
+                    mobile: mobile
                 }, { onConflict: 'user_id' })
                 .eq('user_id', user.id);
                 if (dbError) throw dbError;
