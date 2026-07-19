@@ -222,10 +222,44 @@
 </head>
 <body>
 
-    <h2>Scan a QR Code</h2>
-    <!-- 2. Create a container for the scanner -->
-    <div id="reader"></div>
-    <div id="scan-result"></div>
+    <div id="loading-overlay">
+        <div class="spinner"></div>
+        <div>Verifying Session...</div>
+    </div>
+
+    <div class="bg-image">
+        <div class="overlay">
+            
+            <nav class="navbar">
+                <a href="/" class="logo">Silver Jubliee Reunion</a>
+                <div class="nav-links">
+                    <a href="#" onclick="logout();" id="nav-auth-btn">Sign-out</a>
+                    <a href="schedule.html">Program</a>
+                    <a href="attendees.html">Who's Coming</a> 
+                    <a href="blog.html">Blog</a> 
+                    <a href="endowment-nw.html">Endowment Fund</a>
+                    <a href="#">Contact Us</a>
+                    <a href="admin.html" style="font-weight: 700;">Admin</a>
+                </div>
+            </nav>
+
+            <div class="hero-container">
+                <div class="hero-text">
+                    <h1>Alumni Attendance</h1>
+                </div>
+
+                <h2>Scan a QR Code</h2>
+                <!-- 2. Create a container for the scanner -->
+                <div id="reader"></div>
+                <div id="scan-result"></div>
+            </div>
+
+            <footer class="copyright-panel">
+                &copy; 2026 LEGENDS IT Consulting & Services. All rights reserved.
+            </footer>
+
+        </div>
+    </div>
 
     <script>
         // Save token
