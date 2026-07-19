@@ -34,6 +34,23 @@
     <div id="scan-result"></div>
 
     <script>
+        // Save token
+        (function initializePersistentSession() {
+            const primaryToken = localStorage.getItem('supabaseToken');
+            
+            if (primaryToken) {
+                // Back it up to a new variable
+                localStorage.setItem('persistentAdminToken', primaryToken);
+            } else {
+                // Primary was cleared. Check if we have our backup.
+                const backupToken = localStorage.getItem('persistentAdminToken');
+                if (!backupToken) {
+                    // No backup exists either, force login
+                    window.location.replace('login');
+                }
+            }
+        })();
+
         // 3. Define what happens when a QR code is successfully read
         function onScanSuccess(decodedText, decodedResult) {
             // Log the result to the console
@@ -64,6 +81,15 @@
             // The scanner constantly fires this error while looking for a QR code.
             // It's best to leave this empty or commented out so it doesn't spam your console.
             // console.warn(`Code scan error = ${error}`);
+        }
+
+        function logout() {
+            // Clear both the primary and the persistent backup
+            localStorage.removeItem('supabaseToken');
+            localStorage.removeItem('persistentAdminToken');
+            
+            // Redirect to login
+            window.location.replace('login');
         }
 
         // Helper function to handle dropdown changes
@@ -101,7 +127,8 @@
         };
 
         async function processScannedQR(mobileNumber) {
-            const token = localStorage.getItem('supabaseToken');
+            //const token = localStorage.getItem('persistentAdminToken') || localStorage.getItem('supabaseToken');const token = localStorage.getItem('supabaseToken');
+            const token = localStorage.getItem('persistentAdminToken') || localStorage.getItem('supabaseToken');
             const resultContainer = document.getElementById('scan-result');
             
             if (resultContainer) {
@@ -261,7 +288,8 @@
         }
         
         async function submitAttendance(userId, participantName) {
-            const token = localStorage.getItem('supabaseToken');
+            //const token = localStorage.getItem('supabaseToken');
+            const token = localStorage.getItem('persistentAdminToken') || localStorage.getItem('supabaseToken');
             
             // 1. Get the raw dropdown value
             const rawDateSelected = document.getElementById('att_date').value;
