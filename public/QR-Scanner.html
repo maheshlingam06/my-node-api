@@ -66,12 +66,10 @@
             // console.warn(`Code scan error = ${error}`);
         }
 
-        // 4. The async function matching your provided pattern
-        async function processScannedQR(mobileNumber) {
+       async function processScannedQR(mobileNumber) {
             const token = localStorage.getItem('supabaseToken');
-            
-            // Assuming you have a div to display the results: <div id="scan-result"></div>
             const resultContainer = document.getElementById('scan-result');
+            
             if (resultContainer) {
                 resultContainer.innerHTML = '<p style="text-align:center; padding: 30px;">Fetching registration data...</p>';
             }
@@ -92,42 +90,152 @@
                         window.location.replace('login');
                         return;
                     }
-                    if (response.status === 404) {
-                        throw new Error(`No registration found for mobile: ${mobileNumber}`);
-                    }
-                    throw new Error("Failed to fetch submission data");
+                    throw new Error(response.status === 404 ? `No registration found for mobile: ${mobileNumber}` : "Failed to fetch submission data");
                 }
 
                 const jsonResponse = await response.json();
-                const data = jsonResponse.data; // The actual submission record
+                const data = jsonResponse.data;
 
-                // Update UI with success data
+                // --- BUILD COLUMN 1: All Submission Data ---
+                let col1Html = '<table style="width: 100%; border-collapse: collapse; font-size: 14px; text-align: left;">';
+                for (const [key, value] of Object.entries(data)) {
+                    const displayValue = (value === null || value === '') ? '-' : value;
+                    const displayKey = key.replace(/_/g, ' ').toUpperCase();
+                    col1Html += `
+                        <tr>
+                            <td style="padding: 8px 4px; border-bottom: 1px solid #eee; font-weight: bold; color: #555; width: 45%;">${displayKey}</td>
+                            <td style="padding: 8px 4px; border-bottom: 1px solid #eee; word-break: break-word;">${displayValue}</td>
+                        </tr>
+                    `;
+                }
+                col1Html += '</table>';
+
+                // --- BUILD COLUMN 2: Attendance Form ---
+                const today = new Date().toISOString().split('T')[0];
+                const hasSpouse = data.spouse_attending === 'Yes';
+                const regKidsGt10 = data.adults_and_above_10 || 0; // Or data.teens_adults based on how you store >10
+                const regKids6to10 = data.kids_6_10 || 0;
+                const regKidsLt6 = data.kids_under_6 || 0;
+
+                const col2Html = `
+                    <h3 style="margin-top: 0; color: #333; border-bottom: 2px solid #007bff; padding-bottom: 10px;">Log Attendance</h3>
+                    <div style="display: flex; flex-direction: column; gap: 15px; font-size: 15px; margin-top: 15px;">
+                        
+                        <div>
+                            <label style="font-weight: bold; display: block; margin-bottom: 5px;">Date of Event</label>
+                            <input type="date" id="att_date" value="${today}" style="width: 100%; padding: 8px; border: 1px solid #ccc; border-radius: 4px;">
+                        </div>
+                        
+                        <div style="display: flex; align-items: center; gap: 10px; background: #f8f9fa; padding: 10px; border-radius: 4px;">
+                            <input type="checkbox" id="att_alumni" style="width: 20px; height: 20px;" checked>
+                            <label for="att_alumni" style="font-weight: bold; cursor: pointer;">Alumni Present</label>
+                        </div>
+                        
+                        <div style="display: flex; align-items: center; gap: 10px; background: #f8f9fa; padding: 10px; border-radius: 4px;">
+                            <input type="checkbox" id="att_spouse" style="width: 20px; height: 20px;" ${hasSpouse ? 'checked' : ''}>
+                            <label for="att_spouse" style="font-weight: bold; cursor: pointer;">Spouse Present</label>
+                        </div>
+
+                        <div>
+                            <label style="font-weight: bold; display: block; margin-bottom: 5px;">Kids > 10 (Count)</label>
+                            <input type="number" id="att_kids_gt_10" value="${regKidsGt10}" min="0" style="width: 100%; padding: 8px; border: 1px solid #ccc; border-radius: 4px;">
+                        </div>
+
+                        <div>
+                            <label style="font-weight: bold; display: block; margin-bottom: 5px;">Kids 6-10 (Count)</label>
+                            <input type="number" id="att_kids_6_10" value="${regKids6to10}" min="0" style="width: 100%; padding: 8px; border: 1px solid #ccc; border-radius: 4px;">
+                        </div>
+
+                        <div>
+                            <label style="font-weight: bold; display: block; margin-bottom: 5px;">Kids < 6 (Count)</label>
+                            <input type="number" id="att_kids_lt_6" value="${regKidsLt6}" min="0" style="width: 100%; padding: 8px; border: 1px solid #ccc; border-radius: 4px;">
+                        </div>
+
+                        <div style="display: flex; gap: 10px; margin-top: 15px;">
+                            <button onclick="submitAttendance('${data.user_id}')" style="background-color: #28a745; color: white; border: none; padding: 12px; border-radius: 4px; cursor: pointer; flex: 1; font-weight: bold;">Save Attendance</button>
+                            <button onclick="resetScanner()" style="background-color: #6c757d; color: white; border: none; padding: 12px; border-radius: 4px; cursor: pointer; flex: 1; font-weight: bold;">Reset / Cancel</button>
+                        </div>
+                    </div>
+                `;
+
+                // --- RENDER BOTH COLUMNS ---
                 if (resultContainer) {
                     resultContainer.innerHTML = `
-                        <div style="background-color: #d4edda; padding: 20px; border-radius: 5px; color: #155724;">
-                            <h3 style="margin-top: 0;">✅ Valid Registration Found</h3>
-                            <p><strong>Name:</strong> ${data.participant_name || 'N/A'}</p>
-                            <p><strong>Mobile:</strong> ${data.mobile}</p>
-                            <p><strong>Email:</strong> ${data.email || 'N/A'}</p>
-                            <button onclick="html5QrcodeScanner.resume()" style="margin-top: 10px;">Scan Next</button>
+                        <div style="display: flex; flex-wrap: wrap; gap: 30px; background: white; padding: 20px; border-radius: 8px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); max-width: 1000px; margin: 20px auto;">
+                            
+                            <!-- Left Column: Data -->
+                            <div style="flex: 1 1 350px; max-height: 600px; overflow-y: auto; padding-right: 15px; border-right: 2px solid #f0f0f0;">
+                                <h3 style="margin-top: 0; color: #333; position: sticky; top: 0; background: white; padding-bottom: 10px; border-bottom: 2px solid #007bff;">Registration Details</h3>
+                                ${col1Html}
+                            </div>
+                            
+                            <!-- Right Column: Form -->
+                            <div style="flex: 1 1 300px;">
+                                ${col2Html}
+                            </div>
                         </div>
                     `;
                 }
-                
-                // Note: If you want to automatically MARK ATTENDANCE right after finding the record, 
-                // you could chain another fetch call to your '/api/admin/mark-attendance' endpoint here.
 
             } catch (err) {
                 console.error("Scan Error:", err);
                 if (resultContainer) {
                     resultContainer.innerHTML = `
-                        <div style="background-color: #f8d7da; padding: 20px; border-radius: 5px; color: #721c24;">
+                        <div style="background-color: #f8d7da; padding: 20px; border-radius: 5px; color: #721c24; text-align: center; max-width: 500px; margin: 20px auto;">
                             <p>❌ <strong>Error:</strong> ${err.message}</p>
-                            <button onclick="html5QrcodeScanner.resume()" style="margin-top: 10px;">Try Again</button>
+                            <button onclick="resetScanner()" style="margin-top: 15px; padding: 10px 20px; cursor: pointer;">Try Again</button>
                         </div>
                     `;
                 }
             }
+        }
+
+        async function submitAttendance(userId) {
+            const token = localStorage.getItem('supabaseToken');
+            
+            // Gather all data from the UI Form
+            const payload = {
+                user_id: userId,
+                day_of_event: document.getElementById('att_date').value,
+                alumni: document.getElementById('att_alumni').checked,
+                spouse: document.getElementById('att_spouse').checked,
+                kids_gt_10: parseInt(document.getElementById('att_kids_gt_10').value, 10) || 0,
+                kids_6_10: parseInt(document.getElementById('att_kids_6_10').value, 10) || 0,
+                kids_lt_6: parseInt(document.getElementById('att_kids_lt_6').value, 10) || 0,
+            };
+
+            try {
+                const response = await fetch('/api/admin/mark-attendance', {
+                    method: 'POST',
+                    headers: { 
+                        'Authorization': `Bearer ${token}`,
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(payload)
+                });
+
+                if (!response.ok) {
+                    const errData = await response.json();
+                    throw new Error(errData.error || "Failed to save attendance");
+                }
+
+                // Show success and clear the screen
+                alert("✅ Attendance successfully recorded!");
+                resetScanner();
+                
+            } catch (err) {
+                console.error("Submission Error:", err);
+                alert("Error: " + err.message);
+            }
+        }
+
+        // Clears the UI and turns the camera back on
+        function resetScanner() {
+            const resultContainer = document.getElementById('scan-result');
+            if (resultContainer) {
+                resultContainer.innerHTML = ''; 
+            }
+            html5QrcodeScanner.resume(); // Unpause the camera
         }
 
         // 5. Initialize the scanner

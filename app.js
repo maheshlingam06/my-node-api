@@ -573,7 +573,7 @@ app.get('/api/admin/all-registrations', trackActivity('ADMIN_GETALL_REGISTRATION
     }
 });
 
-// --- ADMIN ROUTE: Mark Event Attendance ---
+// --- ADMIN ROUTE: Mark Event Attendance (Updated) ---
 app.post('/api/admin/mark-attendance', async (req, res) => {
     try {
         // 1. Authentication & Admin Authorization check
@@ -589,51 +589,52 @@ app.post('/api/admin/mark-attendance', async (req, res) => {
             return res.status(403).json({ error: "Access Denied: Admin rights required." });
         }
 
-        // 2. Extract payload
-        const { mobile } = req.body;
-        if (!mobile) {
-            return res.status(400).json({ error: "Mobile number is required in the payload." });
+        // 2. Extract the rich payload from the frontend
+        const { 
+            user_id, 
+            day_of_event, 
+            alumni, 
+            spouse, 
+            kids_gt_10, 
+            kids_6_10, 
+            kids_lt_6 
+        } = req.body;
+
+        if (!user_id || !day_of_event) {
+            return res.status(400).json({ error: "Missing required fields: user_id and day_of_event." });
         }
 
-        // 3. Locate the matching record in the submissions table
-        // Using .maybeSingle() so it returns null (instead of throwing an error) if no match is found
-        const { data: submission, error: subError } = await adminSupabase
-            .from('submissions')
-            .select('user_id, participant_name')
-            .eq('mobile', mobile)
-            .maybeSingle();
-
-        if (subError) throw subError;
-
-        if (!submission) {
-            return res.status(404).json({ error: `No registration found for mobile: ${mobile}` });
-        }
-
-        // 4. Create an entry in the EventAttendance table
-        // We capture the current date and also record which admin scanned the code
-        const todayDate = new Date().toISOString().split('T')[0]; // Format: YYYY-MM-DD
-
+        // 3. Insert the full attendance record into EventAttendance table
         const { data: attendanceRecord, error: attError } = await adminSupabase
             .from('EventAttendance')
             .insert([{
-                user_id: submission.user_id,
-                day_of_event: todayDate,
-                admin: user.id // Log the admin's UUID who performed the scan
+                user_id: user_id,
+                day_of_event: day_of_event,
+                
+                // Ensure correct data types for the database
+                alumni: Boolean(alumni),
+                spouse: Boolean(spouse),
+                kids_gt_10: parseInt(kids_gt_10, 10) || 0,
+                kids_6_10: parseInt(kids_6_10, 10) || 0,
+                kids_lt_6: parseInt(kids_lt_6, 10) || 0,
+                
+                // Track which admin logged this entry
+                admin: user.id 
             }])
             .select()
             .single();
 
         if (attError) throw attError;
 
-        // 5. Return success
+        // 4. Return success
         res.json({
             success: true,
-            message: `Attendance successfully recorded for ${submission.participant_name || 'Participant'}`,
+            message: "Attendance successfully recorded.",
             data: attendanceRecord
         });
 
     } catch (err) {
-        console.error("Attendance Scan Error:", err);
+        console.error("Attendance Submission Error:", err);
         res.status(500).json({ error: err.message });
     }
 });
