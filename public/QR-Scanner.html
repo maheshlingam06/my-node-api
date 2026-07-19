@@ -51,6 +51,25 @@
             }
         })();
 
+        // Listen for clicks anywhere on the page
+        document.addEventListener('click', function(event) {
+            // Check if the clicked element is the dynamically generated "Stop Scanning" button
+            // We check both the ID and the text just to be fully compatible with different library versions
+            if (event.target && (event.target.id === 'html5-qrcode-button-camera-stop' || event.target.innerText === 'Stop Scanning')) {
+                
+                // 1. Clear the UI columns
+                const resultContainer = document.getElementById('scan-result');
+                if (resultContainer) {
+                    resultContainer.innerHTML = ''; 
+                }
+
+                // 2. Clear the cached state to prevent old data from bleeding over
+                window.currentScanData = null;
+                
+                console.log("Scanner stopped, UI cleared.");
+            }
+        });
+
         // 3. Define what happens when a QR code is successfully read
         function onScanSuccess(decodedText, decodedResult) {
             // Log the result to the console
