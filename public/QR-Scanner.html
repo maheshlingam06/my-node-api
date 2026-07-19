@@ -37,6 +37,20 @@
         function onScanSuccess(decodedText, decodedResult) {
             // Log the result to the console
             console.log("QR Code Data:", decodedText);
+            // Check if the scanned text matches your expected Reunion format
+            if (decodedText.startsWith("Reunion-2026-")) {
+                
+                // Extract the mobile number by replacing the prefix with an empty string
+                const mobileNumber = decodedText.replace("Reunion-2026-", "");
+                
+                console.log("Extracted Mobile:", mobileNumber);
+                
+                // Optional: Stop scanning after a successful read
+                // html5QrcodeScanner.clear();
+                
+            } else {
+                console.warn("Unrecognized QR Code format:", decodedText);
+            }
             
             // Optional: Stop the scanner after a successful scan
             // html5QrcodeScanner.clear();
