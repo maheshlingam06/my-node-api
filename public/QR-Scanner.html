@@ -39,13 +39,13 @@
             const primaryToken = localStorage.getItem('supabaseToken');
             
             if (primaryToken) {
-                // Back it up to a new variable
-                localStorage.setItem('persistentAdminToken', primaryToken);
+                // Back it up to sessionStorage instead of localStorage
+                sessionStorage.setItem('persistentAdminToken', primaryToken);
             } else {
-                // Primary was cleared. Check if we have our backup.
-                const backupToken = localStorage.getItem('persistentAdminToken');
+                // Primary was cleared. Check if we have our session backup.
+                const backupToken = sessionStorage.getItem('persistentAdminToken');
                 if (!backupToken) {
-                    // No backup exists either, force login
+                    // Tab was closed or no backup exists, force login
                     window.location.replace('login');
                 }
             }
@@ -86,7 +86,7 @@
         function logout() {
             // Clear both the primary and the persistent backup
             localStorage.removeItem('supabaseToken');
-            localStorage.removeItem('persistentAdminToken');
+            //localStorage.removeItem('persistentAdminToken');
             
             // Redirect to login
             window.location.replace('login');
@@ -128,7 +128,8 @@
 
         async function processScannedQR(mobileNumber) {
             //const token = localStorage.getItem('persistentAdminToken') || localStorage.getItem('supabaseToken');const token = localStorage.getItem('supabaseToken');
-            const token = localStorage.getItem('persistentAdminToken') || localStorage.getItem('supabaseToken');
+            //const token = localStorage.getItem('persistentAdminToken') || localStorage.getItem('supabaseToken');
+            const token = sessionStorage.getItem('persistentAdminToken') || localStorage.getItem('supabaseToken');
             const resultContainer = document.getElementById('scan-result');
             
             if (resultContainer) {
@@ -289,7 +290,8 @@
         
         async function submitAttendance(userId, participantName) {
             //const token = localStorage.getItem('supabaseToken');
-            const token = localStorage.getItem('persistentAdminToken') || localStorage.getItem('supabaseToken');
+            //const token = localStorage.getItem('persistentAdminToken') || localStorage.getItem('supabaseToken');
+            const token = sessionStorage.getItem('persistentAdminToken') || localStorage.getItem('supabaseToken');
             
             // 1. Get the raw dropdown value
             const rawDateSelected = document.getElementById('att_date').value;
