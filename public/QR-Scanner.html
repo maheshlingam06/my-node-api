@@ -66,7 +66,7 @@
             // console.warn(`Code scan error = ${error}`);
         }
 
-       async function processScannedQR(mobileNumber) {
+        async function processScannedQR(mobileNumber) {
             const token = localStorage.getItem('supabaseToken');
             const resultContainer = document.getElementById('scan-result');
             
@@ -96,24 +96,43 @@
                 const jsonResponse = await response.json();
                 const data = jsonResponse.data;
 
-                // --- BUILD COLUMN 1: All Submission Data ---
+                // --- BUILD COLUMN 1: Specific Ordered Data ---
+                // Array of fields in the exact order requested
+                const displayFields = [
+                    "id", "participant_name", "email", "mobile", "department", 
+                    "class_reg_no", "spouse_attending", "adults_and_above_10", 
+                    "kids_6_10", "kids_under_6", "thu_stay_type", "fri_family_join", 
+                    "fri_stay_type", "sat_attend_type", "sat_stay_type", 
+                    "payment_status", "amount_received", "donation_amount", 
+                    "remarks", "t_shirt_size", "performing_culturals", 
+                    "volunteering", "last_modified_at", "user_id"
+                ];
+
                 let col1Html = '<table style="width: 100%; border-collapse: collapse; font-size: 14px; text-align: left;">';
-                for (const [key, value] of Object.entries(data)) {
-                    const displayValue = (value === null || value === '') ? '-' : value;
+                
+                displayFields.forEach(key => {
+                    const rawValue = data[key];
+                    let displayValue = (rawValue === null || rawValue === '' || rawValue === undefined) ? '-' : rawValue;
                     const displayKey = key.replace(/_/g, ' ').toUpperCase();
+
+                    // Format timestamp nicely if it exists
+                    if (key === 'last_modified_at' && displayValue !== '-') {
+                        displayValue = new Date(displayValue).toLocaleString();
+                    }
+
                     col1Html += `
                         <tr>
                             <td style="padding: 8px 4px; border-bottom: 1px solid #eee; font-weight: bold; color: #555; width: 45%;">${displayKey}</td>
                             <td style="padding: 8px 4px; border-bottom: 1px solid #eee; word-break: break-word;">${displayValue}</td>
                         </tr>
                     `;
-                }
+                });
                 col1Html += '</table>';
 
                 // --- BUILD COLUMN 2: Attendance Form ---
                 const today = new Date().toISOString().split('T')[0];
                 const hasSpouse = data.spouse_attending === 'Yes';
-                const regKidsGt10 = data.adults_and_above_10 || 0; // Or data.teens_adults based on how you store >10
+                const regKidsGt10 = data.adults_and_above_10 || 0; 
                 const regKids6to10 = data.kids_6_10 || 0;
                 const regKidsLt6 = data.kids_under_6 || 0;
 
@@ -123,7 +142,11 @@
                         
                         <div>
                             <label style="font-weight: bold; display: block; margin-bottom: 5px;">Date of Event</label>
-                            <input type="date" id="att_date" value="${today}" style="width: 100%; padding: 8px; border: 1px solid #ccc; border-radius: 4px;">
+                            <select id="att_date" style="width: 100%; padding: 8px; border: 1px solid #ccc; border-radius: 4px; background: white;">
+                                <option value="Thu, 23rd Jul">Thu, 23rd Jul</option>
+                                <option value="Fri, 24th Jul">Fri, 24th Jul</option>
+                                <option value="Sat, 25th Jul">Sat, 25th Jul</option>
+                            </select>
                         </div>
                         
                         <div style="display: flex; align-items: center; gap: 10px; background: #f8f9fa; padding: 10px; border-radius: 4px;">
@@ -189,14 +212,25 @@
                 }
             }
         }
-
+       
         async function submitAttendance(userId) {
             const token = localStorage.getItem('supabaseToken');
             
-            // Gather all data from the UI Form
+            // 1. Get the raw dropdown value
+            const rawDateSelected = document.getElementById('att_date').value;
+
+            // 2. Map the display text to the actual DB Date value format (YYYY-MM-DD)
+            const dateMapping = {
+                "Thu, 23rd Jul": "2026-07-23",
+                "Fri, 24th Jul": "2026-07-24",
+                "Sat, 25th Jul": "2026-07-25"
+            };
+            const mappedDbDate = dateMapping[rawDateSelected];
+
+            // 3. Gather all data from the UI Form
             const payload = {
                 user_id: userId,
-                day_of_event: document.getElementById('att_date').value,
+                day_of_event: mappedDbDate, // Using the mapped date here
                 alumni: document.getElementById('att_alumni').checked,
                 spouse: document.getElementById('att_spouse').checked,
                 kids_gt_10: parseInt(document.getElementById('att_kids_gt_10').value, 10) || 0,
@@ -219,8 +253,7 @@
                     throw new Error(errData.error || "Failed to save attendance");
                 }
 
-                // Show success and clear the screen
-                alert("✅ Attendance successfully recorded!");
+                alert(`✅ Attendance for ${rawDateSelected} successfully recorded!`);
                 resetScanner();
                 
             } catch (err) {
